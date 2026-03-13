@@ -18,4 +18,19 @@
 
 body {
   background-color: white;
+  margin: 0;
+  padding: 0;
 }
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background-color: #f8fafc; /* light grey to match slate-50 */
+}
+
+.map-wrapper {
+  height: calc(100vh - 64px);
+  width: 100%;
+  position: relative;
+}
+

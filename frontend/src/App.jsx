@@ -90,8 +90,9 @@ function AppContent() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/verify-otp" element={<VerifyOTP />} />
-                  <Route path="/explore" element={<ExploreMap />} />
+                  <Route path="/explore-map" element={<ExploreMap />} />
                   <Route path="/explore-list" element={<Explore />} />
+                  <Route path="/places" element={<Explore />} />
                   <Route path="/guides" element={<Guides />} />
                   <Route path="/guides/:id" element={<GuideProfile />} />
                   <Route path="/ai-chat" element={<AIChat />} />

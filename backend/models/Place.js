@@ -12,4 +12,6 @@ const placeSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+placeSchema.index({ latitude: 1, longitude: 1 });
+
 module.exports = mongoose.model('Place', placeSchema);

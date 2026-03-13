@@ -12,6 +12,20 @@ const useAudioGuide = () => {
     }
   }, []);
 
+  const pause = useCallback(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.pause();
+      setIsPlaying(false);
+    }
+  }, []);
+
+  const resume = useCallback(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.resume();
+      setIsPlaying(true);
+    }
+  }, []);
+
   const speak = useCallback((text) => {
     if (!text) return;
     
@@ -20,6 +34,8 @@ const useAudioGuide = () => {
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-IN";
+      utterance.rate = 0.9; // Slightly slower for clarity
       
       utterance.onstart = () => {
         setIsPlaying(true);
@@ -50,7 +66,7 @@ const useAudioGuide = () => {
     };
   }, []);
 
-  return { isPlaying, currentText, speak, stop };
+  return { isPlaying, currentText, speak, stop, pause, resume };
 };
 
 export default useAudioGuide;

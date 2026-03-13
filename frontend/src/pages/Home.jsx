@@ -34,7 +34,7 @@ const Home = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 pt-4">
-              <Link to="/explore" className="w-full sm:w-auto px-10 py-5 bg-primary-500 text-slate-900 rounded-[2rem] font-black text-lg hover:bg-primary-400 transition-all shadow-2xl shadow-primary-500/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center">
+              <Link to="/explore-map" className="w-full sm:w-auto px-10 py-5 bg-primary-500 text-slate-900 rounded-[2rem] font-black text-lg hover:bg-primary-400 transition-all shadow-2xl shadow-primary-500/30 hover:-translate-y-1 active:scale-95 flex items-center justify-center">
                 Start Exploring <Compass className="w-5 h-5 ml-3" />
               </Link>
               <Link to="/ai-chat" className="w-full sm:w-auto px-10 py-5 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-[2rem] font-black text-lg hover:bg-white/20 transition-all flex items-center justify-center">
@@ -80,30 +80,36 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard 
-              icon={<Search className="w-8 h-8" />}
-              title="Smart Discovery"
-              desc="Real-time geo-location shows you exactly what's around you, from monuments to cafes."
-              color="bg-blue-500"
-            />
+            <Link to="/explore-map">
+              <FeatureCard 
+                icon={<Search className="w-8 h-8" />}
+                title="Smart Discovery"
+                desc="Real-time geo-location shows you exactly what's around you, from monuments to cafes."
+                color="bg-blue-500"
+              />
+            </Link>
             <FeatureCard 
               icon={<ShieldCheck className="w-8 h-8" />}
               title="Verified Experts"
               desc="Every guide on our platform is hand-vetted for local expertise and safety."
               color="bg-green-500"
             />
-            <FeatureCard 
-              icon={<MessageSquare className="w-8 h-8" />}
-              title="AI Planning"
-              desc="Tell our Gemini-powered assistant your interests and get a custom itinerary in seconds."
-              color="bg-primary-500"
-            />
-            <FeatureCard 
-              icon={<Globe className="w-8 h-8" />}
-              title="Audio Guides"
-              desc="No guide available? Our AI-generated audio stories bring locations to life instantly."
-              color="bg-purple-500"
-            />
+            <Link to="/ai-chat">
+              <FeatureCard 
+                icon={<MessageSquare className="w-8 h-8" />}
+                title="AI Planning"
+                desc="Tell our Gemini-powered assistant your interests and get a custom itinerary in seconds."
+                color="bg-primary-500"
+              />
+            </Link>
+            <Link to="/places">
+              <FeatureCard 
+                icon={<Globe className="w-8 h-8" />}
+                title="Audio Guides"
+                desc="No guide available? Our AI-generated audio stories bring locations to life instantly."
+                color="bg-purple-500"
+              />
+            </Link>
           </div>
         </div>
       </section>

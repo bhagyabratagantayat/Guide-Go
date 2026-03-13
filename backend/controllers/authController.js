@@ -14,7 +14,9 @@ const generateOTP = () => {
 
 const registerUser = asyncHandler(async (req, res, next) => {
   const { name, email, password, role, mobile, location } = req.body;
-  const userExists = await User.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+  
+  const userExists = await User.findOne({ email: normalizedEmail });
   if (userExists) {
     return next(new ErrorResponse('User already exists', 400, 'USER_EXISTS'));
   }
@@ -22,9 +24,10 @@ const registerUser = asyncHandler(async (req, res, next) => {
   const otp = generateOTP();
   const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+  console.log('Registering user:', { name, email: normalizedEmail, role });
   const user = await User.create({ 
     name, 
-    email, 
+    email: normalizedEmail, 
     password, 
     role, 
     mobile, 
@@ -35,6 +38,13 @@ const registerUser = asyncHandler(async (req, res, next) => {
   });
 
   if (user) {
+    // Immediate verification check
+    const check = await User.findById(user._id);
+    if (!check) {
+      console.error('CRITICAL: User was reported as created but could not be found via findById immediately after!', user._id);
+      return next(new ErrorResponse('Database synchronization error. Please try again.', 500));
+    }
+    console.log('User verified in DB immediately after creation:', check.email);
     logger.info(`User registered, awaiting verification: ${user.email}`);
     
     try {
@@ -59,11 +69,15 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
 const verifyOTP = asyncHandler(async (req, res, next) => {
   const { email, otp } = req.body;
-  const user = await User.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+  console.log('Verifying OTP for:', normalizedEmail, 'with code:', otp);
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
+    console.log('User NOT found during verification for email:', email);
     return next(new ErrorResponse('User not found', 404, 'USER_NOT_FOUND'));
   }
+  console.log('User found for verification:', user.email, 'Target OTP:', user.otp);
 
   if (user.isVerified) {
     return next(new ErrorResponse('User is already verified', 400, 'ALREADY_VERIFIED'));

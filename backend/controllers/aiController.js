@@ -1,5 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const config = require('../config/env');
+const { getAIResponse } = require('../services/aiKnowledgeBase');
 const asyncHandler = require('../middleware/asyncHandler');
 const ErrorResponse = require('../utils/errorResponse');
 
@@ -10,26 +9,16 @@ const generateTravelAdvice = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Please provide a question', 400));
   }
 
-  const genAI = new GoogleGenerativeAI(config.geminiApiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-
-  const prompt = `You are a professional travel assistant for GuideGo. 
-  Answer the following user question about travel, itineraries, or food in a helpful, concise, and structured way.
-  Use markdown for formatting.
-  
-  Question: ${question}`;
-
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const answer = getAIResponse(question);
 
     res.status(200).json({
       success: true,
-      response: text
+      answer: answer,
+      response: answer // Keep for backward compatibility if needed by some frontend parts
     });
   } catch (error) {
-    return next(new ErrorResponse('AI Generation failed: ' + error.message, 500));
+    return next(new ErrorResponse('Local AI processing failed: ' + error.message, 500));
   }
 });
 

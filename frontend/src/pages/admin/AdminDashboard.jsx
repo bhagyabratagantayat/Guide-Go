@@ -14,14 +14,21 @@ import {
 const AdminDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const { data } = await axios.get('/api/admin/stats');
-        setData(data.data);
+        if (data.success && data.data) {
+          setData(data.data);
+          setError(null);
+        } else {
+          setError('Failed to load statistics');
+        }
       } catch (error) {
         console.error('Error fetching admin stats:', error);
+        setError(error.response?.data?.message || 'Error connecting to server');
       } finally {
         setLoading(false);
       }
@@ -32,6 +39,26 @@ const AdminDashboard = () => {
   if (loading) return (
     <div className="flex items-center justify-center h-full">
       <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-full space-y-4">
+      <div className="p-4 bg-red-50 text-red-600 rounded-2xl font-bold border border-red-100">
+        {error}
+      </div>
+      <button 
+        onClick={() => window.location.reload()}
+        className="px-6 py-2 bg-primary-500 text-slate-900 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary-400"
+      >
+        Retry Fetch
+      </button>
+    </div>
+  );
+
+  if (!data || !data.stats) return (
+    <div className="flex items-center justify-center h-full">
+      <p className="text-slate-500 font-bold uppercase tracking-widest">No dashboard data available.</p>
     </div>
   );
 

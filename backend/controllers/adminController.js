@@ -129,6 +129,33 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   res.json({ success: true, message: 'User removed' });
 });
 
+// @desc    Create a new admin
+// @route   POST /api/admin/users/admin
+// @access  Private/Admin
+const createAdmin = asyncHandler(async (req, res, next) => {
+  const { name, email, password, mobile } = req.body;
+
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return next(new ErrorResponse('User with this email already exists', 400));
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    password,
+    mobile,
+    role: 'admin',
+    isVerified: true // Admin created secondary admin is verified by default
+  });
+
+  res.status(201).json({
+    success: true,
+    data: user
+  });
+});
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -136,5 +163,6 @@ module.exports = {
   deleteUser,
   getAllGuides,
   updateGuideStatus,
-  getAllBookings
+  getAllBookings,
+  createAdmin
 };

@@ -42,10 +42,12 @@ export const AuthProvider = ({ children }) => {
     const { data } = await axios.post('/api/auth/verify-otp', { email, otp });
     localStorage.setItem('userInfo', JSON.stringify(data));
     setUser(data);
+    return data;
   };
 
   const register = async (name, email, password, role, mobile, location) => {
-    const { data } = await axios.post('/api/auth/register', { name, email, password, role, mobile, location });
+    const normalizedEmail = email.trim().toLowerCase();
+    const { data } = await axios.post('/api/auth/register', { name, email: normalizedEmail, password, role, mobile, location });
     return data;
   };
 

@@ -18,7 +18,13 @@ const Login = () => {
       else if (role === 'guide') navigate('/guide-dashboard');
       else navigate('/');
     } catch (error) {
-      alert(error.response?.data?.message || 'Login failed');
+      if (error.response?.data?.errorCode === 'NOT_VERIFIED') {
+        alert('Please verify your email first.');
+        const normalizedEmail = email.trim().toLowerCase();
+        navigate('/verify-otp', { state: { email: normalizedEmail } });
+      } else {
+        alert(error.response?.data?.message || 'Login failed');
+      }
     }
   };
 

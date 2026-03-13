@@ -15,9 +15,9 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await register(name, email, password, role, mobile, location);
-      alert('Registration successful. You can now login.');
-      navigate('/login');
+      await register(name, email, password, role, mobile, location);
+      alert('Registration successful. Please verify your email with the OTP sent.');
+      navigate('/verify-otp', { state: { email } });
     } catch (error) {
       alert(error.response?.data?.message || 'Registration failed');
     }

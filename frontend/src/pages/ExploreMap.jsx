@@ -41,15 +41,17 @@ const ExploreMap = () => {
   const [mapCenter, setMapCenter] = useState([20.2961, 85.8245]);
   const [userLocation, setUserLocation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { isPlaying, speak, stop } = useAudioGuide();
+  const { isPlaying, speak, stop, pause, resume } = useAudioGuide();
+  const [nearestPlace, setNearestPlace] = useState(null);
+  const [autoSuggested, setAutoSuggested] = useState(new Set());
   const { user } = useAuth();
   const { liveGuides } = useGuideTracking(user);
 
   const fetchData = async (lat, lng) => {
     try {
       const [placesRes, guidesRes] = await Promise.all([
-        axios.get('/api/places'),
-        axios.get(`/api/guides/nearby?lat=${lat}&lng=${lng}&distance=50000`)
+        axios.get(`/api/places/nearby?lat=${lat}&lng=${lng}`),
+        axios.get(`/api/guides/nearby?lat=${lat}&lng=${lng}&distance=10000`)
       ]);
       setPlaces(placesRes.data);
       setGuides(guidesRes.data);
@@ -71,6 +73,7 @@ const ExploreMap = () => {
           fetchData(latitude, longitude);
         },
         () => {
+          alert('Location permission required for Smart Discovery. Using default location.');
           fetchData(20.2961, 85.8245);
         }
       );
@@ -80,10 +83,43 @@ const ExploreMap = () => {
     return () => stop();
   }, []);
 
+  // Proximity detection for Auto Audio Guide (100m)
+  useEffect(() => {
+    if (userLocation && places.length > 0) {
+      const R = 6371000; // Earth radius in meters
+      const deg2rad = (deg) => deg * (Math.PI / 180);
+
+      let closest = null;
+      let minDistance = 101; // Only care if within 100m
+
+      places.forEach(place => {
+        const dLat = deg2rad(place.latitude - userLocation[0]);
+        const dLon = deg2rad(place.longitude - userLocation[1]);
+        const a = 
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(deg2rad(userLocation[0])) * Math.cos(deg2rad(place.latitude)) * 
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closest = place;
+        }
+      });
+
+      if (closest && !autoSuggested.has(closest._id)) {
+        setNearestPlace(closest);
+      } else {
+        setNearestPlace(null);
+      }
+    }
+  }, [userLocation, places, autoSuggested]);
+
   // Socket logic moved to useGuideTracking hook
 
   return (
-    <div className="h-[calc(100vh-64px)] relative w-full overflow-hidden">
+    <div className="map-wrapper overflow-hidden">
       {/* Map Content */}
       <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%', zIndex: 0 }}>
         <TileLayer
@@ -104,32 +140,44 @@ const ExploreMap = () => {
             >
               <div className="p-3 min-w-[240px]">
                 <div className="h-24 rounded-xl overflow-hidden mb-3 relative group/img">
-                  <img src={place.images?.[0] || 'https://images.unsplash.com/photo-1524492459422-ad5193910f54'} alt={place.name} className="w-full h-full object-cover" />
+                  <img src={place.image || 'https://images.unsplash.com/photo-1524492459422-ad5193910f54'} alt={place.name} className="w-full h-full object-cover" />
                   <button 
                     onClick={() => speak(place.audioGuideText || place.description)}
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white"
                   >
-                    <Volume2 className="w-8 h-8 animate-pulse" />
+                    <div className="flex flex-col items-center">
+                      <Volume2 className="w-8 h-8 animate-pulse mb-1" />
+                      <span className="text-[10px] font-bold uppercase">Play Audio Guide</span>
+                    </div>
                   </button>
                 </div>
                 <div className="flex justify-between items-start mb-1">
                   <h4 className="font-black text-slate-900 text-lg leading-tight">{place.name}</h4>
-                  <button 
-                    onClick={() => speak(place.audioGuideText || place.description)}
-                    className="p-1.5 bg-primary-100 text-primary-600 rounded-lg hover:bg-primary-600 hover:text-white transition-colors"
-                    title="Play Audio Guide"
-                  >
-                    <Volume2 className="w-4 h-4" />
-                  </button>
-                </div>
-                <p className="text-xs text-slate-500 line-clamp-2 mb-3">{place.description}</p>
-                <div className="flex items-center justify-between border-t pt-2">
-                  <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                    {place.category}
-                  </span>
-                  <Link to={`/explore-list`} className="text-xs font-bold text-slate-800 flex items-center hover:text-primary-600 transition-colors">
-                    More Spots <Info className="w-3 h-3 ml-1" />
-                  </Link>
+                  <div className="flex items-center space-x-2 border-t pt-2">
+                    {!isPlaying ? (
+                      <button 
+                        onClick={() => speak(place.audioGuideText || place.description)}
+                        className="flex-1 py-1.5 bg-primary-600 text-white rounded-lg text-[10px] font-bold flex items-center justify-center hover:bg-primary-700 transition-colors"
+                      >
+                        <Volume2 className="w-3.5 h-3.5 mr-1" /> Play Guide
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          onClick={pause}
+                          className="flex-1 py-1.5 bg-slate-100 text-slate-800 rounded-lg text-[10px] font-bold flex items-center justify-center hover:bg-slate-200 transition-colors"
+                        >
+                          Pause
+                        </button>
+                        <button 
+                          onClick={stop}
+                          className="flex-1 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold flex items-center justify-center hover:bg-red-100 transition-colors"
+                        >
+                          Stop
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </Popup>
@@ -147,10 +195,10 @@ const ExploreMap = () => {
                 <div className="p-3 min-w-[220px]">
                   <div className="flex items-center space-x-3 mb-3 pb-2 border-b">
                     <div className="w-12 h-12 rounded-xl bg-secondary-100 flex items-center justify-center text-secondary-600 font-bold text-xl uppercase overflow-hidden shadow-inner">
-                      {guide.userId.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : guide.userId.name.charAt(0)}
+                      {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : (guide.userId?.name?.charAt(0) || 'G')}
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-800 leading-tight">{guide.userId.name}</h4>
+                      <h4 className="font-bold text-slate-800 leading-tight">{guide.userId?.name || 'Local Guide'}</h4>
                       <div className="flex items-center text-[10px] text-yellow-500 font-bold">
                         <Star className="w-3 h-3 fill-yellow-500 mr-1" /> {guide.rating}
                       </div>
@@ -209,7 +257,34 @@ const ExploreMap = () => {
 
       {/* Legend / Status Overlay */}
       <div className="absolute bottom-6 left-6 z-[1000]">
-        {!loading && guides.length === 0 && (
+        {nearestPlace && (
+          <div className="bg-white/90 backdrop-blur shadow-xl rounded-2xl p-4 border-2 border-primary-500 animate-in fade-in slide-in-from-bottom duration-500 max-w-[280px]">
+            <p className="text-[10px] font-black text-primary-600 uppercase tracking-widest mb-1">Near {nearestPlace.name}</p>
+            <p className="text-xs text-slate-700 font-bold mb-3">You are within reach of a historical site. Want to hear its story?</p>
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => {
+                  speak(nearestPlace.audioGuideText || nearestPlace.description);
+                  setAutoSuggested(prev => new Set(prev).add(nearestPlace._id));
+                  setNearestPlace(null);
+                }}
+                className="flex-1 py-2 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-tighter hover:bg-primary-700 shadow-lg shadow-primary-200"
+              >
+                Yes, Play Now
+              </button>
+              <button 
+                onClick={() => {
+                  setAutoSuggested(prev => new Set(prev).add(nearestPlace._id));
+                  setNearestPlace(null);
+                }}
+                className="px-3 py-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-bold hover:bg-slate-200"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+        {!loading && guides.length === 0 && !nearestPlace && (
           <div className="bg-white/90 backdrop-blur shadow-xl rounded-2xl p-4 border border-slate-100 animate-in fade-in slide-in-from-bottom duration-500">
             <p className="text-xs font-black text-slate-800 uppercase tracking-widest">No guides available nearby.</p>
           </div>

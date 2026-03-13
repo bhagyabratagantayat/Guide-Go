@@ -16,8 +16,11 @@ const VerifyOTP = () => {
         alert('Email not found. Please register or login again.');
         return navigate('/login');
       }
-      await verifyOTP(email, otp);
-      navigate('/');
+      const data = await verifyOTP(email, otp);
+      const role = data.role;
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'guide') navigate('/guide-dashboard');
+      else navigate('/');
     } catch (error) {
       alert(error.response?.data?.message || 'OTP Verification failed');
     }

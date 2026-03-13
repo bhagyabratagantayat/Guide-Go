@@ -8,19 +8,24 @@ const AIChat = () => {
   const [itinerary, setItinerary] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, q) => {
+    if (e) e.preventDefault();
     setLoading(true);
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const { data } = await axios.post('/api/ai/travel', {
+      const { data } = await axios.post('/api/ai/ask', {
         question: q || question
       }, {
         headers: { Authorization: `Bearer ${userInfo?.token}` }
       });
-      setItinerary(data.response);
+      setItinerary(data.answer);
     } catch (error) {
-      alert('Failed to generate response. Please ensure you are logged in.');
+      console.error('AI Chat Error:', error);
+      if (error.response && error.response.status === 401) {
+        alert('Validation failed: Please ensure you are logged in.');
+      } else {
+        alert('Failed to generate response. Please try again or check your backend connection.');
+      }
     }
     setLoading(false);
   };

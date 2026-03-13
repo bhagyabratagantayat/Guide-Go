@@ -15,6 +15,7 @@ router.use(authorizeRole('admin'));
 
 router.get('/stats', getDashboardStats);
 router.get('/users', getAllUsers);
+router.post('/users/admin', require('../controllers/adminController').createAdmin);
 router.put('/users/:id/role', require('../controllers/adminController').updateUserRole);
 router.delete('/users/:id', require('../controllers/adminController').deleteUser);
 router.get('/guides', getAllGuides);

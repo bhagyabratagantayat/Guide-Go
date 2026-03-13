@@ -18,42 +18,56 @@ const app = express();
 const server = http.createServer(app);
 const io = initSocket(server);
 
-// Set security HTTP headers
-app.use(helmet());
-
-// Compress responses
-app.use(compression());
-
-// Limit requests from same API
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 mins
-  max: 100, // 100 requests per window
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api', limiter);
-
-// Data sanitization against XSS
-app.use(xss());
-
-// CORS configuration
+// CORS configuration - MUST BE FIRST to ensure all responses have CORS headers
 const allowedOrigins = [
   'http://localhost:5173', 
-  'https://guide-go.vercel.app', // Example Vercel URL
-  /\.vercel\.app$/ // Any vercel subdomain
+  'http://127.0.0.1:5173',
+  'https://guide-go.vercel.app',
+  /\.vercel\.app$/
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
     // allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(regex => regex instanceof RegExp && regex.test(origin))) {
+    
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') return allowed === origin;
+      if (allowed instanceof RegExp) return allowed.test(origin);
+      return false;
+    });
+
+    if (isAllowed) {
       callback(null, true);
     } else {
+      // For development, allow localhost/127.0.0.1 even if not explicitly matched above
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true
 }));
+
+// Set security HTTP headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Compress responses
+app.use(compression());
+
+// Limit requests from same API
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 2000, 
+  message: 'Too many requests from this IP'
+});
+app.use('/api', limiter);
+
+// Data sanitization against XSS
+app.use(xss());
 
 app.use(express.json());
 app.use(requestLogger);
@@ -71,7 +85,6 @@ app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/restaurants', require('./routes/restaurantRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
-app.use('/api/ai', require('./routes/aiRoutes'));
 
 app.get('/', (req, res) => {
   res.send('GuideGo API is running...');

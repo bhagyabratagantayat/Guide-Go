@@ -16,6 +16,7 @@ const AdminBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -120,7 +121,10 @@ const AdminBookings = () => {
                     </span>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <button className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all">
+                    <button 
+                      onClick={() => setSelectedBooking(booking)}
+                      className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
+                    >
                       <ChevronRight className="w-5 h-5" />
                     </button>
                   </td>
@@ -130,6 +134,74 @@ const AdminBookings = () => {
           </table>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setSelectedBooking(null)}></div>
+          <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+             <div className="bg-slate-900 p-10 text-white flex justify-between items-start">
+               <div className="space-y-2">
+                 <h3 className="text-3xl font-black tracking-tighter uppercase leading-none">Booking Summary</h3>
+                 <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">REF: #{selectedBooking._id.toUpperCase()}</p>
+               </div>
+               <button onClick={() => setSelectedBooking(null)} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+                  <LogOut className="w-5 h-5 rotate-45 text-slate-400" />
+               </button>
+             </div>
+
+             <div className="p-10 space-y-8">
+               <div className="grid grid-cols-2 gap-8">
+                 <div className="space-y-4">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tourist Details</h4>
+                   <div className="space-y-1">
+                     <p className="text-sm font-black text-slate-900">{selectedBooking.touristId?.name}</p>
+                     <p className="text-xs font-bold text-slate-500">{selectedBooking.touristId?.email}</p>
+                   </div>
+                 </div>
+                 <div className="space-y-4 shadow-inner p-4 bg-slate-50 rounded-2xl">
+                   <h4 className="text-[10px] font-black text-primary-600 uppercase tracking-widest">Guide Expertise</h4>
+                   <div className="space-y-1">
+                     <p className="text-sm font-black text-slate-900">{selectedBooking.guideId?.name}</p>
+                     <p className="text-xs font-bold text-slate-500">{selectedBooking.guideId?.email}</p>
+                   </div>
+                 </div>
+               </div>
+
+               <div className="space-y-4 pt-8 border-t border-slate-100">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Journey Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl">
+                      <MapPin className="w-5 h-5 text-primary-500" />
+                      <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Location</p>
+                        <p className="text-xs font-black text-slate-900 uppercase">{selectedBooking.location}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl">
+                      <Clock className="w-5 h-5 text-primary-500" />
+                      <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase">Schedule</p>
+                        <p className="text-xs font-black text-slate-900 uppercase">{new Date(selectedBooking.bookingTime).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="p-6 bg-slate-900 text-white rounded-[2rem] flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Transaction</p>
+                    <p className="text-2xl font-black">₹{selectedBooking.price}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
+                    <span className="text-xs font-black text-primary-400 uppercase tracking-tighter">{selectedBooking.status}</span>
+                  </div>
+               </div>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
