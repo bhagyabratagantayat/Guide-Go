@@ -3,8 +3,10 @@ const config = require('../config/env');
 const logger = require('./logger');
 
 const sendEmail = async (options) => {
+  logger.info(`Attempting to send email to: ${options.email}`);
+  
   if (!config.email.user || !config.email.pass) {
-    logger.warn('Email credentials not configured. Skipping email send.');
+    logger.warn(`Email credentials missing. USER: ${!!config.email.user}, PASS: ${!!config.email.pass}`);
     return;
   }
 

@@ -45,16 +45,16 @@ const registerUser = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse('Database synchronization error. Please try again.', 500));
     }
     console.log('User verified in DB immediately after creation:', check.email);
-    logger.info(`User registered, awaiting verification: ${user.email}`);
-    
+    logger.info(`Sending OTP email to ${user.email}...`);
     try {
       await sendEmail({
         email: user.email,
         subject: 'GuideGo - Verify your email',
         message: `Your verification code is ${otp}. It will expire in 5 minutes.`
       });
+      logger.info(`OTP email triggered successfully for ${user.email}`);
     } catch (error) {
-      logger.error('Failed to send OTP email after registration');
+      logger.error(`Failed to send OTP email to ${user.email}: ${error.message}`);
       // We don't crash, but we might want to inform the client
     }
 
@@ -151,13 +151,14 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   try {
+    logger.info(`Sending password reset OTP email to ${user.email}...`);
     await sendEmail({
       email: user.email,
       subject: 'GuideGo - Password Reset Request',
       message: `Your password reset OTP is ${otp}. It will expire in 5 minutes.`
     });
     
-    logger.info(`Password reset OTP sent to: ${user.email}`);
+    logger.info(`Password reset OTP triggered successfully for: ${user.email}`);
     res.json({ message: 'OTP sent to your email.' });
   } catch (error) {
     user.otp = undefined;
@@ -227,15 +228,17 @@ const resendOTP = asyncHandler(async (req, res, next) => {
   await user.save();
 
   try {
+    logger.info(`Sending resend OTP email to ${user.email}...`);
     await sendEmail({
       email: user.email,
       subject: 'GuideGo - New Verification Code',
       message: `Your new verification code is ${otp}. It will expire in 5 minutes.`
     });
     
-    logger.info(`New OTP sent to: ${user.email}`);
+    logger.info(`Resend OTP triggered successfully for: ${user.email}`);
     res.json({ message: 'New OTP sent to your email.' });
   } catch (error) {
+    logger.error(`Failed to resend OTP email to ${user.email}: ${error.message}`);
     user.otp = undefined;
     user.otpExpiry = undefined;
     await user.save();
