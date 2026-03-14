@@ -1,125 +1,100 @@
 # GuideGo | AI-Powered Smart Tourism
 
-GuideGo is a comprehensive, modern travel and tourism platform that bridges the gap between tourists and verified local guides. Designed with a premium tech stack, it features smart AI itinerary planning, real-time geolocation tracking, immersive audio guides, and a complete admin management ecosystem.
+GuideGo is a professional, production-level travel and tourism platform designed to provide a premium experience for tourists while empowering local guides. Built with a modern tech stack, it features smart AI itinerary planning, real-time geolocation tracking, immersive audio guides, and a robust role-based administrative ecosystem.
 
 ## 🌟 Key Features
 
-### For Tourists
-* **Smart Discovery:** Explore tourist spots via an interactive map or list view (powered by Leaflet.js and OpenStreetMap).
-* **AI Travel Assistant:** Plan trips, get local insights, and ask travel-related questions using our Google Gemini-powered AI chatbot.
-* **Smart Audio Guides:** Listen to rich, auto-generated historic narratives and descriptions of places using the browser's Text-to-Speech synthesis.
-* **Guide Booking:** Browse verified local guides, view their languages/skills, and securely book them with our built-in demo payment system (Cash on Service & UPI).
-* **Real-Time Tracking:** Watch your booked guide move towards you in real-time on the map using Socket.io telemetry.
+### 🛡️ Core Authentication & Security
+*   **Production-Ready Auth:** Secure login and registration with hashed passwords and JWT-based session management.
+*   **OTP Email Verification:** Mandatory mobile/email OTP verification for all new users to ensure a verified community.
+*   **Role-Based Access Control (RBAC):** Distinct permissions and UI dashboards for **Tourists**, **Guides**, and **Admins**.
 
-### For Guides
-* **Professional Profile:** Create a profile showcasing expertise, languages, experience, and hourly rates.
-* **Live Broadcasting:** Toggle "Go Live" to broadcast your real-time location to nearby tourists, increasing booking chances.
-* **Booking Management:** Receive and fulfill tourist bookings.
+### 🗺️ For Tourists
+*   **Smart Discovery:** Explore tourist spots via an interactive map or list view (powered by Leaflet.js).
+*   **AI Travel Assistant:** Get personalized local insights and itinerary plans using our **Google Gemini-powered** chatbot.
+*   **Smart Audio Guides:** Listen to high-quality, auto-generated historic narratives using browser Text-to-Speech.
+*   **Guide Booking:** Browse verified local guides and book them securely with a built-in demo payment system.
+*   **Real-Time Tracking:** Watch your booked guide move towards you in real-time via **Socket.io** telemetry.
 
-### For Administrators
-* **Centralized Dashboard:** Monitor platform metrics like total revenue, active users, and booking statuses.
-* **Guide Verification Pipeline:** Review, approve, or reject pending guide applications to maintain a premium ecosystem.
-* **Location Management (CRUD):** Add and manage tourist places with rich descriptions, categories, and Cloudinary-hosted images.
-* **User Oversight:** Moderate the tourist network and assign administrative privileges via role-based access control.
+### 🧭 For Guides
+*   **Professional Dashboard:** Manage your profile, expertise, and hourly rates.
+*   **Live Connectivity:** Toggle "Go Live" to broadcast your real-time location to nearby tourists.
+*   **Booking Management:** Seamlessly track and fulfill upcoming tourist bookings.
+
+### ⚙️ For Administrators
+*   **Centralized Analytics:** Monitor revenue, user growth, and active bookings.
+*   **Verification Pipeline:** Review and approve guide applications to maintain quality.
+*   **Content Management:** Full CRUD capabilities for tourist places with Cloudinary-hosted imagery.
 
 ## 🛠 Tech Stack
 
-### Frontend (Client-Side)
-* **Framework:** React.js, Vite
-* **Styling:** Tailwind CSS, custom premium animations
-* **Routing:** React Router v6
-* **Maps:** React-Leaflet, Leaflet.js
-* **Icons & UI:** Lucide React
-* **Real-time:** Socket.io-client
-* **HTTP Client:** Axios
+| Frontend | Backend | Infrastructure |
+| :--- | :--- | :--- |
+| **React.js** (Vite) | **Node.js** (Express) | **MongoDB Atlas** |
+| **Tailwind CSS** | **Socket.io** | **Cloudinary** (Media) |
+| **Framer Motion** | **Google Gemini AI** | **Vercel** (Frontend) |
+| **Lucide React** | **JWT & Bcrypt** | **Render** (Backend) |
 
-### Backend (Server-Side)
-* **Runtime:** Node.js
-* **Framework:** Express.js
-* **Database:** MongoDB & Mongoose
-* **Authentication:** JSON Web Tokens (JWT), bcryptjs
-* **Real-time:** Socket.io
-* **AI Engine:** @google/generative-ai (Gemini API)
-* **Cloud Storage:** Cloudinary (for images)
-* **Payments:** Internal Demo System (Cash & UPI)
+## 📂 Project Structure
+
+```text
+Guide Go/
+├── frontend/             # React Client (Vite)
+│   ├── src/
+│   │   ├── pages/        # User, Guide, and Admin Views
+│   │   ├── context/      # Auth & Global State
+│   │   └── components/   # Reusable UI Elements
+│   └── vercel.json       # Frontend deployment config
+├── backend/              # Express Server
+│   ├── models/           # Mongoose Schemas
+│   ├── routes/           # API Endpoints
+│   ├── controllers/      # Business Logic
+│   └── middleware/       # Auth & Security Guards
+├── package.json          # Root config with unified build scripts
+└── DEPLOYMENT.md         # Detailed production guide
+```
 
 ## 🚀 Getting Started
 
-### Prerequisites
-Make sure you have installed the following on your local machine:
-* [Node.js](https://nodejs.org/) (v16 or higher)
-* [MongoDB](https://www.mongodb.com/) (Local or Atlas cluster)
+### 1. Prerequisites
+*   [Node.js](https://nodejs.org/) (v18+)
+*   [MongoDB](https://www.mongodb.com/) (Local or Atlas)
+*   API Keys for **Google Gemini** and **Cloudinary**
 
-### Installation
+### 2. Installation & Setup
+1.  **Clone & Install Root:**
+    ```bash
+    git clone https://github.com/bhagyabratagantayat/Guide-Go.git
+    cd Guide-Go
+    npm install
+    ```
+2.  **Setup Environment Variables:**
+    *   Create `backend/.env` using `backend/.env.example` as a template.
+    *   Create `frontend/.env` and set `VITE_API_URL`.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/guide-go.git
-   cd guide-go
-   ```
+### 3. Running Locally
+*   **Development Mode:**
+    Run these in separate terminals:
+    ```bash
+    # Backend
+    cd backend && npm run dev
+    
+    # Frontend
+    cd frontend && npm run dev
+    ```
+*   **Production Build (Root):**
+    ```bash
+    npm run build
+    ```
 
-2. **Install Backend Dependencies**
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. **Install Frontend Dependencies**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-
-### Environment Configuration
-
-Create a `.env` file in the `backend` directory based on the `.env.example` file.
-
-```env
-# Server
-PORT=3000
-NODE_ENV=development
-
-# Database
-MONGO_URI=your_mongodb_connection_string
-
-# Auth
-JWT_SECRET=your_super_secret_key
-
-# AI Integration
-GEMINI_API_KEY=your_google_gemini_api_key
-
-# Cloud Storage
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-```
-
-Create a `.env` file in the `frontend` directory (if you want to override the default API URL, though Vite defaults `localhost:3000` inside your Axios setup):
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-### Running the Application
-
-1. **Start the Backend Server (Terminal 1)**
-   ```bash
-   cd backend
-   npm run dev
-   ```
-
-2. **Start the Frontend Development Server (Terminal 2)**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-3. **Open in Browser**
-   * Navigate to `http://localhost:5173` to view the app.
-
-## 🔒 Security & Architecture
-* **Role-Based Access Control (RBAC):** Middleware protects admin and guide-specific routes preventing unauthorized actions.
-* **XSS Sanitization & Rate Limiting:** Global rate limiting is applied through Express, and cross-site scripting vulnerabilities are patched with Helmet & express-xss-sanitizer.
-* **Scalable Data Fetching:** Optimized React component life cycles alongside context-driven global state management.
+## 🌐 API Overview
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | User/Guide registration |
+| `POST` | `/api/auth/verify-otp` | OTP Email verification |
+| `GET` | `/api/places` | Fetch all tourist places |
+| `GET` | `/api/admin/dashboard` | Admin analytics (Protected) |
+| `POST` | `/api/ai/chat` | Gemini AI Travel Assistant |
 
 ## 📜 License
 This project is licensed under the MIT License.
