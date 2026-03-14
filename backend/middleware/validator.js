@@ -58,6 +58,11 @@ const validateVerifyOTP = [
   validate
 ];
 
+const validateResendOTP = [
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  validate
+];
+
 const validateForgotPassword = [
   body('email').isEmail().withMessage('Please provide a valid email'),
   validate
@@ -74,6 +79,7 @@ module.exports = {
   validateRegister,
   validateLogin,
   validateVerifyOTP,
+  validateResendOTP,
   validateForgotPassword,
   validateResetPassword,
   validateGuideRegister,

@@ -4,10 +4,21 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState('');
-  const { verifyOTP } = useAuth();
+  const [timer, setTimer] = useState(60);
+  const { verifyOTP, resendOTP } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || '';
+
+  React.useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +34,16 @@ const VerifyOTP = () => {
       else navigate('/');
     } catch (error) {
       alert(error.response?.data?.message || 'OTP Verification failed');
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await resendOTP(email);
+      setTimer(60);
+      alert('New OTP sent to your email');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to resend OTP');
     }
   };
 
@@ -48,7 +69,21 @@ const VerifyOTP = () => {
           </div>
           <button type="submit" className="w-full btn-primary mt-4">Verify</button>
         </form>
-        <p className="text-center text-sm text-slate-600 mt-6">
+        
+        <div className="text-center mt-6">
+          {timer > 0 ? (
+            <p className="text-sm text-slate-500">Resend OTP in {timer}s</p>
+          ) : (
+            <button 
+              onClick={handleResend}
+              className="text-primary-600 font-medium hover:underline text-sm"
+            >
+              Resend OTP
+            </button>
+          )}
+        </div>
+
+        <p className="text-center text-sm text-slate-600 mt-4">
           <Link to="/login" className="text-primary-600 hover:underline">Back to Login</Link>
         </p>
       </div>

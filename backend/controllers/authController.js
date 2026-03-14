@@ -208,6 +208,41 @@ const getProfile = asyncHandler(async (req, res, next) => {
   }
 });
 
+const resendOTP = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (!user) {
+    return next(new ErrorResponse('User not found', 404, 'USER_NOT_FOUND'));
+  }
+
+  if (user.isVerified) {
+    return next(new ErrorResponse('User is already verified', 400, 'ALREADY_VERIFIED'));
+  }
+
+  const otp = generateOTP();
+  user.otp = otp;
+  user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  await user.save();
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'GuideGo - New Verification Code',
+      message: `Your new verification code is ${otp}. It will expire in 5 minutes.`
+    });
+    
+    logger.info(`New OTP sent to: ${user.email}`);
+    res.json({ message: 'New OTP sent to your email.' });
+  } catch (error) {
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+    return next(new ErrorResponse('Email could not be sent. Please try again later.', 500, 'INTERNAL_SERVER_ERROR'));
+  }
+});
+
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, config.jwtSecret, { expiresIn: '30d' });
 };
@@ -216,6 +251,7 @@ module.exports = {
   registerUser, 
   loginUser, 
   verifyOTP, 
+  resendOTP,
   forgotPassword, 
   resetPassword,
   getProfile 

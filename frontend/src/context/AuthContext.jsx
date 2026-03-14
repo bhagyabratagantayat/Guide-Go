@@ -51,8 +51,13 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const resendOTP = async (email) => {
+    const { data } = await axios.post('/api/auth/resend-otp', { email });
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, verifyOTP }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, verifyOTP, resendOTP }}>
       {children}
     </AuthContext.Provider>
   );
