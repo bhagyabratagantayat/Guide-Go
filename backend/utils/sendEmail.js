@@ -11,12 +11,19 @@ const sendEmail = async (options) => {
   }
 
   try {
+    console.log(`Sending email to: ${options.email}`);
+    
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // true for 465, false for other ports
       auth: {
         user: config.email.user,
         pass: config.email.pass,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
 
     const mailOptions = {
@@ -28,8 +35,10 @@ const sendEmail = async (options) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${options.email}. Message ID: ${info.messageId}`);
     logger.info(`Message sent: ${info.messageId}`);
   } catch (error) {
+    console.error(`Email sending failed for ${options.email}:`, error);
     logger.error(`Error sending email: ${error.message}`);
     throw new Error('Email could not be sent');
   }

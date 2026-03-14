@@ -44,7 +44,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
       console.error('CRITICAL: User was reported as created but could not be found via findById immediately after!', user._id);
       return next(new ErrorResponse('Database synchronization error. Please try again.', 500));
     }
-    console.log('User verified in DB immediately after creation:', check.email);
+    console.log('User created. Sending OTP to:', user.email, 'for user:', user.name);
     logger.info(`Sending OTP email to ${user.email}...`);
     try {
       await sendEmail({
@@ -151,6 +151,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   try {
+    console.log(`Sending password reset OTP to: ${user.email}`);
     logger.info(`Sending password reset OTP email to ${user.email}...`);
     await sendEmail({
       email: user.email,
@@ -158,6 +159,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
       message: `Your password reset OTP is ${otp}. It will expire in 5 minutes.`
     });
     
+    console.log(`Password reset OTP sent to: ${user.email}`);
     logger.info(`Password reset OTP triggered successfully for: ${user.email}`);
     res.json({ message: 'OTP sent to your email.' });
   } catch (error) {
@@ -228,6 +230,7 @@ const resendOTP = asyncHandler(async (req, res, next) => {
   await user.save();
 
   try {
+    console.log(`Resending OTP to: ${user.email}`);
     logger.info(`Sending resend OTP email to ${user.email}...`);
     await sendEmail({
       email: user.email,
@@ -235,6 +238,7 @@ const resendOTP = asyncHandler(async (req, res, next) => {
       message: `Your new verification code is ${otp}. It will expire in 5 minutes.`
     });
     
+    console.log(`Resend OTP sent to: ${user.email}`);
     logger.info(`Resend OTP triggered successfully for: ${user.email}`);
     res.json({ message: 'New OTP sent to your email.' });
   } catch (error) {
