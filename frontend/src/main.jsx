@@ -12,7 +12,7 @@ const getBaseURL = () => {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return 'http://localhost:3000';
   }
-  return 'https://guidego-backend.onrender.com';
+  return 'https://guide-go-backend.onrender.com';
 };
 
 axios.defaults.baseURL = getBaseURL();
