@@ -44,7 +44,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
       console.error('CRITICAL: User was reported as created but could not be found via findById immediately after!', user._id);
       return next(new ErrorResponse('Database synchronization error. Please try again.', 500));
     }
-    console.log('User created. Sending OTP to:', user.email, 'for user:', user.name);
+    console.log(`User created [ID: ${user._id}]. Stored OTP: ${user.otp}`);
     logger.info(`Sending OTP email to ${user.email}...`);
     try {
       await sendEmail({
@@ -230,7 +230,7 @@ const resendOTP = asyncHandler(async (req, res, next) => {
   await user.save();
 
   try {
-    console.log(`Resending OTP to: ${user.email}`);
+    console.log(`Resending OTP to: ${user.email}. New Stored OTP: ${user.otp}`);
     logger.info(`Sending resend OTP email to ${user.email}...`);
     await sendEmail({
       email: user.email,

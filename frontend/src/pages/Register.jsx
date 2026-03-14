@@ -13,18 +13,23 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('tourist');
   const [mobile, setMobile] = useState('');
-  const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    
+    setLoading(true);
     try {
       await register(name, email, password, role, mobile, location);
       alert('Registration successful. Please verify your email with the OTP sent.');
       navigate('/verify-otp', { state: { email } });
     } catch (error) {
       alert(error.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -148,9 +153,14 @@ const Register = () => {
               </div>
             </div>
 
-            <button type="submit" className="w-full btn-primary py-4 text-lg flex items-center justify-center group overflow-hidden mt-4">
+            <button 
+              type="submit" 
+              disabled={loading}
+              className={`w-full btn-primary py-4 text-lg flex items-center justify-center group overflow-hidden mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
                 <span className="relative z-10 flex items-center">
-                   Create Account <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                   {loading ? 'Processing...' : 'Create Account'} 
+                   {!loading && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" /> }
                 </span>
             </button>
           </form>

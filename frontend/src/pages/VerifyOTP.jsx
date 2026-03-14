@@ -5,6 +5,8 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 const VerifyOTP = () => {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60);
+  const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
   const { verifyOTP, resendOTP } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +24,9 @@ const VerifyOTP = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (verifying) return;
+
+    setVerifying(true);
     try {
       if (!email) {
         alert('Email not found. Please register or login again.');
@@ -34,16 +39,23 @@ const VerifyOTP = () => {
       else navigate('/');
     } catch (error) {
       alert(error.response?.data?.message || 'OTP Verification failed');
+    } finally {
+      setVerifying(false);
     }
   };
 
   const handleResend = async () => {
+    if (resending || timer > 0) return;
+
+    setResending(true);
     try {
       await resendOTP(email);
       setTimer(60);
       alert('New OTP sent to your email');
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to resend OTP');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -67,7 +79,13 @@ const VerifyOTP = () => {
               required
             />
           </div>
-          <button type="submit" className="w-full btn-primary mt-4">Verify</button>
+          <button 
+            type="submit" 
+            disabled={verifying}
+            className={`w-full btn-primary mt-4 ${verifying ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {verifying ? 'Verifying...' : 'Verify'}
+          </button>
         </form>
         
         <div className="text-center mt-6">
@@ -76,9 +94,10 @@ const VerifyOTP = () => {
           ) : (
             <button 
               onClick={handleResend}
-              className="text-primary-600 font-medium hover:underline text-sm"
+              disabled={resending}
+              className={`text-primary-600 font-medium hover:underline text-sm ${resending ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Resend OTP
+              {resending ? 'Sending...' : 'Resend OTP'}
             </button>
           )}
         </div>
