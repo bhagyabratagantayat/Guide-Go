@@ -22,7 +22,7 @@ const io = initSocket(server);
 const allowedOrigins = [
   'http://localhost:5173', 
   'http://127.0.0.1:5173',
-  'https://guide-go.vercel.app',
+  'https://guidego.vercel.app',
   /\.vercel\.app$/
 ];
 
