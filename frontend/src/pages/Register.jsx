@@ -3,8 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { 
-  UserPlus, Mail, Lock, User, Phone, 
-  MapPin, CheckCircle, ArrowRight, ShieldCheck 
+  User, Mail, Lock, Phone, 
+  MapPin, CheckCircle, ArrowRight, Compass 
 } from 'lucide-react';
 
 const Register = () => {
@@ -35,147 +35,119 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-primary-500/10 rounded-full blur-[100px] -z-10"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary-500/10 rounded-full blur-[100px] -z-10"></div>
-
+    <div className="mobile-container p-6 flex flex-col pt-12">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-xl"
+        className="w-full"
       >
-        <div className="glass-card rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 to-secondary-500"></div>
-          
-          <div className="text-center mb-10 space-y-2">
-            <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-               <UserPlus className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic font-serif">Join GuideGo</h1>
-            <p className="text-slate-500 font-bold text-sm tracking-widest uppercase">Start your local journey today.</p>
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-primary-500/20 mx-auto mb-4"
+          >
+            <Compass className="w-8 h-8 stroke-[2.5]" />
+          </motion.div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter italic font-serif leading-none">Create Account</h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">Join the GuideGo Global Community</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="input-group">
+            <User className="absolute left-6 top-[44px] text-slate-400 w-4 h-4 z-10" />
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Full Name</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              className="input-field pl-12 py-3.5 text-sm"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Full Name</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    className="input-field pl-12"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+          <div className="input-group">
+            <Mail className="absolute left-6 top-[44px] text-slate-400 w-4 h-4 z-10" />
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Email</label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              className="input-field pl-12 py-3.5 text-sm"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="email"
-                    placeholder="name@example.com"
-                    className="input-field pl-12"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+          <div className="input-group">
+            <Lock className="absolute left-6 top-[44px] text-slate-400 w-4 h-4 z-10" />
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Password</label>
+            <input
+              type="password"
+              placeholder="Minimum 8 characters"
+              className="input-field pl-12 py-3.5 text-sm"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-              {/* Password */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="input-field pl-12"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Mobile */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Mobile Number</label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="+91 00000 00000"
-                    className="input-field pl-12"
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Current Location</label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Puri, Odisha"
-                    className="input-field pl-12"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Role Selection */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Join As</label>
-                <div className="relative">
-                  <CheckCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="input-field pl-12 appearance-none cursor-pointer"
-                  >
-                    <option value="tourist">Tourist</option>
-                    <option value="guide">Local Guide</option>
-                  </select>
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="input-group">
+              <Phone className="absolute left-6 top-[44px] text-slate-400 w-4 h-4 z-10" />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Mobile</label>
+              <input
+                type="text"
+                placeholder="+91..."
+                className="input-field pl-12 py-3.5 text-sm"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                required
+              />
             </div>
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className={`w-full btn-primary py-4 text-lg flex items-center justify-center group overflow-hidden mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-                <span className="relative z-10 flex items-center">
-                   {loading ? 'Processing...' : 'Create Account'} 
-                   {!loading && <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" /> }
-                </span>
-            </button>
-          </form>
-
-          <div className="mt-8 pt-8 border-t border-slate-100 text-center space-y-4">
-            <p className="text-sm font-bold text-slate-500">
-              Already a member?{' '}
-              <Link to="/login" className="text-primary-500 font-black hover:text-primary-600">Sign In instead</Link>
-            </p>
-            <div className="flex items-center justify-center space-x-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-               <ShieldCheck className="w-3 h-3" />
-               <span>Encrypted & Secure Signup</span>
+            <div className="input-group">
+              <CheckCircle className="absolute left-6 top-[44px] text-slate-400 w-4 h-4 z-10" />
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">I am a</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="input-field pl-12 py-3.5 text-sm appearance-none cursor-pointer"
+              >
+                <option value="tourist">Tourist</option>
+                <option value="guide">Guide</option>
+              </select>
             </div>
           </div>
+
+          <div className="input-group">
+            <MapPin className="absolute left-6 top-[44px] text-slate-400 w-4 h-4 z-10" />
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Location</label>
+            <input
+              type="text"
+              placeholder="City, Country"
+              className="input-field pl-12 py-3.5 text-sm"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+
+          <motion.button 
+            whileTap={{ scale: 0.98 }}
+            type="submit" 
+            disabled={loading}
+            className={`w-full btn-orange py-4 text-sm mt-6 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {loading ? 'Processing...' : 'Start My Journey'}
+            {!loading && <ArrowRight className="w-5 h-5" />}
+          </motion.button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm font-bold text-slate-400">
+            Member already?{' '}
+            <Link to="/login" className="text-primary-500 font-extrabold hover:underline underline-offset-4 decoration-2">Sign In</Link>
+          </p>
         </div>
       </motion.div>
     </div>

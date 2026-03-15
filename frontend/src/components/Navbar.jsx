@@ -1,169 +1,225 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation, NavLink as RouterNavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Map, Compass, BookOpen, MessageSquare, 
-  LogOut, User, ShieldCheck, LayoutDashboard,
-  Menu, X, Bell
+  LogOut, Bell, ShieldCheck, LayoutDashboard, 
+  Compass, Menu, X, User, ChevronRight,
+  Sparkles, Map, Heart, Search, Home, Headset, Calendar
 } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const navLinks = [
-    { name: 'Explore Map', path: '/explore-map', icon: Compass, roles: ['tourist', null] },
-    { name: 'Guides', path: '/guides', icon: Map, roles: ['tourist', null] },
-    { name: 'My Bookings', path: '/bookings', icon: BookOpen, roles: ['tourist', 'guide'] },
-    { name: 'AI Assistant', path: '/ai-chat', icon: MessageSquare, roles: ['tourist', null] },
-  ];
-
   return (
-    <nav className="fixed top-0 w-full z-50 px-4 py-3 sm:px-6 lg:px-8">
+    <nav className={`fixed top-0 w-full z-[1000] transition-all duration-500 px-6 py-6 ${isScrolled ? 'py-4' : 'py-8'}`}>
       <motion.div 
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="max-w-7xl mx-auto glass-card rounded-[2rem] px-6 py-3"
+        className={`max-w-7xl mx-auto rounded-[2.5rem] transition-all duration-500 flex justify-between items-center px-8 py-3 
+          ${isScrolled 
+            ? 'bg-slate-900/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' 
+            : 'bg-white/80 backdrop-blur-md border border-slate-100 shadow-soft'}`}
       >
-        <div className="flex justify-between items-center h-12">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20 group-hover:rotate-12 transition-transform">
-              <Compass className="w-6 h-6" />
-            </div>
-            <span className="text-xl font-black text-slate-800 tracking-tighter">GuideGo</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 lg:space-x-4">
-            {/* Conditional Admin/Guide Hubs */}
-            {user?.role === 'admin' && (
-              <NavLink to="/admin" icon={ShieldCheck} label="Admin Hub" active={location.pathname.startsWith('/admin')} variant="special" />
-            )}
-            {user?.role === 'guide' && (
-              <NavLink to="/guide-dashboard" icon={LayoutDashboard} label="Guide Hub" active={location.pathname === '/guide-dashboard'} variant="special" />
-            )}
-
-            {/* Standard Nav Links */}
-            {navLinks.map((link) => (
-              (link.roles.includes(user?.role || null)) && (
-                <NavLink 
-                  key={link.path} 
-                  to={link.path} 
-                  icon={link.icon} 
-                  label={link.name} 
-                  active={location.pathname === link.path} 
-                />
-              )
-            ))}
+        {/* Logo Section */}
+        <Link to="/" className="flex items-center space-x-4 group">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl group-hover:rotate-12 group-hover:scale-110 
+            ${isScrolled ? 'bg-primary-500 text-slate-900' : 'bg-slate-900 text-white shadow-slate-900/20'}`}>
+            <Compass className="w-7 h-7 stroke-[2.5]" />
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3">
-            {user ? (
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                <button className="p-2 text-slate-400 hover:text-primary-500 transition-colors relative">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-secondary-500 rounded-full border-2 border-white"></span>
-                </button>
-                
-                <Link to="/profile" className="flex items-center space-x-2 p-1 pl-1 pr-3 rounded-full hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
-                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-black text-xs uppercase overflow-hidden ring-2 ring-primary-500/10">
-                    {user.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user.name.charAt(0)}
-                  </div>
-                  <span className="text-sm font-bold text-slate-700 hidden lg:block">{user.name.split(' ')[0]}</span>
-                </Link>
-
-                <button 
-                  onClick={handleLogout}
-                  className="p-2 text-slate-400 hover:text-red-500 transition-colors hidden sm:block"
-                  title="Logout"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link to="/login" className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-primary-500">Login</Link>
-                <Link to="/register" className="btn-primary py-2 px-5 text-sm">Join Free</Link>
-              </div>
-            )}
-
-            {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+          <div className="flex flex-col -space-y-1">
+            <span className={`text-2xl font-black tracking-tighter italic font-serif transition-colors duration-500 ${isScrolled ? 'text-white' : 'text-slate-900'}`}>GuideGo</span>
+            <span className={`text-[9px] font-black uppercase tracking-[0.3em] ml-0.5 ${isScrolled ? 'text-primary-400' : 'text-slate-400'}`}>Premium Travel</span>
           </div>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center space-x-2">
+          {user?.role === 'admin' && (
+            <CustomNavLink to="/admin" label="Admin" isScrolled={isScrolled} variant="secondary" />
+          )}
+          {user?.role === 'guide' && (
+            <CustomNavLink to="/guide-dashboard" label="Dashboard" isScrolled={isScrolled} variant="secondary" />
+          )}
+          
+          <CustomNavLink to="/explore-map" label="Live Map" isScrolled={isScrolled} />
+          <CustomNavLink to="/guides" label="Experts" isScrolled={isScrolled} />
+          <CustomNavLink to="/ai-chat" label="The Oracle" isScrolled={isScrolled} />
         </div>
-      </motion.div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden mt-2 glass-card rounded-3xl p-4 space-y-2 mx-auto max-w-7xl"
-          >
-            {navLinks.map((link) => (
-              (link.roles.includes(user?.role || null)) && (
-                <Link 
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center space-x-3 p-4 rounded-2xl font-bold transition-all ${
-                    location.pathname === link.path 
-                      ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' 
-                      : 'text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <link.icon className="w-5 h-5" />
-                  <span>{link.name}</span>
-                </Link>
-              )
-            ))}
-            {user && (
+        {/* Desktop Actions */}
+        <div className="hidden lg:flex items-center space-x-6">
+          {user ? (
+            <div className="flex items-center space-x-5">
+              <div className="flex items-center space-x-2">
+                 <button className={`p-3 rounded-2xl transition-colors relative ${isScrolled ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-primary-500'}`}>
+                   <Bell className="w-5 h-5" />
+                   <span className="absolute top-3 right-3 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-900"></span>
+                 </button>
+                 <button className={`p-3 rounded-2xl transition-colors ${isScrolled ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-primary-500'}`}>
+                   <Search className="w-5 h-5" />
+                 </button>
+              </div>
+
+              <div className="h-8 w-px bg-white/10" />
+              
+              <Link to="/profile" className="flex items-center space-x-4 p-1 rounded-full group">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs uppercase overflow-hidden ring-4 transition-all group-hover:ring-primary-500/30 ${isScrolled ? 'bg-primary-500 text-slate-900 ring-white/10' : 'bg-slate-900 text-white ring-slate-100'}`}>
+                  {user.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user.name.charAt(0)}
+                </div>
+                <div className="flex flex-col">
+                   <p className={`text-[9px] font-black uppercase tracking-widest ${isScrolled ? 'text-primary-400' : 'text-slate-400'}`}>{user.role}</p>
+                   <p className={`text-sm font-bold leading-none ${isScrolled ? 'text-white' : 'text-slate-900'}`}>{user.name.split(' ')[0]}</p>
+                </div>
+              </Link>
+
               <button 
                 onClick={handleLogout}
-                className="w-full flex items-center space-x-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all"
+                className={`p-3 rounded-2xl transition-all active:scale-90 ${isScrolled ? 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-red-400' : 'bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500'}`}
               >
                 <LogOut className="w-5 h-5" />
-                <span>Logout</span>
               </button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-4">
+              <Link to="/login" className={`text-sm font-black uppercase tracking-widest px-6 py-2 transition-colors ${isScrolled ? 'text-white hover:text-primary-500' : 'text-slate-500 hover:text-primary-500'}`}>Login</Link>
+              <Link to="/register" className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 ${isScrolled ? 'bg-primary-500 text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-primary-500 hover:text-slate-900'}`}>Join Now</Link>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className={`lg:hidden p-3 rounded-2xl transition-all active:scale-90 ${isScrolled ? 'bg-white/5 text-white' : 'bg-slate-900 text-white shadow-xl'}`}
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </motion.div>
+
+      {/* Mobile Sidebar Overlay */}
+       <AnimatePresence>
+         {isMobileMenuOpen && (
+           <>
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[90]"
+               onClick={() => setIsMobileMenuOpen(false)}
+             />
+             <motion.div 
+               initial={{ x: '100%' }}
+               animate={{ x: 0 }}
+               exit={{ x: '100%' }}
+               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+               className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white z-[100] shadow-2xl p-8 flex flex-col"
+             >
+                <div className="flex items-center justify-between mb-12">
+                   <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold italic">G</div>
+                      <span className="text-xl font-black text-slate-900 italic font-serif italic">GuideGo</span>
+                   </div>
+                   <button onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-slate-50 rounded-2xl text-slate-400">
+                      <X className="w-6 h-6" />
+                   </button>
+                </div>
+
+                <div className="flex-grow space-y-4">
+                   <MobileNavLink to="/" label="Home" icon={Home} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/explore-map" label="Live Map" icon={Map} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/explore" label="Audio Guides" icon={Headset} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/guides" label="Local Experts" icon={User} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/ai-chat" label="The Oracle AI" icon={Sparkles} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/bookings" label="My Bookings" icon={Calendar} onClick={() => setIsMobileMenuOpen(false)} />
+                </div>
+
+                {user ? (
+                   <div className="pt-8 border-t border-slate-100 flex flex-col space-y-4">
+                      <Link 
+                        to="/profile" 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center space-x-4 p-4 rounded-3xl bg-slate-50 text-slate-900 font-bold"
+                      >
+                         <div className="w-12 h-12 bg-primary-500 rounded-2xl flex items-center justify-center font-black text-white text-lg italic">
+                            {user.name.charAt(0)}
+                         </div>
+                         <div>
+                            <p className="text-xs font-black text-slate-400 tracking-widest uppercase">{user.role}</p>
+                            <p className="text-lg font-black tracking-tight">{user.name}</p>
+                         </div>
+                      </Link>
+                      <button 
+                        onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                        className="w-full py-5 bg-red-50 text-red-500 rounded-3xl font-black text-xs uppercase tracking-widest shadow-soft flex items-center justify-center space-x-3"
+                      >
+                         <LogOut className="w-5 h-5" />
+                         <span>Sign Out</span>
+                      </button>
+                   </div>
+                ) : (
+                   <div className="pt-8 border-t border-slate-100 space-y-4">
+                      <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block w-full py-5 bg-slate-50 text-slate-900 rounded-3xl font-black text-xs uppercase tracking-widest text-center">Login</Link>
+                      <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="block w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-xs uppercase tracking-widest text-center shadow-premium">Start Exploring</Link>
+                   </div>
+                )}
+             </motion.div>
+           </>
+         )}
+       </AnimatePresence>
     </nav>
   );
 };
 
-const NavLink = ({ to, icon: Icon, label, active, variant = 'default' }) => (
-  <Link 
+const CustomNavLink = ({ to, label, isScrolled, variant = 'primary' }) => (
+  <RouterNavLink 
     to={to} 
-    className={`
-      flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300
-      ${variant === 'special' 
-        ? (active ? 'bg-secondary-500 text-white' : 'text-secondary-600 hover:bg-secondary-50')
-        : (active ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'text-slate-600 hover:text-primary-500 hover:bg-slate-50')
+    className={({ isActive }) => `
+      px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500
+      ${isActive 
+        ? (variant === 'primary' ? 'bg-primary-500 text-slate-900 shadow-lg shadow-primary-500/20 scale-105' : 'bg-secondary-500 text-white shadow-lg') 
+        : (isScrolled ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-500 hover:text-primary-500 hover:bg-primary-50')
       }
     `}
   >
-    <Icon className={`w-4 h-4 ${active ? 'animate-pulse' : ''}`} />
-    <span>{label}</span>
-  </Link>
+    {label}
+  </RouterNavLink>
+);
+
+const MobileNavLink = ({ to, label, icon: Icon, onClick }) => (
+  <RouterNavLink 
+    to={to} 
+    onClick={onClick}
+    className={({ isActive }) => `
+      flex items-center justify-between p-5 rounded-[2rem] transition-all duration-300
+      ${isActive ? 'bg-primary-50 text-primary-600' : 'text-slate-500 hover:bg-slate-50'}
+    `}
+  >
+    {({ isActive }) => (
+      <>
+        <div className="flex items-center space-x-4">
+           <Icon className={`w-6 h-6 ${isActive ? 'text-primary-500' : 'text-slate-300'}`} />
+           <span className="text-sm font-black uppercase tracking-widest italic">{label}</span>
+        </div>
+        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-primary-500' : 'text-slate-200'}`} />
+      </>
+    )}
+  </RouterNavLink>
 );
 
 export default Navbar;

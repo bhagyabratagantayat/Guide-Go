@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, LogIn, ArrowRight, Compass } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +20,6 @@ const Login = () => {
       else navigate('/');
     } catch (error) {
       if (error.response?.data?.errorCode === 'NOT_VERIFIED') {
-        alert('Please verify your email first.');
         const normalizedEmail = email.trim().toLowerCase();
         navigate('/verify-otp', { state: { email: normalizedEmail } });
       } else {
@@ -30,78 +29,75 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-[100px] -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary-500/10 rounded-full blur-[100px] -z-10"></div>
-
+    <div className="mobile-container flex items-center justify-center p-6">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full"
       >
-        <div className="glass-card rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 to-secondary-500"></div>
-          
-          <div className="text-center mb-10 space-y-2">
-            <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-               <LogIn className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic font-serif">Welcome Back</h1>
-            <p className="text-slate-500 font-bold text-sm tracking-widest uppercase">Your next adventure awaits.</p>
+        <div className="text-center mb-12">
+          <motion.div 
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            className="w-20 h-20 bg-primary-500 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-primary-500/30 mx-auto mb-6 animate-float"
+          >
+            <Compass className="w-10 h-10 stroke-[2.5]" />
+          </motion.div>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic font-serif mb-2 leading-none">Welcome Back</h1>
+          <p className="text-xs font-black text-primary-500 uppercase tracking-[0.3em]">GuideGo Secure Gateway</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="input-group">
+            <Mail className="absolute left-6 top-[54px] text-slate-400 w-5 h-5 pointer-events-none z-10" />
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6">Email Address</label>
+            <input
+              type="email"
+              placeholder="Your email"
+              className="input-field pl-14"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-4">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  className="input-field pl-12"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+          <div className="input-group">
+            <Lock className="absolute left-6 top-[54px] text-slate-400 w-5 h-5 pointer-events-none z-10" />
+            <div className="flex justify-between items-center px-4">
+               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Secure Password</label>
+               <Link to="/forgot-password" size="sm" className="text-[10px] font-black text-primary-500 uppercase tracking-widest">Forgot?</Link>
             </div>
-
-            <div className="space-y-2">
-               <div className="flex justify-between items-center px-4">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Password</label>
-                  <Link to="/forgot-password" className="text-[10px] font-black text-primary-500 uppercase tracking-widest hover:text-primary-600 transition-colors">Forgot?</Link>
-               </div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="input-field pl-12"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <button type="submit" className="w-full btn-primary py-4 text-lg flex items-center justify-center group overflow-hidden">
-                <span className="relative z-10 flex items-center">
-                   Sign In <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-            </button>
-          </form>
-
-          <div className="mt-8 pt-8 border-t border-slate-100 text-center space-y-4">
-            <p className="text-sm font-bold text-slate-500">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary-500 font-black hover:text-primary-600">Join Free</Link>
-            </p>
-            <div className="flex items-center justify-center space-x-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-               <ShieldCheck className="w-3 h-3" />
-               <span>Secure Cloud Authentication</span>
-            </div>
+            <input
+              type="password"
+              placeholder="Your password"
+              className="input-field pl-14"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
+
+          <motion.button 
+            whileTap={{ scale: 0.98 }}
+            type="submit" 
+            className="w-full btn-primary py-5 text-base group"
+          >
+            Sign In Now
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
+        </form>
+
+        <div className="mt-12 text-center text-slate-400">
+          <p className="text-sm font-bold">
+            New to GuideGo?{' '}
+            <Link to="/register" className="text-primary-500 font-extrabold hover:underline underline-offset-4 decoration-2">Create Account</Link>
+          </p>
+        </div>
+
+        <div className="mt-16 flex justify-center items-center space-x-6 grayscale opacity-30 pointer-events-none">
+           <div className="text-[10px] font-black uppercase tracking-tighter">Safe</div>
+           <div className="text-[10px] font-black uppercase tracking-tighter">Secure</div>
+           <div className="text-[10px] font-black uppercase tracking-tighter">Cloud</div>
         </div>
       </motion.div>
     </div>

@@ -1,58 +1,94 @@
-const responses = {
-  "plan 1 day trip in puri": "Recommended itinerary: Jagannath Temple (Morning Darshan) → Puri Beach (Relaxation) → Konark Sun Temple (Afternoon visit) → Local seafood dinner near the beach.",
-  "best food in puri": "Puri is famous for its Mahaprasad at the temple. You must also try Odia dishes like Dalma, Chhena Poda, and the fresh variety of seafood near Puri Beach.",
-  "places to visit in bhubaneswar": "Top places: Lingaraj Temple, Udayagiri & Khandagiri Caves, Nandankanan Zoological Park, Dhauli Shanti Stupa, and the Odisha State Museum.",
-  "what is konark sun temple": "Konark Sun Temple is a 13th-century UNESCO World Heritage site built in the shape of a giant chariot with detailed wheels and horses, dedicated to the Sun God.",
-  "hidden places in odisha": "Explore Satkosia Gorge, the mangrove forests of Bhitarkanika, Chilika Lake islands, and the tribal heartlands of Koraput for unique, offbeat experiences.",
-  "best time to visit odisha": "The best time to visit Odisha is between October and March when the weather is pleasant and ideal for sightseeing and beach activities.",
-  "how to reach puri": "Puri is well-connected by rail and road. The nearest airport is Biju Patnaik International Airport in Bhubaneswar, which is about 60 km away.",
-  "jagannath temple facts": "The 12th-century Jagannath Temple is famous for the annual Rath Yatra. Interestingly, the flag on the temple dome always flies in the opposite direction of the wind.",
-  "chilika lake highlights": "Chilika is Asia's largest salt-water lagoon. It's famous for Irrawaddy dolphins, migratory birds at Nalabana Sanctuary, and beautiful boating experiences.",
-  "shopping in odisha": "Look for Pattachitra paintings, Sambalpuri and Kataki sarees, silver filigree (Tarakasi) from Cuttack, and stone carvings from Puri.",
-  "festivals in odisha": "Major festivals include Rath Yatra (Puri), Bali Jatra (Cuttack), Konark Dance Festival, and Nuakhai (Western Odisha).",
-  "beaches in odisha": "Top beaches include Puri Beach, Konark (Chandrabhaga) Beach, Gopalpur-on-Sea, and the quiet Chandipur Beach where the sea recedes during low tide.",
-  "cuttack tourist places": "Famous for silver filigree, Cuttack offers Netaji Birthplace Museum, Barabati Fort, Katak Chandi Temple, and the Maritime Museum.",
-  "wildlife in odisha": "Odisha is home to Similipal National Park (Tigers), Bhitarkanika (Crocodiles), and Gahirmatha (Olive Ridley Turtles nesting site).",
-  "local transport in puri": "In Puri, you can use cycle rickshaws, auto-rickshaws, and e-rickshaws. Many visitors also prefer renting scooters or cycles for local exploration.",
-  "similipal national park": "A tiger reserve and national park in Mayurbhanj district known for its dense forests, waterfalls like Barehipani, and rich biodiversity.",
-  "buddhist sites in odisha": "Known as the Golden Triangle of Buddhism: Ratnagiri, Lalitgiri, and Udayagiri house ancient monasteries and stupas.",
-  "hirakud dam": "Located near Sambalpur, it is one of the longest earthen dams in the world, built across the Mahanadi River.",
-  "handicrafts of odisha": "Odisha is world-renowned for Pattachitra, Applique work (Pipli), Bell Metal work, and intricate Silver Filigree.",
-  "staying in puri": "Puri offers a wide range of stay options from luxury beach resorts to budget hotels and traditional 'Dharmashalas' near the temple.",
-  "popular snacks in odisha": "Don't miss out on Bara-Aludum in Cuttack, Gupchup (Pani Puri), Dahi Bara-Aloo Dum, and Rasagulla from Pahala.",
-  "safety tips for tourists": "Odisha is generally very safe. However, always follow temple dress codes, be cautious of strong currents at the beach, and use authorized guides.",
-};
+const knowledgeBase = [
+  {
+    keywords: ["puri", "trip", "plan", "itinerary", "one day", "1 day"],
+    answer: "A perfect one-day Puri itinerary: Start with an early morning Darshan at the **Jagannath Temple**, followed by breakfast with local 'Puris'. Head to **Konark Sun Temple** (35km away) to witness the sunrise or morning glory. Spend your afternoon at **Chandrabhaga Beach** and return to Puri for a sunset stroll and seafood dinner at **Puri Beach**.",
+    score: 3
+  },
+  {
+    keywords: ["food", "eat", "dish", "cuisine", "specialty", "mahaprasad"],
+    answer: "Odisha is a culinary paradise! You must try the **Mahaprasad** (Chappan Bhog) at Puri Temple. Other local favorites include **Dalma** (lentils with vegetables), **Dahi Bara-Aloo Dum** (Cuttack's specialty), **Chhena Poda** (baked cheese dessert), and ultra-fresh seafood. Don't miss the **Pahala Rasagulla**!",
+    score: 2
+  },
+  {
+    keywords: ["bhubaneswar", "temple city", "visit", "places"],
+    answer: "Bhubaneswar, the 'Temple City', offers a blend of heritage and nature. Top sites: **Lingaraj Temple**, **Udayagiri & Khandagiri Caves**, **Dhauli Shanti Stupa**, **Nandankanan Zoo**, and the **Odisha State Museum**. It's the perfect gateway to your Odisha journey.",
+    score: 2
+  },
+  {
+    keywords: ["konark", "sun temple", "chariot", "black pagoda"],
+    answer: "The **Konark Sun Temple**, a UNESCO World Heritage site, is a 13th-century architectural marvel built as a giant chariot for the Sun God. Known as the 'Black Pagoda', it features 24 intricately carved wheels and 7 horses, symbolizing time and the days of the week.",
+    score: 3
+  },
+  {
+    keywords: ["odisha", "india", "overview", "describe", "culture"],
+    answer: "Odisha is one of India's most vibrant coastal states, known for its **heritage temples**, **pristine beaches**, and **rich tribal culture**. It is the land of Lord Jagannath and the birthplace of the classical **Odissi dance**. From the Asia's largest lagoon (**Chilika**) to the spiritual heart of **Puri**, it's India's best-kept secret.",
+    score: 2
+  },
+  {
+    keywords: ["india", "travel", "important", "tips", "visa", "currency"],
+    answer: "Travelling to India is a soul-stirring experience! **Important tips**: 1. Ensure you have an E-Visa. 2. Use Indian Rupees (INR). 3. Respect local traditions (remove shoes at temples). 4. Try the diverse street food but stick to bottled water. 5. Download **GuideGo** for the best local insights!",
+    score: 2
+  },
+  {
+    keywords: ["best time", "weather", "month", "visit", "season"],
+    answer: "The ideal time to visit Odisha and most parts of India is from **October to March**. The weather is pleasantly cool, perfect for beach activities, temple visits, and festivals like the Konark Dance Festival.",
+    score: 2
+  },
+  {
+    keywords: ["rath yatra", "chariot festival", "puri festival"],
+    answer: "The **Rath Yatra** or Chariot Festival in Puri is one of the world's most spectacular religious events. It usually occurs in June or July. Lord Jagannath, along with His siblings, travels in massive decorated chariots to the Gundicha Temple. It's a sea of humanity and pure devotion!",
+    score: 4
+  },
+  {
+    keywords: ["chilika", "lake", "lagoon", "dolphin", "bird"],
+    answer: "**Chilika Lake** is Asia's largest brackish water lagoon. It's world-famous for the rare **Irrawaddy Dolphins** at Satapada and the migratory birds at **Nalabana Bird Sanctuary**. A boat ride at sunrise or sunset is a must-experience!",
+    score: 3
+  },
+  {
+    keywords: ["safe", "safety", "security", "emergency", "women"],
+    answer: "Odisha is known as one of the safest states in India for tourists. People are generally helpful and humble. **Pro-tips**: Use authorized guides from GuideGo, avoid isolated areas late at night, and keep the local police helpline (112) saved. Your safety is our priority.",
+    score: 2
+  },
+  {
+    keywords: ["namaste", "hello", "hi", "greet"],
+    answer: "Namaste! (or 'Juhar' in Western Odisha). I am the GuideGo Oracle, your spiritual and cultural companion. How can I help you explore the beautiful land of India today?",
+    score: 1
+  },
+  {
+    keywords: ["who are you", "what is this", "oracle", "guidego"],
+    answer: "I am the **GuideGo Oracle**, an AI-powered knowledge base designed to answer all your travel, heritage, and cultural questions about Odisha and India. I help you find the best guides, hidden gems, and local secrets.",
+    score: 2
+  }
+];
 
 const getAIResponse = (question) => {
   const q = question.toLowerCase();
+  let bestMatch = null;
+  let highestScore = -1;
 
-  // Keyword matching logic - simplified for better matching
-  if (q.includes("puri") && (q.includes("trip") || q.includes("plan") || q.includes("itinerary"))) return responses["plan 1 day trip in puri"];
-  if (q.includes("food") || q.includes("eat") || q.includes("dish")) return responses["best food in puri"];
-  if (q.includes("puri")) return responses["plan 1 day trip in puri"]; // Default for Puri
-  if (q.includes("bhubaneswar")) return responses["places to visit in bhubaneswar"];
-  if (q.includes("konark") || q.includes("sun temple")) return responses["what is konark sun temple"];
-  if (q.includes("hidden") || q.includes("offbeat") || q.includes("gem")) return responses["hidden places in odisha"];
-  if (q.includes("time") || q.includes("when")) return responses["best time to visit odisha"];
-  if (q.includes("reach") || q.includes("how to") || q.includes("airport") || q.includes("train")) return responses["how to reach puri"];
-  if (q.includes("jagannath") || q.includes("temple")) return responses["jagannath temple facts"];
-  if (q.includes("chilika") || q.includes("lake") || q.includes("dolphin")) return responses["chilika lake highlights"];
-  if (q.includes("shop") || q.includes("market") || q.includes("saree")) return responses["shopping in odisha"];
-  if (q.includes("fest") || q.includes("yatra") || q.includes("event")) return responses["festivals in odisha"];
-  if (q.includes("beach")) return responses["beaches in odisha"];
-  if (q.includes("cuttack")) return responses["cuttack tourist places"];
-  if (q.includes("wildlife") || q.includes("park") || q.includes("tiger") || q.includes("crocodile") || q.includes("animal")) return responses["wildlife in odisha"];
-  if (q.includes("transport") || q.includes("scooter") || q.includes("auto") || q.includes("cab")) return responses["local transport in puri"];
-  if (q.includes("similipal")) return responses["similipal national park"];
-  if (q.includes("buddhist") || q.includes("monastery") || q.includes("stupa")) return responses["buddhist sites in odisha"];
-  if (q.includes("dam") || q.includes("hirakud")) return responses["hirakud dam"];
-  if (q.includes("handicraft") || q.includes("filigree") || q.includes("applique")) return responses["handicrafts of odisha"];
-  if (q.includes("stay") || q.includes("hotel") || q.includes("resort") || q.includes("room")) return responses["staying in puri"];
-  if (q.includes("snack") || q.includes("rasagulla") || q.includes("dahibara")) return responses["popular snacks in odisha"];
-  if (q.includes("safe") || q.includes("security") || q.includes("emergency")) return responses["safety tips for tourists"];
+  for (const item of knowledgeBase) {
+    let currentScore = 0;
+    let matchCount = 0;
 
-  // Default fallback
-  return "I can help with travel plans, tourist places, guides, and local food recommendations in Odisha. Try asking about Puri, Bhubaneswar, Konark, or hidden gems!";
+    for (const keyword of item.keywords) {
+      if (q.includes(keyword)) {
+        currentScore += item.score;
+        matchCount++;
+      }
+    }
+
+    // Boost score if multiple keywords match
+    if (matchCount > 1) {
+      currentScore *= 1.5;
+    }
+
+    if (currentScore > highestScore && currentScore > 0) {
+      highestScore = currentScore;
+      bestMatch = item.answer;
+    }
+  }
+
+  return bestMatch || "I'm currently in 'Demo Mode' and can answer questions about Odisha, India, Puri, Jagannath Temple, local food, and general travel tips. Feel free to ask about any of these!";
 };
 
-module.exports = { getAIResponse };
+module.exports = { getAIResponse, knowledgeBase };
