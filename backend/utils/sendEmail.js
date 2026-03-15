@@ -22,9 +22,10 @@ const sendEmail = async (options) => {
       tls: {
         rejectUnauthorized: false
       },
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000,
-      socketTimeout: 20000
+      family: 4, // Force IPv4 to avoid ENETUNREACH issues with IPv6 on some networks
+      connectionTimeout: 15000, 
+      greetingTimeout: 15000,
+      socketTimeout: 30000
     });
 
     // Verify connection configuration

@@ -194,7 +194,8 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     user.resetPasswordOTP = undefined;
     user.resetPasswordOTPExpiry = undefined;
     await user.save();
-    return next(new ErrorResponse('Email could not be sent. Please try again later.', 500, 'INTERNAL_SERVER_ERROR'));
+    logger.error(`Error in forgotPassword: ${error.message}`);
+    return next(new ErrorResponse(`Email could not be sent: ${error.message}. Please check your SMTP settings.`, 500, 'INTERNAL_SERVER_ERROR'));
   }
 });
 
