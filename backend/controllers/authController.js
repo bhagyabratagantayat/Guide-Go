@@ -21,10 +21,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('User already exists', 400, 'USER_EXISTS'));
   }
 
-  const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-  console.log('Registering user:', { name, email: normalizedEmail, role });
   const user = await User.create({ 
     name, 
     email: normalizedEmail, 
@@ -32,34 +28,13 @@ const registerUser = asyncHandler(async (req, res, next) => {
     role, 
     mobile, 
     location,
-    otp,
-    otpExpiry,
-    isVerified: false
+    isVerified: true
   });
 
   if (user) {
-    // Immediate verification check
-    const check = await User.findById(user._id);
-    if (!check) {
-      console.error('CRITICAL: User was reported as created but could not be found via findById immediately after!', user._id);
-      return next(new ErrorResponse('Database synchronization error. Please try again.', 500));
-    }
-    console.log(`User created [ID: ${user._id}]. Stored OTP: ${user.otp}`);
-    logger.info(`Sending OTP email to ${user.email}...`);
-    try {
-      await sendEmail({
-        email: user.email,
-        subject: 'GuideGo - Verify your email',
-        message: `Your verification code is ${otp}. It will expire in 5 minutes.`
-      });
-      logger.info(`OTP email triggered successfully for ${user.email}`);
-    } catch (error) {
-      logger.error(`Failed to send OTP email to ${user.email}: ${error.message}`);
-      // We don't crash, but we might want to inform the client
-    }
-
+    logger.info(`User registered successfully: ${user.email}`);
     res.status(201).json({
-      message: 'Registration successful. Please verify your email with the OTP sent.',
+      message: 'Registration successful. You can now login.',
       email: user.email
     });
   } else {
@@ -149,9 +124,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Invalid email or password', 401, 'INVALID_CREDENTIALS'));
   }
 
-  if (!user.isVerified) {
-    return next(new ErrorResponse('Please verify your email first', 403, 'NOT_VERIFIED'));
-  }
 
   logger.info(`User logged in: ${user.email}`);
   res.json({

@@ -25,8 +25,8 @@ const Register = () => {
     setLoading(true);
     try {
       await register(name, email, password, role, mobile, location);
-      alert('Registration successful. Please verify your email with the OTP sent.');
-      navigate('/verify-otp', { state: { email } });
+      alert('Registration successful! You can now log in.');
+      navigate('/login');
     } catch (error) {
       alert(error.response?.data?.message || 'Registration failed');
     } finally {

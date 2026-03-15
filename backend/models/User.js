@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   mobile: { type: String, required: true },
   otp: { type: String },
   otpExpiry: { type: Date },
-  isVerified: { type: Boolean, default: false },
+  isVerified: { type: Boolean, default: true },
   location: { type: String },
   profilePicture: { type: String, default: '' },
   resetPasswordOTP: { type: String },
