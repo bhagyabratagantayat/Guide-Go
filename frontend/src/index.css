@@ -1,41 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  /* Design Tokens - Odisha Premium Palette */
-  --color-primary-50: #fff9ed;
-  --color-primary-100: #ffefd1;
-  --color-primary-200: #ffdca3;
-  --color-primary-300: #ffc266;
-  --color-primary-400: #ffa333;
-  --color-primary-500: #ff9933; /* Odisha Saffron */
-  --color-primary-600: #e67e22;
-  --color-primary-700: #d35400;
-  --color-primary-800: #a04000;
-  --color-primary-900: #5d2500;
+  /* Design Tokens - GuideGo Modern Palette (Reference Aligned) */
+  --color-primary-50: #e3f2fd;
+  --color-primary-100: #bbdefb;
+  --color-primary-200: #90caf9;
+  --color-primary-300: #64b5f6;
+  --color-primary-400: #42a5f5;
+  --color-primary-500: #1e88e5; /* Main Brand Blue */
+  --color-primary-600: #1976d2;
+  --color-primary-700: #1565c0;
+  --color-primary-800: #0d47a1;
+  --color-primary-900: #0a2d61;
 
-  --color-secondary-50: #f4f4f4;
-  --color-secondary-100: #e8e8e8;
-  --color-secondary-200: #d1d1d1;
-  --color-secondary-300: #b9b9b9;
-  --color-secondary-400: #8c8c8c;
-  --color-secondary-500: #707070; /* Temple Stone Grey */
-  --color-secondary-600: #5e5e5e;
-  --color-secondary-700: #4a4a4a;
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-500: #64748b; /* Slate Grey */
+  --color-secondary-600: #475569;
 
-  --color-accent-500: #005a9c; /* Chilika Blue */
+  --color-accent-500: #fb8c00; /* Secondary Orange from logo */
+  --color-accent-600: #ea580c;
 
-  --color-surface-50: #faf9f6; /* Sand White */
-  --color-surface-100: #f3f2ee;
-  --color-surface-200: #e7e5dc;
-  --color-surface-300: #d1cdc0;
-  --color-surface-400: #b9b2a1;
+  --color-surface-50: #f4f7fa; /* Very Light Blue-Grey Background */
+  --color-surface-100: #ffffff;
   
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Outfit', serif;
+  --font-serif: 'Outfit', sans-serif; /* Using Outfit as a clean sans-serif instead of serif */
   
-  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-  --shadow-premium: 0 10px 40px -6px rgba(0, 0, 0, 0.08);
-  --shadow-inner-soft: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-premium: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
+  --shadow-inner-soft: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03);
 }
 
 @layer base {
@@ -43,13 +38,13 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-surface-50 text-slate-800 font-sans antialiased;
+    @apply bg-surface-50 text-slate-900 font-sans antialiased;
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-black tracking-tight italic font-serif;
+    @apply font-bold tracking-tight font-serif; /* Ref. image uses bold sans-serif, not italic serif */
   }
 }
 
@@ -83,9 +78,9 @@
   }
 
   .btn-orange {
-    @apply bg-secondary-500 text-white font-black py-4 px-8 rounded-[2rem] 
-           hover:bg-secondary-600 active:scale-[0.98] transition-all duration-300
-           shadow-xl shadow-secondary-500/25 hover:shadow-secondary-600/40
+    @apply bg-accent-500 text-white font-black py-4 px-8 rounded-[2rem] 
+           hover:bg-accent-600 active:scale-[0.98] transition-all duration-300
+           shadow-xl shadow-accent-500/25 hover:shadow-accent-600/40
            flex items-center justify-center gap-2 text-sm uppercase tracking-widest;
   }
 

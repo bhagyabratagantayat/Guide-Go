@@ -30,6 +30,10 @@ import Profile from './pages/Profile';
 import GuideProfile from './pages/GuideProfile';
 
 import Chat from './pages/Chat';
+import Hotels from './pages/Hotels';
+import Restaurants from './pages/Restaurants';
+import Emergency from './pages/Emergency';
+import Support from './pages/Support';
 
 // Admin
 import AdminLayout from './components/AdminLayout';
@@ -97,6 +101,10 @@ function AppContent() {
               <Route path="/bookings" element={<PageWrapper><Bookings /></PageWrapper>} />
               <Route path="/chat/:id" element={<ProtectedRoute><PageWrapper><Chat /></PageWrapper></ProtectedRoute>} />
               <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+              <Route path="/hotels" element={<PageWrapper><Hotels /></PageWrapper>} />
+              <Route path="/restaurants" element={<PageWrapper><Restaurants /></PageWrapper>} />
+              <Route path="/emergency" element={<PageWrapper><Emergency /></PageWrapper>} />
+              <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
 
               {/* Protected Roles */}
               <Route path="/guide-dashboard" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />

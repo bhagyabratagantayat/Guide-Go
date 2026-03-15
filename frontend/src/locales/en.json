@@ -2,12 +2,11 @@
   "common": {
     "home": "Home",
     "explore": "Explore",
-    "chat": "Oracle",
+    "oracle": "Guide AI",
     "bookings": "Bookings",
     "profile": "Profile",
     "login": "Login",
-    "register": "Register",
-    "chat": "Oracle"
+    "register": "Register"
   },
   "home": {
     "title": "Smart Tourism Redefined",

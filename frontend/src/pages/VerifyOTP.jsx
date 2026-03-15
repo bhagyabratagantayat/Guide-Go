@@ -73,39 +73,38 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="mobile-container flex items-center justify-center p-6 bg-surface-50 min-h-screen">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-primary-50 to-white">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md mx-auto"
+        className="w-full max-w-sm bg-white rounded-[3rem] p-10 shadow-premium border border-primary-50"
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <motion.div 
-            initial={{ y: -20 }}
+            initial={{ y: -10 }}
             animate={{ y: 0 }}
-            className="w-20 h-20 bg-primary-500 rounded-[2rem] flex items-center justify-center text-white shadow-premium mx-auto mb-6"
+            className="mb-4 flex justify-center"
           >
-            <ShieldCheck className="w-10 h-10 stroke-[2.5]" />
+            <img 
+              src="/src/assets/GuideGo Logo.jpeg" 
+              alt="GuideGo" 
+              className="h-16 w-auto object-contain"
+            />
           </motion.div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic font-serif mb-2 leading-none">
-            {t('auth.verify_otp')}
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">
+            Verify Your Email
           </h1>
-          <div className="flex items-center justify-center space-x-2 text-slate-400">
-             <Mail className="w-3 h-3" />
-             <p className="text-[10px] font-black uppercase tracking-widest">{email || 'Verified Gateway'}</p>
-          </div>
+          <p className="text-xs text-slate-400 font-medium">Please enter the 6-digit OTP sent to</p>
+          <p className="text-[11px] font-bold text-primary-500 mt-1">{email || 'your email'}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-4">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">
-              Enter 6-Digit Secure Code
-            </label>
+          <div className="flex justify-center">
             <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              className="w-full bg-white border-2 border-slate-100 rounded-[2rem] p-6 text-center text-4xl font-black tracking-[0.5em] text-slate-900 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all shadow-soft"
+              className="w-full bg-secondary-50 border-transparent rounded-2xl p-5 text-center text-3xl font-bold tracking-[0.5em] text-slate-900 focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-serif"
               placeholder="000000"
               maxLength="6"
               required
@@ -116,50 +115,37 @@ const VerifyOTP = () => {
             whileTap={{ scale: 0.98 }}
             type="submit" 
             disabled={verifying}
-            className={`w-full py-6 bg-slate-900 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest shadow-premium flex items-center justify-center space-x-3 transition-all ${verifying ? 'opacity-70' : 'hover:bg-primary-600'}`}
+            className={`w-full bg-primary-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all text-sm uppercase tracking-widest ${verifying ? 'opacity-70' : ''}`}
           >
-            {verifying ? (
-               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-               <>
-                 <span>Validate Code</span>
-                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-               </>
-            )}
+            {verifying ? 'Verifying...' : 'Verify'}
           </motion.button>
         </form>
         
-        <div className="mt-10 text-center">
+        <div className="mt-8 text-center uppercase tracking-widest text-[10px] font-bold">
           <AnimatePresence mode="wait">
             {timer > 0 ? (
               <motion.p 
                 key="timer"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-xs font-black text-slate-400 uppercase tracking-widest"
+                className="text-slate-400"
               >
-                Code expires in <span className="text-primary-500">{timer}s</span>
+                Resend OTP in <span className="text-primary-500">{timer}s</span>
               </motion.p>
             ) : (
               <motion.button 
                 key="resend"
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
                 onClick={handleResend}
                 disabled={resending}
-                className={`flex items-center space-x-2 mx-auto text-xs font-black text-primary-500 uppercase tracking-widest hover:text-primary-600 transition-colors ${resending ? 'opacity-50' : ''}`}
+                className={`text-primary-500 hover:text-primary-600 transition-colors ${resending ? 'opacity-50' : ''}`}
               >
-                <RefreshCcw className={`w-4 h-4 ${resending ? 'animate-spin' : ''}`} />
-                <span>{resending ? 'Resending...' : 'Resend Secure Code'}</span>
+                {resending ? 'Resending...' : 'Resend OTP'}
               </motion.button>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="mt-16 text-center">
-          <Link to="/login" className="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
-            {t('auth.back_to_login')}
+        <div className="mt-10 text-center">
+          <Link to="/login" className="text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">
+            Back to Login
           </Link>
         </div>
       </motion.div>

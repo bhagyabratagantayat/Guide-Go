@@ -31,81 +31,80 @@ const Login = () => {
   };
 
   return (
-    <div className="mobile-container flex items-center justify-center p-6 bg-surface-50 min-h-screen">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-primary-50 to-white">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="w-full max-w-sm bg-white rounded-[3rem] p-10 shadow-premium border border-primary-50"
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <motion.div 
-            initial={{ scale: 0.8, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            className="w-20 h-20 bg-primary-500 rounded-[2.5rem] flex items-center justify-center text-white shadow-premium mx-auto mb-6 animate-float"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="mb-6 flex justify-center"
           >
-            <Compass className="w-10 h-10 stroke-[2.5]" />
+            <img 
+              src="/src/assets/GuideGo Logo.jpeg" 
+              alt="GuideGo" 
+              className="h-24 w-auto object-contain"
+            />
           </motion.div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic font-serif mb-2 leading-none">
-            {t('auth.login_title')}
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">
+            Welcome Back
           </h1>
-          <p className="text-[10px] font-black text-primary-500 uppercase tracking-[0.4em] font-sans">GuideGo Secure Hub</p>
+          <p className="text-xs text-slate-400 font-medium">Please sign in to continue</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="input-group group">
-            <Mail className="absolute left-6 top-[54px] text-slate-300 w-5 h-5 pointer-events-none z-10 transition-colors group-focus-within:text-primary-500" />
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-2 block">{t('auth.email')}</label>
-            <input
-              type="email"
-              placeholder={t('auth.email_placeholder')}
-              className="input-field pl-14"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1">
+            <div className="relative flex items-center">
+              <Mail className="absolute left-5 text-slate-300 w-5 h-5" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="w-full bg-secondary-50 border-transparent rounded-2xl pl-14 pr-6 py-4 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all placeholder:text-slate-400 font-medium"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          <div className="input-group group">
-            <Lock className="absolute left-6 top-[54px] text-slate-300 w-5 h-5 pointer-events-none z-10 transition-colors group-focus-within:text-primary-500" />
-            <div className="flex justify-between items-center px-4 mb-2">
-               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t('auth.password')}</label>
-               <Link to="/forgot-password" size="sm" className="text-[10px] font-black text-primary-500 uppercase tracking-widest">
-                 {t('auth.forgot_password')}
-               </Link>
+          <div className="space-y-1">
+            <div className="relative flex items-center">
+              <Lock className="absolute left-5 text-slate-300 w-5 h-5" />
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full bg-secondary-50 border-transparent rounded-2xl pl-14 pr-6 py-4 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all placeholder:text-slate-400 font-medium"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
-            <input
-              type="password"
-              placeholder={t('auth.password_placeholder')}
-              className="input-field pl-14"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="flex justify-end p-1">
+              <Link to="/forgot-password" size="sm" className="text-[11px] font-bold text-slate-400 hover:text-primary-500 transition-colors uppercase tracking-widest">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <motion.button 
             whileTap={{ scale: 0.98 }}
             type="submit" 
-            className="w-full btn-primary py-6 text-base group"
+            className="w-full bg-primary-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all text-sm uppercase tracking-widest mt-4"
           >
-            {t('common.login')}
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            Login
           </motion.button>
         </form>
 
-        <div className="mt-12 text-center">
-          <p className="text-sm font-bold text-slate-400">
-            {t('auth.no_account')} {' '}
-            <Link to="/register" className="text-primary-500 font-extrabold hover:underline underline-offset-4 decoration-2">
-              {t('common.register')}
+        <div className="mt-10 text-center">
+          <p className="text-xs font-bold text-slate-400">
+            Don't have an account? {' '}
+            <Link to="/register" className="text-primary-500 hover:text-primary-600">
+              Create One
             </Link>
           </p>
-        </div>
-
-        <div className="mt-16 flex justify-center items-center space-x-6 grayscale opacity-20 pointer-events-none">
-           <div className="text-[10px] font-black uppercase tracking-tighter">Safe</div>
-           <div className="text-[10px] font-black uppercase tracking-tighter">Secure</div>
-           <div className="text-[10px] font-black uppercase tracking-tighter">Odisha</div>
         </div>
       </motion.div>
     </div>

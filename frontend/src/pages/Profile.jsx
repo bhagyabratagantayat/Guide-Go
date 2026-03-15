@@ -134,12 +134,12 @@ const Profile = () => {
                   )}
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <ProfileCard icon={Mail} label="CHRONICLE EMAIL" value={user.email} color="text-indigo-500" />
-                  <ProfileCard icon={Phone} label="COMMUNICATION LINE" value={user.phone || 'Disconnected'} color="text-emerald-500" />
-                  <ProfileCard icon={Shield} label="SECURITY LEVEL" value={`${user.role} Access`} color="text-primary-500" />
-                  <ProfileCard icon={Star} label="QUEST SCORE" value="4.9 Elite Traveler" color="text-orange-500" />
-               </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                   <ProfileCard icon={Mail} label="CHRONICLE EMAIL" value={user.email} color="text-primary-500" />
+                   <ProfileCard icon={Phone} label="COMMUNICATION LINE" value={user.phone || 'Disconnected'} color="text-blue-500" />
+                   <ProfileCard icon={Shield} label="SECURITY LEVEL" value={`${user.role} Access`} color="text-slate-900" />
+                   <ProfileCard icon={Star} label="QUEST SCORE" value="4.9 Elite Traveler" color="text-yellow-500" />
+                </div>
 
                <div className="mt-20 pt-16 border-t border-slate-50">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">QUICK REALMS</h4>

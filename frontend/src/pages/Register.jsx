@@ -37,86 +37,85 @@ const Register = () => {
   };
 
   return (
-    <div className="mobile-container p-6 flex flex-col pt-12 bg-surface-50 min-h-screen pb-12">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-primary-50 to-white py-12">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md mx-auto"
+        className="w-full max-w-sm bg-white rounded-[3rem] p-10 shadow-premium border border-primary-50"
       >
         <div className="text-center mb-10">
           <motion.div 
-            initial={{ rotate: -20, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            className="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center text-white shadow-premium mx-auto mb-4"
+            initial={{ y: -10 }}
+            animate={{ y: 0 }}
+            className="mb-4 flex justify-center"
           >
-            <Compass className="w-8 h-8 stroke-[2.5]" />
+            <img 
+              src="/src/assets/GuideGo Logo.jpeg" 
+              alt="GuideGo" 
+              className="h-16 w-auto object-contain"
+            />
           </motion.div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter italic font-serif leading-none">
-            {t('auth.register_title')}
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">
+            Create Account
           </h1>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-2">Join the GuideGo Culture</p>
+          <p className="text-xs text-slate-400 font-medium">Join our community today</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="input-group group">
-            <UserIcon className="absolute left-6 top-[44px] text-slate-300 w-4 h-4 z-10 transition-colors group-focus-within:text-primary-500" />
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-1 block">Full Name</label>
+          <div className="relative flex items-center">
+            <UserIcon className="absolute left-5 text-slate-300 w-4 h-4" />
             <input
               type="text"
-              placeholder="Jagannath Das"
-              className="input-field pl-12 py-3.5 text-sm"
+              placeholder="Full Name"
+              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
 
-          <div className="input-group group">
-            <Mail className="absolute left-6 top-[44px] text-slate-300 w-4 h-4 z-10 transition-colors group-focus-within:text-primary-500" />
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-1 block">{t('auth.email')}</label>
+          <div className="relative flex items-center">
+            <Mail className="absolute left-5 text-slate-300 w-4 h-4" />
             <input
               type="email"
-              placeholder="name@example.com"
-              className="input-field pl-12 py-3.5 text-sm"
+              placeholder="Email Address"
+              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
-          <div className="input-group group">
-            <Lock className="absolute left-6 top-[44px] text-slate-300 w-4 h-4 z-10 transition-colors group-focus-within:text-primary-500" />
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-1 block">{t('auth.password')}</label>
+          <div className="relative flex items-center">
+            <Lock className="absolute left-5 text-slate-300 w-4 h-4" />
             <input
               type="password"
-              placeholder="Minimum 8 characters"
-              className="input-field pl-12 py-3.5 text-sm"
+              placeholder="Password"
+              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="input-group group">
-              <Phone className="absolute left-6 top-[44px] text-slate-300 w-4 h-4 z-10 transition-colors group-focus-within:text-primary-500" />
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-1 block">Mobile</label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative flex items-center">
+              <Phone className="absolute left-5 text-slate-300 w-4 h-4" />
               <input
                 type="text"
-                placeholder="+91..."
-                className="input-field pl-12 py-3.5 text-sm"
+                placeholder="Mobile"
+                className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 required
               />
             </div>
-            <div className="input-group group">
-              <CheckCircle className="absolute left-6 top-[44px] text-slate-300 w-4 h-4 z-10 transition-colors group-focus-within:text-primary-500" />
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-1 block">I am a</label>
+            <div className="relative flex items-center">
+              <CheckCircle className="absolute left-5 text-slate-300 w-4 h-4 pointer-events-none" />
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="input-field pl-12 py-3.5 text-sm appearance-none cursor-pointer"
+                className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium appearance-none"
               >
                 <option value="tourist">Tourist</option>
                 <option value="guide">Guide</option>
@@ -124,13 +123,12 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="input-group group">
-            <MapPin className="absolute left-6 top-[44px] text-slate-300 w-4 h-4 z-10 transition-colors group-focus-within:text-primary-500" />
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-6 mb-1 block">Location</label>
+          <div className="relative flex items-center">
+            <MapPin className="absolute left-5 text-slate-300 w-4 h-4" />
             <input
               type="text"
-              placeholder="Bhubaneswar, Odisha"
-              className="input-field pl-12 py-3.5 text-sm"
+              placeholder="Location (e.g. Puri, Odisha)"
+              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -140,17 +138,18 @@ const Register = () => {
             whileTap={{ scale: 0.98 }}
             type="submit" 
             disabled={loading}
-            className={`w-full btn-primary py-5 text-sm mt-6 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full bg-primary-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all text-sm uppercase tracking-widest mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            {loading ? 'Processing...' : (t('common.register'))}
-            {!loading && <ArrowRight className="w-5 h-5 ml-2 inline-block transition-transform group-hover:translate-x-1" />}
+            {loading ? 'Processing...' : 'Register'}
           </motion.button>
         </form>
 
-        <div className="mt-8 text-center pb-10">
-          <p className="text-sm font-bold text-slate-400">
-            {t('auth.already_member')} {' '}
-            <Link to="/login" className="text-primary-500 font-extrabold hover:underline underline-offset-4 decoration-2">{t('common.login')}</Link>
+        <div className="mt-8 text-center">
+          <p className="text-xs font-bold text-slate-400">
+            Already a member? {' '}
+            <Link to="/login" className="text-primary-500 hover:text-primary-600">
+              Sign In
+            </Link>
           </p>
         </div>
       </motion.div>
