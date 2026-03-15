@@ -8,8 +8,8 @@ dotenvSafe.config({
   allowEmptyValues: true
 });
 
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-  console.warn('⚠️ WARNING: EMAIL_USER or EMAIL_PASS is missing in .env file. OTP emails will fail to send. Please configure them to enable full authentication flow.');
+if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  console.warn('⚠️ WARNING: SMTP_USER or SMTP_PASS (Brevo) is missing in .env file. Emails will fail to send. Please configure them to enable full authentication flow.');
 }
 
 const config = {
@@ -29,7 +29,12 @@ const config = {
   },
   email: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS,
+    smtpHost: process.env.SMTP_HOST,
+    smtpPort: process.env.SMTP_PORT,
+    smtpUser: process.env.SMTP_USER,
+    smtpPass: process.env.SMTP_PASS,
+    from: process.env.EMAIL_FROM
   }
 };
 
