@@ -1,62 +1,50 @@
-const nodemailer = require('nodemailer');
 const config = require('../config/env');
 const logger = require('./logger');
 
+/**
+ * Sends email using Brevo HTTP API (Port 443)
+ * This bypasses firewalls that block standard SMTP ports (25, 587, 465, 2525)
+ */
 const sendEmail = async (options) => {
-  logger.info(`>>> EMAIL DELIVERY INITIATED: ${options.email} <<<`);
+  logger.info(`>>> BREVO HTTP API INITIATED: ${options.email} <<<`);
   
-  if (!config.email.smtpUser || !config.email.smtpPass) {
-    logger.error(`❌ CRITICAL: Brevo SMTP credentials missing. Delivery aborted.`);
+  if (!config.email.smtpPass) {
+    logger.error(`❌ CRITICAL: Brevo API Key (SMTP_PASS) missing. Delivery aborted.`);
     return;
   }
 
+  const payload = {
+    sender: { name: "GuideGo Support", email: config.email.from },
+    to: [{ email: options.email }],
+    subject: options.subject,
+    htmlContent: options.htmlMessage || options.message,
+    textContent: options.message
+  };
+
   try {
-    const transporter = nodemailer.createTransport({
-      host: config.email.smtpHost,
-      port: config.email.smtpPort,
-      secure: config.email.smtpPort === 465,
-      auth: {
-        user: config.email.smtpUser,
-        pass: config.email.smtpPass,
+    logger.info(`📤 Sending POST request to Brevo API (https://api.brevo.com/v3/smtp/email)...`);
+    
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': config.email.smtpPass
       },
-      tls: {
-        rejectUnauthorized: false
-      },
-      family: 4, // Force IPv4 to avoid ENETUNREACH issues with IPv6 on some networks
-      connectionTimeout: 15000, 
-      greetingTimeout: 15000,
-      socketTimeout: 30000
+      body: JSON.stringify(payload)
     });
 
-    // Verify connection configuration
-    logger.info(`🔍 Verifying SMTP connection to ${config.email.smtpHost}:${config.email.smtpPort}...`);
-    try {
-      await transporter.verify();
-      logger.info(`✅ SMTP Connection Verified Successfully.`);
-    } catch (verifyError) {
-      logger.error(`❌ SMTP Verification Failed: ${verifyError.message}`);
-      throw verifyError;
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || `API Error: ${response.status} ${response.statusText}`);
     }
 
-    const mailOptions = {
-      from: `"GuideGo Support" <${config.email.from}>`,
-      to: options.email,
-      subject: options.subject,
-      text: options.message,
-      html: options.htmlMessage || options.message,
-    };
-
-    logger.info(`📤 Sending mail via Brevo Relay...`);
-    const info = await transporter.sendMail(mailOptions);
-    logger.info(`🚀 EMAIL SENT SUCCESSFULLY! MessageId: ${info.messageId}`);
-    return info;
+    logger.info(`🚀 API EMAIL SENT SUCCESSFULLY! MessageId: ${data.messageId || 'N/A'}`);
+    return data;
   } catch (error) {
-    logger.error(`❌ FINAL EMAIL FAILURE for ${options.email}: ${error.message}`);
-    // If it's a timeout, it might be Render's network
-    if (error.code === 'ETIMEDOUT') {
-      logger.error(`⚠️ Connection timed out. This often happens on Render Free Tier if the relay is slow.`);
-    }
-    throw new Error(`Email could not be sent: ${error.message}`);
+    logger.error(`❌ FINAL API FAILURE for ${options.email}: ${error.message}`);
+    throw new Error(`[V4-API] Email could not be sent: ${error.message}`);
   }
 };
 
