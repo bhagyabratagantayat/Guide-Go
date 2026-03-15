@@ -301,18 +301,5 @@ const ActivityItem = ({ time, text, user, color }) => (
   </div>
 );
 
-const ActivityItem = ({ time, text, user, color }) => (
-  <div className="flex items-start space-x-6 relative z-10">
-    <div className={`w-4 h-4 rounded-full ${color} mt-1 flex-shrink-0 border-4 border-white shadow-sm`}></div>
-    <div className="space-y-1">
-      <p className="text-sm font-bold text-slate-800 leading-tight">{text}</p>
-      <div className="flex items-center space-x-2">
-        <span className="text-[10px] font-black text-primary-600 uppercase tracking-tighter cursor-pointer hover:underline">{user}</span>
-        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-        <span className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">{time}</span>
-      </div>
-    </div>
-  </div>
-);
 
 export default AdminDashboard;
