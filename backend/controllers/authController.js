@@ -94,9 +94,37 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
   user.isVerified = true;
   user.otp = undefined;
   user.otpExpiry = undefined;
-  await user.save();
-
   logger.info(`User verified successfully: ${user.email}`);
+
+  // Send Welcome Email
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Welcome to GuideGo 🎉',
+      message: `Hello ${user.name},\n\nYour account has been successfully registered on GuideGo.\n\nExplore tourist destinations, find verified local guides, and use smart audio travel guides.\n\nVisit: https://guidego.vercel.app`,
+      htmlMessage: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <h2 style="color: #3b82f6;">Welcome to GuideGo 🎉</h2>
+          <p>Hello <strong>${user.name}</strong>,</p>
+          <p>Your account has been successfully registered on GuideGo.</p>
+          <p>You can now:</p>
+          <ul>
+            <li>Explore tourist destinations</li>
+            <li>Find verified local guides</li>
+            <li>Use smart audio travel guides</li>
+            <li>Plan your trips</li>
+          </ul>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://guidego.vercel.app" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Get Started</a>
+          </div>
+          <p style="margin-top: 30px; color: #666; font-size: 12px;">If you didn't create this account, please ignore this email.</p>
+        </div>
+      `
+    });
+    console.log(`Welcome email sent to: ${user.email}`);
+  } catch (error) {
+    console.error(`Failed to send welcome email to ${user.email}:`, error);
+  }
   
   res.json({
     _id: user._id,
@@ -146,12 +174,12 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   }
 
   const otp = generateOTP();
-  user.otp = otp;
-  user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  user.resetPasswordOTP = otp;
+  user.resetPasswordOTPExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
   await user.save();
 
   try {
-    console.log(`Sending password reset OTP to: ${user.email}`);
+    console.log(`Sending password reset OTP to: ${user.email}. Stored Reset OTP: ${otp}`);
     logger.info(`Sending password reset OTP email to ${user.email}...`);
     await sendEmail({
       email: user.email,
@@ -163,11 +191,38 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     logger.info(`Password reset OTP triggered successfully for: ${user.email}`);
     res.json({ message: 'OTP sent to your email.' });
   } catch (error) {
-    user.otp = undefined;
-    user.otpExpiry = undefined;
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordOTPExpiry = undefined;
     await user.save();
     return next(new ErrorResponse('Email could not be sent. Please try again later.', 500, 'INTERNAL_SERVER_ERROR'));
   }
+});
+
+const verifyResetOTP = asyncHandler(async (req, res, next) => {
+  const { email, otp } = req.body;
+  console.log(`Verifying reset OTP for: ${email}. Provided Code: ${otp}`);
+  
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    console.log(`User not found for reset verification: ${email}`);
+    return next(new ErrorResponse('User not found', 404, 'USER_NOT_FOUND'));
+  }
+
+  console.log(`User found: ${user.email}. Stored Reset OTP: ${user.resetPasswordOTP}`);
+
+  if (user.resetPasswordOTP !== otp) {
+    console.log(`Invalid Reset OTP provided for ${email}. Expected: ${user.resetPasswordOTP}, Got: ${otp}`);
+    return next(new ErrorResponse('Invalid OTP', 400, 'INVALID_OTP'));
+  }
+
+  if (user.resetPasswordOTPExpiry < Date.now()) {
+    console.log(`Reset OTP expired for ${email}`);
+    return next(new ErrorResponse('OTP expired', 400, 'OTP_EXPIRED'));
+  }
+
+  console.log(`Reset OTP verified successfully for: ${email}`);
+  res.json({ message: 'OTP verified. You can now reset your password.' });
 });
 
 const resetPassword = asyncHandler(async (req, res, next) => {
@@ -178,17 +233,18 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('User not found', 404, 'USER_NOT_FOUND'));
   }
 
-  if (user.otp !== otp) {
+  if (user.resetPasswordOTP !== otp) {
     return next(new ErrorResponse('Invalid OTP', 400, 'INVALID_OTP'));
   }
 
-  if (user.otpExpiry < Date.now()) {
+  if (user.resetPasswordOTPExpiry < Date.now()) {
     return next(new ErrorResponse('OTP expired', 400, 'OTP_EXPIRED'));
   }
 
+  // Hash password is done by pre-save hook in User model
   user.password = newPassword;
-  user.otp = undefined;
-  user.otpExpiry = undefined;
+  user.resetPasswordOTP = undefined;
+  user.resetPasswordOTPExpiry = undefined;
   await user.save();
 
   logger.info(`Password reset successful for: ${user.email}`);
@@ -260,6 +316,7 @@ module.exports = {
   verifyOTP, 
   resendOTP,
   forgotPassword, 
+  verifyResetOTP,
   resetPassword,
   getProfile 
 };

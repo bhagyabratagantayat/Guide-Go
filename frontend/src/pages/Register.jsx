@@ -13,6 +13,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('tourist');
   const [mobile, setMobile] = useState('');
+  const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();

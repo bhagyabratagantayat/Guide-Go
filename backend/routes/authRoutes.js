@@ -15,6 +15,7 @@ const {
   validateVerifyOTP, 
   validateResendOTP,
   validateForgotPassword, 
+  validateVerifyResetOTP,
   validateResetPassword 
 } = require('../middleware/validator');
 
@@ -25,6 +26,7 @@ router.post('/verify-otp', validateVerifyOTP, verifyOTP);
 router.post('/resend-otp', validateResendOTP, resendOTP);
 router.post('/login', validateLogin, loginUser);
 router.post('/forgot-password', validateForgotPassword, forgotPassword);
+router.post('/verify-reset-otp', validateVerifyResetOTP, verifyResetOTP);
 router.post('/reset-password', validateResetPassword, resetPassword);
 router.get('/profile', authenticateUser, getProfile);
 

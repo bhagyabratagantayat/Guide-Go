@@ -68,6 +68,12 @@ const validateForgotPassword = [
   validate
 ];
 
+const validateVerifyResetOTP = [
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+  validate
+];
+
 const validateResetPassword = [
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
@@ -81,6 +87,7 @@ module.exports = {
   validateVerifyOTP,
   validateResendOTP,
   validateForgotPassword,
+  validateVerifyResetOTP,
   validateResetPassword,
   validateGuideRegister,
   validateBooking,

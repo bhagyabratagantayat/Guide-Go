@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   location: { type: String },
   profilePicture: { type: String, default: '' },
+  resetPasswordOTP: { type: String },
+  resetPasswordOTPExpiry: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 

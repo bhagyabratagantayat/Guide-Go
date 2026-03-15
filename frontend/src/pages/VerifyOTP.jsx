@@ -32,13 +32,22 @@ const VerifyOTP = () => {
         alert('Email not found. Please register or login again.');
         return navigate('/login');
       }
+
+      if (otp.length !== 6) {
+        alert('Please enter exactly 6 digits.');
+        setVerifying(false);
+        return;
+      }
+
       const data = await verifyOTP(email, otp);
       const role = data.role;
       if (role === 'admin') navigate('/admin');
       else if (role === 'guide') navigate('/guide-dashboard');
       else navigate('/');
     } catch (error) {
-      alert(error.response?.data?.message || 'OTP Verification failed');
+      console.error('OTP Verification Error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'OTP Verification failed';
+      alert(errorMessage);
     } finally {
       setVerifying(false);
     }

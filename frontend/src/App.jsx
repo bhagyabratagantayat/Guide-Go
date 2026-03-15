@@ -7,6 +7,9 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import VerifyOTP from './pages/VerifyOTP';
+import ForgotPassword from './pages/ForgotPassword';
+import VerifyResetOTP from './pages/VerifyResetOTP';
+import ResetPassword from './pages/ResetPassword';
 import GuideDashboard from './pages/GuideDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Explore from './pages/Explore';
@@ -90,6 +93,9 @@ function AppContent() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/verify-otp" element={<VerifyOTP />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/verify-reset-otp" element={<VerifyResetOTP />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/explore-map" element={<ExploreMap />} />
                   <Route path="/explore-list" element={<Explore />} />
                   <Route path="/places" element={<Explore />} />
