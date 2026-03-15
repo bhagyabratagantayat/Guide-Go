@@ -28,11 +28,11 @@ const config = {
     keySecret: process.env.RAZORPAY_KEY_SECRET
   },
   email: {
-    smtpHost: process.env.SMTP_HOST,
-    smtpPort: process.env.SMTP_PORT,
+    smtpHost: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    smtpPort: parseInt(process.env.SMTP_PORT, 10) || 587,
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
-    from: process.env.EMAIL_FROM
+    from: process.env.EMAIL_FROM || 'guidego2026@gmail.com'
   }
 };
 

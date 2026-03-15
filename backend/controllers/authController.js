@@ -7,7 +7,6 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/asyncHandler');
 const logger = require('../utils/logger');
 const sendEmail = require('../utils/sendEmail');
-const sendEmailBrevo = require('../utils/emailService');
 
 const generateOTP = () => {
   return otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
@@ -262,10 +261,10 @@ const testEmail = asyncHandler(async (req, res, next) => {
   logger.info(`Sending test email to ${email} using Brevo SMTP...`);
   
   try {
-    await sendEmailBrevo({
+    await sendEmail({
       email: email,
-      subject: 'GuideGo - SMTP Test Email',
-      message: 'This is a test email to verify your Brevo SMTP configuration is working correctly! 🚀'
+      subject: 'GuideGo - Brevo Relay Test',
+      message: 'If you see this, your Brevo SMTP configuration is working perfectly! 🚀'
     });
 
     res.status(200).json({
