@@ -7,15 +7,16 @@ const {
   forgotPassword, 
   verifyResetOTP,
   resetPassword,
-  getProfile 
+  getProfile,
+  testEmail
 } = require('../controllers/authController');
 const { authenticateUser } = require('../middleware/auth');
-const { 
-  validateRegister, 
-  validateLogin, 
-  validateVerifyOTP, 
+const {
+  validateRegister,
+  validateLogin,
+  validateVerifyOTP,
   validateResendOTP,
-  validateForgotPassword, 
+  validateForgotPassword,
   validateVerifyResetOTP,
   validateResetPassword 
 } = require('../middleware/validator');

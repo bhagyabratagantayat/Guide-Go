@@ -7,6 +7,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/asyncHandler');
 const logger = require('../utils/logger');
 const sendEmail = require('../utils/sendEmail');
+const sendEmailBrevo = require('../utils/emailService');
 
 const generateOTP = () => {
   return otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
@@ -251,6 +252,31 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   res.json({ message: 'Password reset successful. You can now login.' });
 });
 
+const testEmail = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return next(new ErrorResponse('Please provide an email address', 400));
+  }
+
+  logger.info(`Sending test email to ${email} using Brevo SMTP...`);
+  
+  try {
+    await sendEmailBrevo({
+      email: email,
+      subject: 'GuideGo - SMTP Test Email',
+      message: 'This is a test email to verify your Brevo SMTP configuration is working correctly! 🚀'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Test email sent successfully to ${email}`
+    });
+  } catch (error) {
+    return next(new ErrorResponse(`Failed to send test email: ${error.message}`, 500));
+  }
+});
+
 const getProfile = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id);
   if (user) {
@@ -318,5 +344,6 @@ module.exports = {
   forgotPassword, 
   verifyResetOTP,
   resetPassword,
-  getProfile 
+  getProfile,
+  testEmail
 };
