@@ -5,9 +5,13 @@
     "chat": "Oracle",
     "bookings": "Bookings",
     "profile": "Profile",
+    "settings": "Settings",
     "login": "Login",
     "register": "Register",
-    "chat": "Oracle"
+    "all": "All",
+    "guides": "Guides",
+    "places": "Places",
+    "hotels": "Hotels"
   },
   "home": {
     "title": "Smart Tourism Redefined",
@@ -60,5 +64,10 @@
     "no_account": "New to GuideGo?",
     "already_member": "Member already?",
     "back_to_login": "Back to Secure Login"
+  },
+  "settings": {
+    "language_realm": "Language Realm",
+    "communication": "Communication",
+    "push_notifications": "Push Notifications"
   }
 }

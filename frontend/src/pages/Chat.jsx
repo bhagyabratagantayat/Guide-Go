@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { 
   Send, Phone, Video, Info, User, 
   ChevronLeft, Image, Paperclip, Smile,
@@ -13,6 +14,7 @@ const Chat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [recipient, setRecipient] = useState(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([

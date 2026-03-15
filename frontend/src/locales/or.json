@@ -5,6 +5,7 @@
     "chat": "ଓରାକଲ୍",
     "bookings": "ବୁକିଂ",
     "profile": "ପ୍ରୋଫାଇଲ୍",
+    "settings": "ସେଟିଂସ",
     "login": "ଲଗଇନ୍",
     "register": "ପଞ୍ଜୀକରଣ",
     "chat": "ଓରାକଲ୍"
@@ -60,5 +61,10 @@
     "no_account": "ଗାଇଡଗୋରେ ନୂଆ କି?",
     "already_member": "ପୂର୍ବରୁ ସଦସ୍ୟ କି?",
     "back_to_login": "ସୁରକ୍ଷିତ ଲଗଇନ୍ କୁ ଫେରିଯାଆନ୍ତୁ"
+  },
+  "settings": {
+    "language_realm": "ଭାଷା କ୍ଷେତ୍ର",
+    "communication": "ଯୋଗାଯୋଗ",
+    "push_notifications": "ପୁଶ୍ ସୂଚନା"
   }
 }

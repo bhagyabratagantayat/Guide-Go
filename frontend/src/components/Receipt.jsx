@@ -2,11 +2,14 @@ import React from 'react';
 import { 
   CheckCircle2, MapPin, Calendar, Clock, 
   DollarSign, Download, Share2, X, Compass,
-  Ticket, ShieldCheck, QrCode
+  Ticket, ShieldCheck, QrCode, MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useNavigate } from 'react-router-dom';
+
 const Receipt = ({ booking, onClose }) => {
+  const navigate = useNavigate();
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl">
        <motion.div 
@@ -49,8 +52,8 @@ const Receipt = ({ booking, onClose }) => {
                 </div>
              </div>
 
-             {/* Ticket Body */}
-             <div className="p-10 space-y-12 relative">
+             {/* Ticket Body - Scrollable */}
+             <div className="max-h-[65vh] overflow-y-auto custom-scrollbar p-10 space-y-12 relative pb-20">
                 {/* ID and Date Row */}
                 <div className="flex justify-between items-start">
                    <div className="space-y-1.5">
@@ -126,13 +129,21 @@ const Receipt = ({ booking, onClose }) => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-4 pt-4">
-                   <button className="flex-1 flex items-center justify-center py-6 bg-slate-100 text-slate-900 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 border border-slate-200 shadow-sm">
-                      <Download className="w-4 h-4 mr-2 text-primary-600" /> Save Pass
+                <div className="flex flex-col space-y-4 pt-4">
+                   <button 
+                     onClick={() => navigate(`/chat/${booking.guideId?._id || booking.guideId}`)}
+                     className="w-full flex items-center justify-center py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-primary-500 transition-all active:scale-95 shadow-xl shadow-slate-900/10 hover:shadow-primary-500/20"
+                   >
+                      <MessageCircle className="w-4 h-4 mr-2 text-primary-400 animate-pulse" /> Chat with Guide
                    </button>
-                   <button className="flex-1 flex items-center justify-center py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-slate-900/10">
-                      <Share2 className="w-4 h-4 mr-2 text-primary-400" /> Share
-                   </button>
+                   <div className="flex space-x-4">
+                      <button className="flex-1 flex items-center justify-center py-6 bg-slate-100 text-slate-900 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 border border-slate-200 shadow-sm">
+                         <Download className="w-4 h-4 mr-2 text-primary-600" /> Save Pass
+                      </button>
+                      <button className="flex-1 flex items-center justify-center py-6 bg-white text-slate-900 border border-slate-200 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95">
+                         <Share2 className="w-4 h-4 mr-2 text-slate-400" /> Share
+                      </button>
+                   </div>
                 </div>
              </div>
           </div>

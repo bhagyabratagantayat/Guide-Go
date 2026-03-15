@@ -7,7 +7,7 @@ import {
   MapPin, User, Star, Volume2, Info, Compass, 
   Languages, DollarSign, X, Activity, Play, 
   Pause, Square, Navigation, Layers, Clock, Gauge,
-  ChevronUp, ChevronDown, CheckCircle2, ArrowRight
+  ChevronUp, ChevronDown, CheckCircle2, ArrowRight, Search
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -75,18 +75,57 @@ const ExploreMap = () => {
   const { user } = useAuth();
   const { liveGuides } = useGuideTracking(user);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  const mockServices = [
+    { _id: 'h1', name: 'Hotel Mayfair', type: 'hotel', latitude: 20.301, longitude: 85.826, rating: 4.8 },
+    { _id: 'r1', name: 'Dalma Restaurant', type: 'restaurant', latitude: 20.298, longitude: 85.821, rating: 4.7 },
+    { _id: 'm1', name: 'Apollo Hospital', type: 'medical', latitude: 20.305, longitude: 85.830, rating: 4.9 },
+    { _id: 't1', name: 'Puri Station', type: 'transport', latitude: 19.814, longitude: 85.827, rating: 4.5 }
+  ];
+
   const fetchData = async (lat, lng) => {
     try {
       const [placesRes, guidesRes] = await Promise.all([
-        axios.get(`/api/places/nearby?lat=${lat}&lng=${lng}`),
-        axios.get(`/api/guides/nearby?lat=${lat}&lng=${lng}&distance=10000`)
+        axios.get(`/api/places/nearby?lat=${lat}&lng=${lng}`).catch(() => ({ data: [] })),
+        axios.get(`/api/guides/nearby?lat=${lat}&lng=${lng}&distance=10000`).catch(() => ({ data: [] }))
       ]);
-      setPlaces(placesRes.data);
+      
+      // Fallback to local places if API fails for demo
+      const localPlaces = [
+        { _id: 'p1', name: 'Konark Sun Temple', type: 'place', latitude: 19.8876, longitude: 86.0945, city: 'Konark', description: 'Ancient sun temple marvel.' },
+        { _id: 'p2', name: 'Jagannath Temple', type: 'place', latitude: 19.8135, longitude: 85.8179, city: 'Puri', description: 'Sacred heritage of Odisha.' }
+      ];
+      
+      setPlaces(placesRes.data.length > 0 ? placesRes.data : localPlaces);
       setGuides(guidesRes.data);
     } catch (error) {
       console.error('Error fetching discovery data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markers = [
+    ...places.map(p => ({ ...p, type: 'place' })),
+    ...guides.map(g => ({ ...g, type: 'guide', name: g.userId?.name })),
+    ...mockServices
+  ];
+
+  const filteredMarkers = markers.filter(m => {
+    const matchesSearch = m.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (activeFilter === 'All') return matchesSearch;
+    return m.type?.toLowerCase() === activeFilter.toLowerCase().replace(/s$/, '') && matchesSearch;
+  });
+
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (filteredMarkers.length > 0) {
+      const first = filteredMarkers[0];
+      setMapCenter([first.latitude || first.location?.coordinates[1], first.longitude || first.location?.coordinates[0]]);
+      setSelectedPlace(first);
+      setSheetState('peek');
     }
   };
 
@@ -127,50 +166,58 @@ const ExploreMap = () => {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         
-        {places.map((place) => (
+        {filteredMarkers.map((marker) => (
           <Marker 
-            key={place._id} 
-            position={[place.latitude, place.longitude]} 
-            icon={PlaceIcon}
+            key={marker._id} 
+            position={[marker.latitude || marker.location?.coordinates[1], marker.longitude || marker.location?.coordinates[0]]} 
+            icon={marker.type === 'guide' ? GuideIcon : PlaceIcon}
             eventHandlers={{
-              click: () => handlePlaceSelect(place)
+              click: () => {
+                setSelectedPlace(marker);
+                setSheetState('peek');
+                setMapCenter([marker.latitude || marker.location?.coordinates[1], marker.longitude || marker.location?.coordinates[0]]);
+              }
             }}
           />
         ))}
-
-        {guides.map((guide) => {
-          const livePos = liveGuides[guide._id] || liveGuides[guide.userId?._id];
-          const position = livePos || [guide.location.coordinates[1], guide.location.coordinates[0]];
-          
-          return (
-            <Marker key={guide._id} position={position} icon={GuideIcon}>
-              <Popup className="premium-discovery-popup">
-                <div className="p-4 min-w-[200px] bg-white rounded-3xl">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary-50 border-2 border-white overflow-hidden shadow-inner">
-                       {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : <User className="w-full h-full p-2 text-primary-500" />}
-                    </div>
-                    <div>
-                      <h4 className="font-black text-slate-900 tracking-tight leading-tight">{guide.userId?.name || 'Local Guide'}</h4>
-                      <div className="flex items-center text-[9px] font-black text-primary-500 uppercase tracking-widest">
-                        <Star className="w-2.5 h-2.5 fill-primary-500 mr-1" /> {guide.rating} Rating
-                      </div>
-                    </div>
-                  </div>
-                  <Link to={`/guide/${guide.userId?._id || guide._id}`} className="block w-full py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black tracking-widest uppercase text-center hover:bg-primary-500 transition-all">
-                    {t('guide.view_profile')}
-                  </Link>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
 
         {userLocation && <Marker position={userLocation} icon={UserIcon} />}
       </MapContainer>
 
       {/* Floating Controls */}
-      <div className="absolute top-28 left-6 z-[1000] space-y-3">
+      <div className="absolute top-12 left-0 right-0 z-[1000] px-6">
+        <form onSubmit={handleSearchSubmit} className="relative flex items-center group mb-4">
+          <Search className="absolute left-5 text-slate-300 w-5 h-5 group-focus-within:text-primary-500 transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search guides, hotels, spots..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border-transparent rounded-[2rem] py-5 pl-14 pr-12 shadow-premium font-medium text-sm focus:ring-primary-500/20 transition-all outline-none"
+          />
+          <button type="submit" className="absolute right-4 w-9 h-9 bg-primary-500 rounded-full flex items-center justify-center text-white shadow-lg">
+             <Navigation className="w-4 h-4" />
+          </button>
+        </form>
+
+        <div className="flex overflow-x-auto gap-2 no-scrollbar pb-2">
+          {['All', 'Guides', 'Places', 'Hotels'].map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-6 py-2 rounded-full whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeFilter === filter 
+                ? 'bg-slate-900 text-white shadow-lg' 
+                : 'bg-white/80 backdrop-blur-md text-slate-400 border border-white/20'
+              }`}
+            >
+              {t(`common.${filter.toLowerCase()}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="absolute top-44 left-6 z-[1000] space-y-3">
          <motion.button 
            whileTap={{ scale: 0.9 }}
            onClick={() => setMapCenter(userLocation || [20.2961, 85.8245])}

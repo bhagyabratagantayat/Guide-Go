@@ -27,6 +27,7 @@ import Guides from './pages/Guides';
 import AIChat from './pages/AIChat';
 import Bookings from './pages/Bookings';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import GuideProfile from './pages/GuideProfile';
 
 import Chat from './pages/Chat';
@@ -97,6 +98,7 @@ function AppContent() {
               <Route path="/bookings" element={<PageWrapper><Bookings /></PageWrapper>} />
               <Route path="/chat/:id" element={<ProtectedRoute><PageWrapper><Chat /></PageWrapper></ProtectedRoute>} />
               <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+              <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
 
               {/* Protected Roles */}
               <Route path="/guide-dashboard" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />

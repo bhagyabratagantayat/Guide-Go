@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Mail, Phone, MapPin, Calendar, 
@@ -10,7 +11,8 @@ import {
 import useGuideTracking from '../hooks/useGuideTracking';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isLive, setIsLive] = useState(false);
   const { startTracking } = useGuideTracking(user);
 
@@ -46,30 +48,37 @@ const Profile = () => {
             <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500 rounded-full blur-[150px] -ml-48 -mb-48" />
          </div>
          
-         <div className="max-w-7xl mx-auto relative z-10">
+         <div className="max-w-7xl mx-auto relative z-10 text-center">
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="mb-8"
+            >
+               <div className="relative inline-block">
+                  <div className="w-32 h-32 rounded-full border-4 border-primary-500 p-1 bg-slate-800 shadow-2xl">
+                     <div className="w-full h-full rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-white text-4xl font-black italic">
+                        {user.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user.name.charAt(0)}
+                     </div>
+                  </div>
+                  <div className="absolute bottom-0 right-0 p-2 bg-primary-500 rounded-full border-4 border-slate-900 shadow-lg cursor-pointer">
+                     <Camera className="w-4 h-4 text-slate-900" />
+                  </div>
+               </div>
+            </motion.div>
+
             <motion.div 
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
-               className="flex flex-col lg:flex-row lg:items-end justify-between gap-12"
+               className="space-y-4"
             >
-               <div className="space-y-6">
-                  <div className="inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10">
-                     <Shield className="w-4 h-4 text-primary-400" />
-                     <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Verified Traveler Realm</span>
+               <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter italic font-serif leading-none">
+                  {user.name.toUpperCase()}
+               </h1>
+               <div className="flex items-center justify-center space-x-4">
+                  <div className="flex items-center space-x-2 text-primary-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                     <Mail className="w-3 h-3" />
+                     <span>{user.email}</span>
                   </div>
-                  <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter italic font-serif leading-none">
-                     YOUR <span className="text-primary-500">LEGEND</span>
-                  </h1>
-               </div>
-
-               <div className="flex items-center space-x-4">
-                  <button className="p-4 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-2xl text-white hover:bg-white/10 transition-all">
-                     <Settings className="w-6 h-6" />
-                  </button>
-                  <button className="px-8 py-4 bg-primary-500 text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center space-x-3">
-                     <Edit3 className="w-4 h-4" />
-                     <span>Edit Chronicle</span>
-                  </button>
                </div>
             </motion.div>
          </div>
@@ -81,73 +90,77 @@ const Profile = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-[4rem] shadow-premium overflow-hidden border border-slate-100"
          >
-            <div className="p-12 lg:p-20">
-               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-16 gap-10">
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-10">
-                     <div className="relative group">
-                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-[3rem] bg-slate-900 p-1 shadow-2xl overflow-hidden group-hover:rotate-6 transition-transform">
-                           <div className="w-full h-full rounded-[2.5rem] bg-primary-500 flex items-center justify-center text-slate-900 font-serif italic font-black text-6xl uppercase overflow-hidden">
-                              {user.profilePicture ? <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" /> : user.name.charAt(0)}
-                           </div>
-                        </div>
-                        <button className="absolute -bottom-2 -right-2 p-4 bg-white text-slate-900 rounded-[1.5rem] shadow-xl hover:scale-110 transition-transform active:scale-90 border border-slate-100">
-                           <Camera className="w-5 h-5" />
-                        </button>
+            <div className="p-10">
+               {/* Quick Info Grid */}
+               <div className="grid grid-cols-2 gap-4 mb-12">
+                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center space-x-4 group hover:bg-slate-900 transition-all cursor-pointer">
+                     <div className="p-3 bg-white rounded-xl shadow-soft group-hover:bg-slate-800 transition-colors">
+                        <MapPin className="w-5 h-5 text-red-500" />
                      </div>
-
-                     <div className="space-y-4">
-                        <div className="flex items-center space-x-4">
-                           <h2 className="text-5xl font-black text-slate-800 tracking-tighter italic font-serif leading-none">{user.name}</h2>
-                           {isLive && (
-                             <div className="px-5 py-2 bg-green-500/10 text-green-600 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center">
-                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-ping" />
-                                LIVE
-                             </div>
-                           )}
-                        </div>
-                        <div className="flex flex-wrap gap-4 items-center">
-                           <div className="flex items-center space-x-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                              <MapPin className="w-3.5 h-3.5 text-red-500" />
-                              <span>{user.location || 'Odisha, Bharat'}</span>
-                           </div>
-                           <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                           <div className="flex items-center space-x-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                              <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                              <span>Member since March 2026</span>
-                           </div>
-                        </div>
+                     <div>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-500">Location</p>
+                        <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">{user.location || 'Bhubaneswar, IN'}</p>
                      </div>
                   </div>
+                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center space-x-4 group hover:bg-slate-900 transition-all cursor-pointer">
+                     <div className="p-3 bg-white rounded-xl shadow-soft group-hover:bg-slate-800 transition-colors">
+                        <Star className="w-5 h-5 text-primary-500" />
+                     </div>
+                     <div>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-500">Language</p>
+                        <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">{user.language || 'English'}</p>
+                     </div>
+                  </div>
+               </div>
 
-                  {user.role === 'guide' && (
-                     <button 
-                        onClick={() => setIsLive(!isLive)}
-                        className={`flex items-center px-10 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl group ${
-                           isLive 
-                           ? 'bg-green-500 text-white shadow-green-500/20' 
-                           : 'bg-slate-900 text-white hover:bg-primary-500 hover:text-slate-900'
-                        }`}
+               {/* Quick Realms - WhatsApp Style Action Grid */}
+               <div className="space-y-8">
+                  <div className="text-center">
+                    <h4 className="inline-block text-[9px] font-black text-slate-300 uppercase tracking-[0.6em] italic border-b border-slate-100 pb-2">Quick Realms</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-8">
+                     <ActionButton 
+                        icon={History} 
+                        label="History" 
+                        color="text-indigo-500"
+                        onClick={() => navigate('/bookings')} 
+                     />
+                     <ActionButton 
+                        icon={Heart} 
+                        label="Favorites" 
+                        color="text-red-500"
+                        onClick={() => navigate('/explore')}
+                     />
+                     <ActionButton 
+                        icon={CreditCard} 
+                        label="Payments" 
+                        color="text-emerald-500"
+                        onClick={() => navigate('/bookings')}
+                     />
+                     <ActionButton 
+                        icon={Settings} 
+                        label="Settings" 
+                        color="text-orange-500"
+                        onClick={() => navigate('/settings')}
+                     />
+                  </div>
+
+                  <div className="pt-12 text-center">
+                     <motion.button 
+                        whileTap={{ scale: 0.95 }}
+                        onClick={logout}
+                        className="flex items-center justify-center space-x-4 mx-auto group"
                      >
-                        <Radio className={`w-5 h-5 mr-3 ${isLive ? 'animate-pulse' : 'group-hover:rotate-12'}`} />
-                        {isLive ? 'TRANSMITTING...' : 'ENABLE TRAVEL BEACON'}
-                     </button>
-                  )}
-               </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <ProfileCard icon={Mail} label="CHRONICLE EMAIL" value={user.email} color="text-indigo-500" />
-                  <ProfileCard icon={Phone} label="COMMUNICATION LINE" value={user.phone || 'Disconnected'} color="text-emerald-500" />
-                  <ProfileCard icon={Shield} label="SECURITY LEVEL" value={`${user.role} Access`} color="text-primary-500" />
-                  <ProfileCard icon={Star} label="QUEST SCORE" value="4.9 Elite Traveler" color="text-orange-500" />
-               </div>
-
-               <div className="mt-20 pt-16 border-t border-slate-50">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">QUICK REALMS</h4>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                     <ActionButton icon={History} label="History" />
-                     <ActionButton icon={Heart} label="Favorites" />
-                     <ActionButton icon={CreditCard} label="Payments" />
-                     <ActionButton icon={Power} label="Sign Out" variant="danger" />
+                        <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all shadow-soft overflow-hidden relative">
+                           <Power className="w-5 h-5 relative z-10" />
+                           <div className="absolute inset-0 bg-red-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                        </div>
+                        <div className="text-left">
+                           <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">Sign Out</p>
+                           <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">End Current Session</p>
+                        </div>
+                     </motion.button>
                   </div>
                </div>
             </div>
@@ -157,29 +170,19 @@ const Profile = () => {
   );
 };
 
-const ProfileCard = ({ icon: Icon, label, value, color }) => (
-  <div className="p-8 bg-slate-50/50 rounded-[3rem] border border-slate-50 group hover:bg-white hover:shadow-premium transition-all">
-     <div className="flex items-center space-x-6">
-        <div className={`p-4 bg-white rounded-2xl shadow-soft group-hover:scale-110 transition-transform ${color}`}>
-           <Icon className="w-6 h-6" />
-        </div>
-        <div>
-           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-           <p className="text-lg font-black text-slate-800 tracking-tight italic font-serif">{value}</p>
-        </div>
+const ActionButton = ({ icon: Icon, label, color, onClick }) => (
+  <motion.button 
+    whileHover={{ y: -5 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={onClick}
+    className="flex flex-col items-center justify-center space-y-4 group"
+  >
+     <div className="w-24 h-24 rounded-[3rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-white group-hover:shadow-premium group-hover:border-transparent transition-all relative">
+        <Icon className={`w-8 h-8 ${color} opacity-40 group-hover:opacity-100 transition-opacity`} />
+        <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/10 to-transparent rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
      </div>
-  </div>
-);
-
-const ActionButton = ({ icon: Icon, label, variant = 'default' }) => (
-  <button className={`flex flex-col items-center justify-center p-8 rounded-[2.5rem] border transition-all active:scale-95 space-y-3 ${
-     variant === 'danger' 
-     ? 'bg-red-50/50 border-red-50 text-red-500 hover:bg-red-500 hover:text-white' 
-     : 'bg-slate-50/50 border-slate-50 text-slate-400 hover:bg-slate-900 hover:text-white'
-  }`}>
-     <Icon className="w-6 h-6" />
-     <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-  </button>
+     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-slate-900 transition-colors">{label}</span>
+  </motion.button>
 );
 
 export default Profile;

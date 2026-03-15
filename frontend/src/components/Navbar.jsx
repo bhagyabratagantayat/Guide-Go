@@ -80,44 +80,6 @@ const Navbar = () => {
         {/* Desktop Actions */}
         <div className="hidden lg:flex items-center space-x-6">
           <div className="flex items-center space-x-4">
-            {/* Language Switcher */}
-            <div className="relative">
-              <button 
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                className={`flex items-center space-x-2 p-3 rounded-2xl transition-all duration-300 ${isScrolled ? 'text-slate-400 hover:text-white bg-white/5' : 'text-slate-500 hover:text-primary-600 bg-slate-50'}`}
-              >
-                <Globe className="w-5 h-5 text-primary-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{i18n.language?.split('-')[0].toUpperCase()}</span>
-              </button>
-
-              <AnimatePresence>
-                {isLangOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className={`absolute right-0 mt-4 w-48 rounded-3xl overflow-hidden shadow-2xl border p-2 z-[1100] ${isScrolled ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-100'}`}
-                  >
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => changeLanguage(lang.code)}
-                        className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all text-left ${i18n.language?.startsWith(lang.code) ? 'bg-primary-500/10 text-primary-600' : (isScrolled ? 'text-slate-400 hover:bg-white/5 hover:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-primary-600')}`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <span className="text-lg">{lang.flag}</span>
-                          <span className="text-xs font-black uppercase tracking-widest">{lang.name}</span>
-                        </div>
-                        {i18n.language?.startsWith(lang.code) && <ShieldCheck className="w-4 h-4" />}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="h-8 w-px bg-white/10" />
-
             {user ? (
               <div className="flex items-center space-x-5">
                 <div className="flex items-center space-x-2">
@@ -125,7 +87,10 @@ const Navbar = () => {
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-3 right-3 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-900"></span>
                   </button>
-                  <button className={`p-3 rounded-2xl transition-colors ${isScrolled ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-primary-500'}`}>
+                  <button 
+                    onClick={() => navigate('/explore-map')}
+                    className={`p-3 rounded-2xl transition-colors ${isScrolled ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-primary-500'}`}
+                  >
                     <Search className="w-5 h-5" />
                   </button>
                 </div>
@@ -160,18 +125,6 @@ const Navbar = () => {
 
         {/* Mobile Menu Toggle */}
         <div className="flex items-center space-x-3 lg:hidden">
-          {/* Mobile Language Switcher Quick Toggle */}
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              const next = i18n.language?.startsWith('en') ? 'hi' : (i18n.language?.startsWith('hi') ? 'or' : 'en');
-              changeLanguage(next);
-            }}
-            className={`p-3 rounded-2xl transition-all active:scale-90 shadow-xl ${isScrolled ? 'bg-white/5 text-white' : 'bg-slate-900 text-white'}`}
-          >
-            <Globe className="w-6 h-6 text-primary-400" />
-          </button>
-
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={`p-3 rounded-2xl transition-all active:scale-90 shadow-xl ${isScrolled ? 'bg-white/5 text-white' : 'bg-slate-900 text-white'}`}
