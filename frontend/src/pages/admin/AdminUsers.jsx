@@ -7,7 +7,10 @@ import {
   Mail, 
   MapPin,
   Search,
-  Filter
+  Filter,
+  ChevronDown,
+  ShieldAlert,
+  Clock
 } from 'lucide-react';
 
 const AdminUsers = () => {
