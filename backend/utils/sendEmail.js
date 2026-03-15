@@ -3,23 +3,21 @@ const config = require('../config/env');
 const logger = require('./logger');
 
 const sendEmail = async (options) => {
-  logger.info(`Attempting to send email to: ${options.email}`);
+  logger.info(`Attempting to send email to: ${options.email} using Brevo SMTP`);
   
-  if (!config.email.user || !config.email.pass) {
-    logger.warn(`Email credentials missing. USER: ${!!config.email.user}, PASS: ${!!config.email.pass}`);
+  if (!config.email.smtpUser || !config.email.smtpPass) {
+    logger.warn(`Brevo SMTP credentials missing. USER: ${!!config.email.smtpUser}, PASS: ${!!config.email.smtpPass}`);
     return;
   }
 
   try {
-    console.log(`Sending email to: ${options.email}`);
-    
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // true for 465, false for other ports
+      host: config.email.smtpHost,
+      port: config.email.smtpPort,
+      secure: config.email.smtpPort == 465,
       auth: {
-        user: config.email.user,
-        pass: config.email.pass,
+        user: config.email.smtpUser,
+        pass: config.email.smtpPass,
       },
       tls: {
         rejectUnauthorized: false
@@ -27,7 +25,7 @@ const sendEmail = async (options) => {
     });
 
     const mailOptions = {
-      from: `"GuideGo" <${config.email.user}>`,
+      from: `"GuideGo" <${config.email.from}>`,
       to: options.email,
       subject: options.subject,
       text: options.message,
@@ -35,12 +33,10 @@ const sendEmail = async (options) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${options.email}. Message ID: ${info.messageId}`);
-    logger.info(`Message sent: ${info.messageId}`);
+    logger.info(`Email sent successfully to ${options.email}. Message ID: ${info.messageId}`);
   } catch (error) {
-    console.error(`Email sending failed for ${options.email}:`, error);
-    logger.error(`Error sending email: ${error.message}`);
-    throw new Error('Email could not be sent');
+    logger.error(`Email sending failed for ${options.email}: ${error.message}`);
+    throw new Error(`Email could not be sent: ${error.message}`);
   }
 };
 

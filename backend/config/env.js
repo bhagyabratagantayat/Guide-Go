@@ -28,8 +28,6 @@ const config = {
     keySecret: process.env.RAZORPAY_KEY_SECRET
   },
   email: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
     smtpHost: process.env.SMTP_HOST,
     smtpPort: process.env.SMTP_PORT,
     smtpUser: process.env.SMTP_USER,
