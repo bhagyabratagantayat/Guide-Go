@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, LogIn, ArrowRight, Compass } from 'lucide-react';
+import logo from '../assets/GuideGo Logo.jpeg';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -44,9 +45,9 @@ const Login = () => {
             className="mb-6 flex justify-center"
           >
             <img 
-              src="/src/assets/GuideGo Logo.jpeg" 
+              src={logo} 
               alt="GuideGo" 
-              className="h-24 w-auto object-contain"
+              className="h-24 w-24 object-cover rounded-full ring-4 ring-primary-500/10 shadow-xl"
             />
           </motion.div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1">

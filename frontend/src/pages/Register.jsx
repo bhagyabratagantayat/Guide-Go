@@ -7,6 +7,7 @@ import {
   User as UserIcon, Mail, Lock, Phone, 
   MapPin, CheckCircle, ArrowRight, Compass 
 } from 'lucide-react';
+import logo from '../assets/GuideGo Logo.jpeg';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -50,9 +51,9 @@ const Register = () => {
             className="mb-4 flex justify-center"
           >
             <img 
-              src="/src/assets/GuideGo Logo.jpeg" 
+              src={logo} 
               alt="GuideGo" 
-              className="h-16 w-auto object-contain"
+              className="h-20 w-20 object-cover rounded-full ring-4 ring-primary-500/10 shadow-xl"
             />
           </motion.div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1">

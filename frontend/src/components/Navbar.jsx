@@ -9,6 +9,7 @@ import {
   Sparkles, Map, Heart, Search, Home, Headset, Calendar,
   Languages, Globe
 } from 'lucide-react';
+import logo from '../assets/GuideGo Logo.jpeg';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -47,9 +48,9 @@ const Navbar = () => {
         {/* Logo Section */}
         <Link to="/" className="flex items-center">
           <img 
-            src="/src/assets/GuideGo Logo.jpeg" 
+            src={logo} 
             alt="GuideGo" 
-            className="h-10 w-auto object-contain"
+            className="h-10 w-10 object-cover rounded-full ring-2 ring-primary-500/20 shadow-lg"
           />
         </Link>
 

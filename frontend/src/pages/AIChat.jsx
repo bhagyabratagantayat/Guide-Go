@@ -10,6 +10,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import logo from '../assets/GuideGo Logo.jpeg';
 
 const AIChat = () => {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ const AIChat = () => {
       >
         {/* Background Watermark Logo */}
         <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
-          <img src="/src/assets/GuideGo Logo.jpeg" alt="" className="w-80 h-80 object-contain grayscale" />
+          <img src={logo} alt="" className="w-80 h-80 object-cover rounded-full grayscale" />
         </div>
 
         <div className="relative z-10">

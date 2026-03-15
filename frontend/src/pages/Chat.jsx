@@ -8,6 +8,7 @@ import {
   MoreVertical, ShieldCheck, Compass, CheckCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import logo from '../assets/GuideGo Logo.jpeg';
 
 const Chat = () => {
   const { id } = useParams();
@@ -110,7 +111,7 @@ const Chat = () => {
        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar relative">
           {/* Background Watermark Logo */}
           <div className="fixed inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-10">
-            <img src="/src/assets/GuideGo Logo.jpeg" alt="" className="w-80 h-80 object-contain grayscale" />
+            <img src={logo} alt="" className="w-80 h-80 object-cover rounded-full grayscale" />
           </div>
 
           <div className="relative z-20">

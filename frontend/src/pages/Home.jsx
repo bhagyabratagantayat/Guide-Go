@@ -8,6 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import logo from '../assets/GuideGo Logo.jpeg';
 
 const Home = () => {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ const Home = () => {
           <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shadow-soft ring-1 ring-slate-100">
              <Menu className="w-5 h-5 text-slate-400" />
           </div>
-          <img src="/src/assets/GuideGo Logo.jpeg" alt="GuideGo" className="h-10 w-auto object-contain" />
+          <img src={logo} alt="GuideGo" className="h-10 w-10 object-cover rounded-full ring-2 ring-primary-500/20 shadow-lg" />
           <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shadow-soft ring-1 ring-slate-100 overflow-hidden">
              {user?.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : <User className="w-5 h-5 text-slate-400" />}
           </div>
