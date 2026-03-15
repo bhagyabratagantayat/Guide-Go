@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   Send, Phone, Video, Info, User, 
   ChevronLeft, Image, Paperclip, Smile,
-  MoreVertical, ShieldCheck, Compass, CheckCheck
+  MoreVertical, ShieldCheck, Compass, CheckCheck, Mic
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/GuideGo Logo.jpeg';

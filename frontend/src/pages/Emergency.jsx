@@ -34,6 +34,15 @@ const Emergency = () => {
         { name: "Ambulance", phone: "108", distance: "Immediate" },
         { name: "Fire", phone: "101", distance: "Immediate" }
       ]
+    },
+    {
+      title: "GuideGo Support",
+      icon: Phone,
+      color: "bg-primary-500",
+      items: [
+        { name: "24/7 Helpline", phone: "+91-1800-GUIDEGO", distance: "Online" },
+        { name: "Emergency Guide SOS", phone: "+91-999-SOS-LOCAL", distance: "GPS Active" }
+      ]
     }
   ];
 

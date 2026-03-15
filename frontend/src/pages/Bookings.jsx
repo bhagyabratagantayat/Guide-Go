@@ -51,10 +51,10 @@ const Bookings = () => {
   };
 
   const filteredBookings = bookings.filter(b => {
-    if (activeFilter === 'all') return true;
-    if (activeFilter === 'pending') return b.status === 'pending';
-    if (activeFilter === 'history') return ['completed', 'cancelled'].includes(b.status);
-    return true;
+    if (activeFilter === 'upcoming') return ['pending', 'confirmed'].includes(b.status);
+    if (activeFilter === 'completed') return b.status === 'completed';
+    if (activeFilter === 'cancelled') return b.status === 'cancelled';
+    return true; // all
   });
 
   const getStatusConfig = (status) => {
@@ -86,22 +86,23 @@ const Bookings = () => {
              </div>
              
              {/* Filter Controls */}
-             <div className="flex bg-surface-50 p-2 rounded-[3rem] border border-surface-100 shadow-inner">
-                {[
-                   { id: 'all', label: 'Overview', icon: HistoryIcon },
-                   { id: 'pending', label: 'Active', icon: Clock3 },
-                   { id: 'history', label: 'Journies', icon: Navigation }
-                ].map(filter => (
-                   <button 
-                     key={filter.id}
-                     onClick={() => setActiveFilter(filter.id)}
-                     className={`flex items-center space-x-3 px-8 py-4 rounded-[2.2rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all ${activeFilter === filter.id ? 'bg-white text-slate-900 shadow-premium' : 'text-slate-400 hover:text-slate-600'}`}
-                   >
-                      <filter.icon className="w-4 h-4" />
-                      <span>{filter.label}</span>
-                   </button>
-                ))}
-             </div>
+              <div className="flex bg-surface-50 p-2 rounded-[3rem] border border-surface-100 shadow-inner overflow-x-auto no-scrollbar">
+                 {[
+                    { id: 'all', label: 'All', icon: HistoryIcon },
+                    { id: 'upcoming', label: 'Upcoming', icon: Clock3 },
+                    { id: 'completed', label: 'Completed', icon: CheckCircle },
+                    { id: 'cancelled', label: 'Cancelled', icon: XCircle }
+                 ].map(filter => (
+                    <button 
+                      key={filter.id}
+                      onClick={() => setActiveFilter(filter.id)}
+                      className={`flex items-center space-x-3 px-6 py-3 rounded-[2.2rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all shrink-0 ${activeFilter === filter.id ? 'bg-white text-slate-900 shadow-premium' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                       <filter.icon className="w-4 h-4" />
+                       <span>{filter.label}</span>
+                    </button>
+                 ))}
+              </div>
           </div>
        </section>
 
@@ -213,9 +214,15 @@ const Bookings = () => {
                                         <Star className="w-5 h-5 mr-3 fill-white/20" /> Write Journal
                                      </button>
                                   )}
-                                  <Link to={`/chat/${displayUser._id}`} className="h-16 w-16 bg-white border-2 border-slate-100 text-slate-900 rounded-[1.8rem] flex items-center justify-center hover:border-slate-900 transition-all active:scale-95 shadow-soft">
-                                     <MessageSquare className="w-6 h-6" />
-                                  </Link>
+                                   {['confirmed', 'completed'].includes(booking.status) ? (
+                                      <Link to={`/chat/${displayUser._id}`} className="h-16 w-16 bg-emerald-50 border-2 border-emerald-100 text-emerald-600 rounded-[1.8rem] flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all active:scale-95 shadow-soft">
+                                         <MessageSquare className="w-6 h-6" />
+                                      </Link>
+                                   ) : (
+                                      <div className="h-16 w-16 bg-slate-50 border-2 border-slate-100 text-slate-300 rounded-[1.8rem] flex items-center justify-center cursor-not-allowed opacity-50" title="Chat available after confirmation">
+                                         <MessageSquare className="w-6 h-6" />
+                                      </div>
+                                   )}
                                </div>
                             </div>
                          </motion.div>

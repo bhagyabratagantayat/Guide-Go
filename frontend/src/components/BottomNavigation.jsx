@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, MapPin, Compass, Sparkles, User 
+  Home, MapPin, Compass, Sparkles, User, Calendar 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -11,11 +11,11 @@ const BottomNavigation = () => {
   const location = useLocation();
   
   const navItems = [
-    { icon: Home, label: t('common.home') || 'Home', path: '/' },
-    { icon: MapPin, label: t('common.explore') || 'Explore', path: '/explore-map' },
-    { icon: Compass, label: t('common.guides') || 'Guides', path: '/guides' },
-    { icon: Sparkles, label: t('common.oracle') || 'Oracle', path: '/ai-chat' },
-    { icon: User, label: t('common.profile') || 'Profile', path: '/profile' }
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: MapPin, label: 'Map', path: '/explore-map' },
+    { icon: Compass, label: 'Explore', path: '/guides' },
+    { icon: Calendar, label: 'Bookings', path: '/bookings' },
+    { icon: User, label: 'Profile', path: '/profile' }
   ];
 
   return (

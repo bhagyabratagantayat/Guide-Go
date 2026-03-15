@@ -34,6 +34,7 @@ import Hotels from './pages/Hotels';
 import Restaurants from './pages/Restaurants';
 import Emergency from './pages/Emergency';
 import Support from './pages/Support';
+import Settings from './pages/Settings';
 
 // Admin
 import AdminLayout from './components/AdminLayout';
@@ -105,6 +106,7 @@ function AppContent() {
               <Route path="/restaurants" element={<PageWrapper><Restaurants /></PageWrapper>} />
               <Route path="/emergency" element={<PageWrapper><Emergency /></PageWrapper>} />
               <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
+              <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
 
               {/* Protected Roles */}
               <Route path="/guide-dashboard" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />

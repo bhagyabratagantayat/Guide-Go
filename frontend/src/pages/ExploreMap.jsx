@@ -43,13 +43,30 @@ const GuideIcon = L.divIcon({
 
 const UserIcon = L.divIcon({
   html: `<div class="relative">
-           <div class="absolute -inset-3 bg-primary-500/20 rounded-full blur animate-ping"></div>
-           <div class="relative w-6 h-6 bg-primary-500 rounded-full border-2 border-white shadow-xl"></div>
+           <div class="absolute -inset-3 bg-blue-500/20 rounded-full blur animate-ping"></div>
+           <div class="relative w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-xl"></div>
          </div>`,
   className: '',
   iconSize: [24, 24],
   iconAnchor: [12, 12]
 });
+
+const createColoredIcon = (color, iconSvg) => L.divIcon({
+  html: `<div class="relative group cursor-pointer">
+           <div class="absolute -inset-2 bg-${color}-500/20 rounded-full blur group-hover:bg-${color}-500/40 transition-all duration-700"></div>
+           <div class="relative bg-${color}-500 w-10 h-10 rounded-2xl border-2 border-white shadow-xl flex items-center justify-center transform group-hover:scale-110 transition-all">
+             ${iconSvg}
+           </div>
+         </div>`,
+  className: '',
+  iconSize: [40, 40],
+  iconAnchor: [20, 40]
+});
+
+const HotelIcon = createColoredIcon('pink', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect width="7" height="5" x="7" y="7" rx="1"/><rect width="7" height="5" x="10" y="12" rx="1"/></svg>');
+const FoodIcon = createColoredIcon('orange', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>');
+const MedicalIcon = createColoredIcon('red', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>');
+const TransportIcon = createColoredIcon('blue', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15h.01"/><path d="M17 15h.01"/><path d="M16 8V5a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v3"/><rect width="16" height="10" x="4" y="8" rx="2"/></svg>');
 
 const ReCenterMap = ({ center }) => {
   const map = useMap();
@@ -64,13 +81,12 @@ const ReCenterMap = ({ center }) => {
 const ExploreMap = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [places, setPlaces] = useState([]);
-  const [guides, setGuides] = useState([]);
+  const [markers, setMarkers] = useState([]); // Array of { ...data, type: 'guide'|'place'|'hotel'|'food'|'medical'|'transport' }
   const [mapCenter, setMapCenter] = useState([20.2961, 85.8245]);
   const [userLocation, setUserLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All'); // 'All', 'Guides', 'Places'
+  const [activeFilter, setActiveFilter] = useState('All'); 
   const { isPlaying, speak, stop, pause, resume } = useAudioGuide();
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [sheetState, setSheetState] = useState('hidden'); 
@@ -83,8 +99,23 @@ const ExploreMap = () => {
         axios.get(`/api/places/nearby?lat=${lat}&lng=${lng}`),
         axios.get(`/api/guides/nearby?lat=${lat}&lng=${lng}&distance=10000`)
       ]);
-      setPlaces(placesRes.data);
-      setGuides(guidesRes.data);
+      
+      const allMarkers = [
+        ...placesRes.data.map(p => ({ ...p, type: 'place' })),
+        ...guidesRes.data.map(g => ({ ...g, type: 'guide' }))
+      ];
+
+      // Simulate/Mock other services for now if backend is pending, 
+      // or fetch from separate endpoints if they exist.
+      // Based on previous work, we have frontend pages, but let's add some visual markers.
+      const mockServices = [
+        { _id: 'h1', name: 'Mayfair Heritage', type: 'hotel', latitude: lat + 0.005, longitude: lng + 0.005, rating: 4.8, city: 'Puri' },
+        { _id: 'r1', name: 'Dalma Restaurant', type: 'food', latitude: lat - 0.005, longitude: lng + 0.006, rating: 4.7, city: 'Bhubaneswar' },
+        { _id: 'm1', name: 'Apollo Hospital', type: 'medical', latitude: lat + 0.008, longitude: lng - 0.004, rating: 4.9, city: 'Bhubaneswar' },
+        { _id: 't1', name: 'Master Canteen', type: 'transport', latitude: lat - 0.003, longitude: lng - 0.008, rating: 4.5, city: 'Bhubaneswar' }
+      ];
+
+      setMarkers([...allMarkers, ...mockServices]);
     } catch (error) {
       console.error('Error fetching discovery data:', error);
     } finally {
@@ -109,6 +140,20 @@ const ExploreMap = () => {
     return () => stop();
   }, []);
 
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return '...';
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d < 1 ? `${(d * 1000).toFixed(0)}m` : `${d.toFixed(1)}km`;
+  };
+
   const handlePlaceSelect = (place) => {
     setSelectedPlace(place);
     setSheetState('peek');
@@ -129,16 +174,19 @@ const ExploreMap = () => {
     }
   };
 
-  const filteredPlaces = places.filter(place => 
-    (activeFilter === 'All' || activeFilter === 'Places') &&
-    place.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredGuides = guides.filter(guide => 
-    (activeFilter === 'All' || activeFilter === 'Guides') &&
-    (guide.userId?.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     guide.specialization?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())))
-  );
+  const filteredMarkers = markers.filter(m => {
+    const matchesSearch = m.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         m.userId?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (activeFilter === 'All') return matchesSearch;
+    if (activeFilter === 'Guides') return m.type === 'guide' && matchesSearch;
+    if (activeFilter === 'Places') return m.type === 'place' && matchesSearch;
+    if (activeFilter === 'Hotels') return m.type === 'hotel' && matchesSearch;
+    if (activeFilter === 'Food') return m.type === 'food' && matchesSearch;
+    if (activeFilter === 'Medical') return m.type === 'medical' && matchesSearch;
+    if (activeFilter === 'Transport') return m.type === 'transport' && matchesSearch;
+    return false;
+  });
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-surface-50">
@@ -157,10 +205,14 @@ const ExploreMap = () => {
              <Layers className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-2">
            <FilterChip label={t('common.all') || 'All'} active={activeFilter === 'All'} onClick={() => setActiveFilter('All')} />
            <FilterChip label={t('common.guides') || 'Guides'} active={activeFilter === 'Guides'} onClick={() => setActiveFilter('Guides')} />
            <FilterChip label={t('common.places') || 'Places'} active={activeFilter === 'Places'} onClick={() => setActiveFilter('Places')} />
+           <FilterChip label="Hotels" active={activeFilter === 'Hotels'} onClick={() => setActiveFilter('Hotels')} />
+           <FilterChip label="Food" active={activeFilter === 'Food'} onClick={() => setActiveFilter('Food')} />
+           <FilterChip label="Medical" active={activeFilter === 'Medical'} onClick={() => setActiveFilter('Medical')} />
+           <FilterChip label="Transport" active={activeFilter === 'Transport'} onClick={() => setActiveFilter('Transport')} />
         </div>
       </div>
 
@@ -176,42 +228,42 @@ const ExploreMap = () => {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         
-        {filteredPlaces.map((place) => (
-          <Marker 
-            key={place._id} 
-            position={[place.latitude, place.longitude]} 
-            icon={PlaceIcon}
-            eventHandlers={{
-              click: () => handlePlaceSelect(place)
-            }}
-          />
-        ))}
+        {filteredMarkers.map((m) => {
+          let position = [m.latitude, m.longitude];
+          let icon = PlaceIcon;
 
-        {filteredGuides.map((guide) => {
-          const livePos = liveGuides[guide._id] || liveGuides[guide.userId?._id];
-          const position = livePos || [guide.location.coordinates[1], guide.location.coordinates[0]];
-          
+          if (m.type === 'guide') {
+            const livePos = liveGuides[m._id] || liveGuides[m.userId?._id];
+            position = livePos || [m.location.coordinates[1], m.location.coordinates[0]];
+            icon = GuideIcon;
+          } else if (m.type === 'hotel') icon = HotelIcon;
+          else if (m.type === 'food') icon = FoodIcon;
+          else if (m.type === 'medical') icon = MedicalIcon;
+          else if (m.type === 'transport') icon = TransportIcon;
+
           return (
             <Marker 
-              key={guide._id} 
+              key={m._id} 
               position={position} 
-              icon={GuideIcon}
+              icon={icon}
               eventHandlers={{
                 click: () => {
-                  setSelectedPlace({ ...guide, isGuide: true });
+                  setSelectedPlace(m);
                   setSheetState('peek');
                   setMapCenter(position);
                 }
               }}
             >
-              <Popup>
-                <div className="p-2 min-w-[120px]">
-                  <p className="font-bold text-slate-900 text-sm">{guide.userId?.name}</p>
-                  <button onClick={() => navigate(`/guide/${guide.userId?._id || guide._id}`)} className="w-full mt-2 py-2 bg-primary-500 text-white rounded-lg text-[10px] uppercase font-bold tracking-widest">
-                    Book Now
-                  </button>
-                </div>
-              </Popup>
+              {m.type === 'guide' && (
+                <Popup>
+                  <div className="p-2 min-w-[120px]">
+                    <p className="font-bold text-slate-900 text-sm">{m.userId?.name}</p>
+                    <button onClick={() => navigate(`/guide/${m.userId?._id || m._id}`)} className="w-full mt-2 py-2 bg-primary-500 text-white rounded-lg text-[10px] uppercase font-bold tracking-widest">
+                      Book Now
+                    </button>
+                  </div>
+                </Popup>
+              )}
             </Marker>
           );
         })}
@@ -266,8 +318,8 @@ const ExploreMap = () => {
                     </div>
                     <span className="text-slate-200">|</span>
                     <div className="flex items-center space-x-1 text-xs font-medium uppercase tracking-widest">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{selectedPlace.city || selectedPlace.locationName || 'Odisha'}</span>
+                      <Navigation className="w-3.5 h-3.5" />
+                      <span>{calculateDistance(userLocation?.[0], userLocation?.[1], selectedPlace.latitude || selectedPlace.location?.coordinates?.[1], selectedPlace.longitude || selectedPlace.location?.coordinates?.[0])}</span>
                     </div>
                   </div>
                 </div>
@@ -280,38 +332,37 @@ const ExploreMap = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-8">
-               {selectedPlace.isGuide ? (
-                 <motion.button 
-                   whileTap={{ scale: 0.95 }}
-                   onClick={() => navigate(`/chat/${selectedPlace.userId?._id || selectedPlace._id}`)}
-                   className="bg-primary-50 text-primary-600 rounded-3xl p-5 flex flex-col items-center justify-center space-y-2 border border-primary-100"
-                 >
-                    <Compass className="w-6 h-6" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Message</span>
-                 </motion.button>
-               ) : (
-                 <motion.button 
-                   whileTap={{ scale: 0.95 }}
-                   onClick={() => speak(selectedPlace.audioGuideText || selectedPlace.description)}
-                   className="bg-primary-50 text-primary-600 rounded-3xl p-5 flex flex-col items-center justify-center space-y-2 border border-primary-100"
-                 >
-                    <Volume2 className="w-6 h-6" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Speak Mode</span>
-                 </motion.button>
-               )}
+            <div className="grid grid-cols-3 gap-2 mb-8">
                <motion.button 
                  whileTap={{ scale: 0.95 }}
-                 onClick={() => selectedPlace.isGuide 
+                 onClick={() => speak(selectedPlace.audioGuideText || selectedPlace.description || `This is ${selectedPlace.name || selectedPlace.userId?.name}`)}
+                 className="bg-primary-50 text-primary-600 rounded-2xl p-4 flex flex-col items-center justify-center space-y-1 border border-primary-100"
+               >
+                  <Volume2 className="w-5 h-5" />
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-center">Play Audio</span>
+               </motion.button>
+
+               <motion.button 
+                 whileTap={{ scale: 0.95 }}
+                 onClick={() => selectedPlace.type === 'guide' 
                    ? navigate(`/guide/${selectedPlace.userId?._id || selectedPlace._id}`) 
                    : handleBestGuide()
                  }
-                 className="bg-primary-500 text-white rounded-3xl p-5 flex flex-col items-center justify-center space-y-2 shadow-lg shadow-primary-500/20"
+                 className="bg-primary-500 text-white rounded-2xl p-4 flex flex-col items-center justify-center space-y-1 shadow-lg shadow-primary-500/20"
                >
-                  <CheckCircle2 className="w-6 h-6" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    {selectedPlace.isGuide ? 'Confirm Booking' : 'Find Best Guide'}
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-center">
+                    {selectedPlace.type === 'guide' ? 'Book Guide' : 'Find Guide'}
                   </span>
+               </motion.button>
+
+               <motion.button 
+                 whileTap={{ scale: 0.95 }}
+                 onClick={() => navigate('/support')}
+                 className="bg-slate-900 text-white rounded-2xl p-4 flex flex-col items-center justify-center space-y-1"
+               >
+                  <Layers className="w-5 h-5" />
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-center">Nearby</span>
                </motion.button>
             </div>
 

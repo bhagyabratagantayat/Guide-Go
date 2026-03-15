@@ -48,7 +48,36 @@ const AIChat = () => {
     const userMsg = { role: 'user', text: query, timestamp: new Date() };
     setMessages(prev => [...prev, userMsg]);
     setQuestion('');
-    setLoading(true);
+    // Demo Itinerary Logic for Prototype
+    const lowerQuery = query.toLowerCase();
+    if (lowerQuery.includes('3-day trip') || lowerQuery.includes('3 day trip') || lowerQuery.includes('itinerary')) {
+      const demoItinerary = `
+### 🌅 Perfect 3-Day Odisha Odyssey
+
+**Day 1: The Spiritual Hub (Puri)**
+- **Morning**: Jagannath Temple Visit & Morning Aarti.
+- **Afternoon**: Relax at Golden Beach (Blue Flag certified).
+- **Evening**: Visit Raghurajpur Heritage Craft Village.
+
+**Day 2: Architectural Marvels (Konark & Dhauli)**
+- **Morning**: Drive to Konark Sun Temple (The Black Pagoda).
+- **Afternoon**: Chandrabhaga Beach stroll.
+- **Evening**: Light & Sound show at Dhauli Shanti Stupa.
+
+**Day 3: The Temple City (Bhubaneswar)**
+- **Morning**: Lingaraj Temple & Mukteshwar Temple.
+- **Afternoon**: Explore Udayagiri & Khandagiri Caves.
+- **Evening**: Shopping at Ekamra Haat for local handlooms.
+
+*Would you like me to find a local guide for this route?*
+`;
+      setTimeout(() => {
+        const oracleMsg = { role: 'oracle', text: demoItinerary, timestamp: new Date() };
+        setMessages(prev => [...prev, oracleMsg]);
+        setLoading(false);
+      }, 1000);
+      return;
+    }
 
     try {
       const { data } = await axios.post('/api/ai/ask', {

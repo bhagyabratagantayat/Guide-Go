@@ -71,12 +71,6 @@ const Navbar = () => {
 
         {/* Mobile Actions */}
         <div className="flex items-center space-x-4 lg:hidden">
-          <button 
-            onClick={() => changeLanguage(i18n.language?.startsWith('en') ? 'hi' : (i18n.language?.startsWith('hi') ? 'or' : 'en'))}
-            className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400"
-          >
-            <Globe className="w-5 h-5" />
-          </button>
           {!user && (
             <Link to="/login" className="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
               <User className="w-5 h-5" />
