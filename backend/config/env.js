@@ -29,7 +29,7 @@ const config = {
   },
   email: {
     smtpHost: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    smtpPort: parseInt(process.env.SMTP_PORT, 10) || 587,
+    smtpPort: parseInt(process.env.SMTP_PORT, 10) || 2525,
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
     from: process.env.EMAIL_FROM || 'guidego2026@gmail.com'
