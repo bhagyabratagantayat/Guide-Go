@@ -8,10 +8,17 @@ const logger = require('./logger');
 const sendEmail = async (options) => {
   logger.info(`>>> BREVO HTTP API INITIATED: ${options.email} <<<`);
   
-  if (!config.email.smtpPass) {
-    logger.error(`❌ CRITICAL: Brevo API Key (SMTP_PASS) missing. Delivery aborted.`);
+  // Strict check and trimming
+  const rawKey = config.email.smtpPass || "";
+  const apiKey = rawKey.trim().replace(/^["']|["']$/g, ''); // Remove spaces and quotes
+  
+  if (!apiKey) {
+    logger.error(`❌ CRITICAL: Brevo API Key is missing or empty. Delivery aborted.`);
     return;
   }
+
+  // Security-safe diagnostic
+  logger.info(`🔍 API Key Diagnostic: Length=${apiKey.length}, Suffix=...${apiKey.slice(-4)}`);
 
   const payload = {
     sender: { name: "GuideGo Support", email: config.email.from },
@@ -29,7 +36,8 @@ const sendEmail = async (options) => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': config.email.smtpPass
+        'api-key': apiKey,
+        'x-sib-api-key': apiKey // Fallback for older/specific API versions
       },
       body: JSON.stringify(payload)
     });
@@ -44,7 +52,7 @@ const sendEmail = async (options) => {
     return data;
   } catch (error) {
     logger.error(`❌ FINAL API FAILURE for ${options.email}: ${error.message}`);
-    throw new Error(`[V4-API] Email could not be sent: ${error.message}`);
+    throw new Error(`[V5-API] Email could not be sent: ${error.message}`);
   }
 };
 
