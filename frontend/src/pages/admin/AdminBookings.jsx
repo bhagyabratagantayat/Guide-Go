@@ -4,13 +4,16 @@ import {
   Search, 
   Filter, 
   Calendar, 
-  User, 
   MapPin, 
-  DollarSign,
-  Info,
-  ChevronRight,
-  Clock
+  ChevronRight, 
+  Clock,
+  X,
+  CreditCard,
+  User,
+  ShieldCheck,
+  Receipt
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -39,93 +42,96 @@ const AdminBookings = () => {
   );
 
   if (loading) return (
-    <div className="flex items-center justify-center h-full">
-      <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="flex items-center justify-center h-[60vh]">
+      <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-[1.5rem] animate-spin"></div>
     </div>
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+    <div className="space-y-10 animate-in fade-in duration-700">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        <div className="relative flex-1 max-w-2xl">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
           <input 
             type="text"
-            placeholder="Search booking ID, tourist, guide..."
-            className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-3xl shadow-sm focus:ring-2 focus:ring-primary-500 outline-none font-bold text-sm"
+            placeholder="Search transactions by tourist, guide or landmark..."
+            className="w-full pl-16 pr-8 py-5 bg-white border border-surface-100 rounded-[2.5rem] shadow-premium focus:ring-4 focus:ring-primary-500/5 outline-none font-bold text-sm leading-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex items-center space-x-3">
-           <button className="px-6 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm text-slate-600 hover:text-primary-500 font-bold text-xs flex items-center">
-             <Filter className="w-4 h-4 mr-2" /> Filter By Status
+        <div className="flex items-center space-x-4">
+           <button className="px-8 py-5 bg-white border border-surface-100 rounded-2xl shadow-premium text-slate-600 font-black text-[10px] uppercase tracking-widest flex items-center hover:text-primary-500 transition-all">
+             <Filter className="w-4 h-4 mr-3" /> Analytical Filter
            </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-[3.5rem] shadow-premium border border-surface-50 overflow-hidden min-h-[500px]">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Booking Details</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tourist / Guide</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Pricing</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+              <tr className="bg-slate-50/30">
+                <th className="px-10 py-8 text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">Transaction</th>
+                <th className="px-10 py-8 text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">Involved Parties</th>
+                <th className="px-10 py-8 text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">Financial Status</th>
+                <th className="px-10 py-8 text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">Clearance</th>
+                <th className="px-10 py-8 text-[9px] font-black text-slate-300 uppercase tracking-[0.4em] text-right">Audit</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-surface-50">
               {filteredBookings.map((booking) => (
-                <tr key={booking._id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-8 py-6">
-                    <div className="space-y-1">
-                      <p className="text-sm font-black text-slate-900 uppercase">#{booking._id.slice(-6).toUpperCase()}</p>
-                      <p className="text-[10px] font-bold text-slate-400 flex items-center uppercase tracking-tighter">
-                        <MapPin className="w-2.5 h-2.5 mr-1" /> {booking.location}
-                      </p>
-                      <p className="text-[10px] font-medium text-slate-400 flex items-center">
-                        <Calendar className="w-2.5 h-2.5 mr-1" /> {new Date(booking.bookingTime).toLocaleString()}
+                <tr key={booking._id} className="hover:bg-slate-50/50 transition-all group">
+                  <td className="px-10 py-8">
+                    <div className="space-y-1.5">
+                      <p className="text-[13px] font-black text-slate-950 uppercase tracking-tight">#{booking._id.slice(-8).toUpperCase()}</p>
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="w-3 h-3 text-primary-500" />
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">{booking.location}</p>
+                      </div>
+                      <p className="text-[10px] font-black text-slate-300 uppercase flex items-center">
+                        <Calendar className="w-3 h-3 mr-1.5" /> {new Date(booking.bookingTime).toLocaleDateString()}
                       </p>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-10 py-8">
+                    <div className="space-y-3">
+                       <div className="flex items-center space-x-3">
+                          <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-500">T</div>
+                          <span className="text-[11px] font-black text-slate-800 uppercase italic">{booking.touristId?.name}</span>
+                       </div>
+                       <div className="flex items-center space-x-3">
+                          <div className="w-6 h-6 rounded-lg bg-orange-50 flex items-center justify-center text-[10px] font-black text-orange-500">G</div>
+                          <span className="text-[11px] font-black text-slate-800 uppercase italic">{booking.guideId?.name}</span>
+                       </div>
+                    </div>
+                  </td>
+                  <td className="px-10 py-8">
                     <div className="space-y-2">
-                       <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 rounded bg-primary-100 flex items-center justify-center text-[10px] font-black text-primary-600">T</div>
-                          <span className="text-xs font-bold text-slate-800">{booking.touristId?.name}</span>
-                       </div>
-                       <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 rounded bg-secondary-100 flex items-center justify-center text-[10px] font-black text-secondary-600">G</div>
-                          <span className="text-xs font-bold text-slate-800">{booking.guideId?.name}</span>
-                       </div>
+                       <p className="text-lg font-black text-slate-950">₹{booking.price}</p>
+                       <span className={`text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${
+                         booking.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'
+                       }`}>
+                         {booking.paymentStatus} / {booking.paymentMethod?.toUpperCase() || 'CASH'}
+                       </span>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="space-y-1">
-                       <p className="text-sm font-black text-slate-900">₹{booking.price}</p>
-                       <p className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${booking.paymentStatus === 'paid' ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'}`}>
-                         {booking.paymentStatus.toUpperCase()} - {booking.paymentMethod?.toUpperCase() || 'CASH'}
-                       </p>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border ${
-                      booking.status === 'confirmed' ? 'bg-green-50 text-green-600 border-green-100' :
-                      booking.status === 'completed' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                  <td className="px-10 py-8">
+                    <span className={`text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-widest border shadow-sm ${
+                      booking.status === 'confirmed' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                      booking.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                       booking.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-100' :
-                      'bg-yellow-50 text-yellow-600 border-yellow-100'
+                      'bg-orange-50 text-orange-600 border-orange-100'
                     }`}>
                       {booking.status}
                     </span>
                   </td>
-                  <td className="px-8 py-6 text-right">
+                  <td className="px-10 py-8 text-right">
                     <button 
                       onClick={() => setSelectedBooking(booking)}
-                      className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
+                      className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-300 hover:text-primary-500 hover:shadow-premium transition-all"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-6 h-6" />
                     </button>
                   </td>
                 </tr>
@@ -135,73 +141,85 @@ const AdminBookings = () => {
         </div>
       </div>
 
-      {/* Detail Modal */}
-      {selectedBooking && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setSelectedBooking(null)}></div>
-          <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-             <div className="bg-slate-900 p-10 text-white flex justify-between items-start">
-               <div className="space-y-2">
-                 <h3 className="text-3xl font-black tracking-tighter uppercase leading-none">Booking Summary</h3>
-                 <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">REF: #{selectedBooking._id.toUpperCase()}</p>
-               </div>
-               <button onClick={() => setSelectedBooking(null)} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-                  <LogOut className="w-5 h-5 rotate-45 text-slate-400" />
-               </button>
-             </div>
-
-             <div className="p-10 space-y-8">
-               <div className="grid grid-cols-2 gap-8">
-                 <div className="space-y-4">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tourist Details</h4>
-                   <div className="space-y-1">
-                     <p className="text-sm font-black text-slate-900">{selectedBooking.touristId?.name}</p>
-                     <p className="text-xs font-bold text-slate-500">{selectedBooking.touristId?.email}</p>
-                   </div>
+      <AnimatePresence>
+        {selectedBooking && (
+          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" 
+              onClick={() => setSelectedBooking(null)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-white w-full max-w-2xl rounded-[4rem] shadow-2xl overflow-hidden border border-white/10"
+            >
+              <div className="bg-slate-900 p-12 text-white relative">
+                 <div className="w-16 h-16 bg-primary-500 rounded-[1.5rem] flex items-center justify-center text-slate-950 mb-10 rotate-3">
+                    <Receipt className="w-8 h-8" />
                  </div>
-                 <div className="space-y-4 shadow-inner p-4 bg-slate-50 rounded-2xl">
-                   <h4 className="text-[10px] font-black text-primary-600 uppercase tracking-widest">Guide Expertise</h4>
-                   <div className="space-y-1">
-                     <p className="text-sm font-black text-slate-900">{selectedBooking.guideId?.name}</p>
-                     <p className="text-xs font-bold text-slate-500">{selectedBooking.guideId?.email}</p>
+                 <h3 className="text-4xl font-black tracking-tighter uppercase italic font-serif leading-none">Journal Entry</h3>
+                 <p className="text-slate-400 text-[10px] font-black mt-4 uppercase tracking-[0.4em] opacity-60">REF-ID: {selectedBooking._id.toUpperCase()}</p>
+                 <button onClick={() => setSelectedBooking(null)} className="absolute top-12 right-12 w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 text-slate-500 hover:text-white transition-colors">
+                    <X className="w-6 h-6" />
+                 </button>
+              </div>
+
+              <div className="p-12 space-y-10">
+                <div className="grid grid-cols-2 gap-10">
+                   <div className="space-y-4">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Master Tourist</p>
+                      <div className="p-6 bg-surface-50 rounded-3xl">
+                         <p className="text-sm font-black text-slate-950 uppercase">{selectedBooking.touristId?.name}</p>
+                         <p className="text-[10px] font-bold text-slate-400 mt-1">{selectedBooking.touristId?.email}</p>
+                      </div>
                    </div>
-                 </div>
-               </div>
-
-               <div className="space-y-4 pt-8 border-t border-slate-100">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Journey Information</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl">
-                      <MapPin className="w-5 h-5 text-primary-500" />
-                      <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Location</p>
-                        <p className="text-xs font-black text-slate-900 uppercase">{selectedBooking.location}</p>
+                   <div className="space-y-4">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Certified Guide</p>
+                      <div className="p-6 bg-surface-50 rounded-3xl">
+                         <p className="text-sm font-black text-slate-950 uppercase">{selectedBooking.guideId?.name}</p>
+                         <p className="text-[10px] font-bold text-slate-400 mt-1">{selectedBooking.guideId?.email}</p>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl">
-                      <Clock className="w-5 h-5 text-primary-500" />
-                      <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Schedule</p>
-                        <p className="text-xs font-black text-slate-900 uppercase">{new Date(selectedBooking.bookingTime).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  </div>
-               </div>
+                   </div>
+                </div>
 
-               <div className="p-6 bg-slate-900 text-white rounded-[2rem] flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Transaction</p>
-                    <p className="text-2xl font-black">₹{selectedBooking.price}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</p>
-                    <span className="text-xs font-black text-primary-400 uppercase tracking-tighter">{selectedBooking.status}</span>
-                  </div>
-               </div>
-             </div>
+                <div className="space-y-4 pt-6 border-t border-slate-100">
+                   <div className="grid grid-cols-2 gap-6">
+                      <div className="flex items-center space-x-4 p-6 bg-slate-50 rounded-3xl">
+                         <MapPin className="w-6 h-6 text-primary-500" />
+                         <div>
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Destination</p>
+                            <p className="text-[11px] font-black text-slate-950 uppercase">{selectedBooking.location}</p>
+                         </div>
+                      </div>
+                      <div className="flex items-center space-x-4 p-6 bg-slate-50 rounded-3xl">
+                         <Clock className="w-6 h-6 text-primary-500" />
+                         <div>
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Scheduled On</p>
+                            <p className="text-[11px] font-black text-slate-950 uppercase">{new Date(selectedBooking.bookingTime).toLocaleDateString()}</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="p-10 bg-slate-950 text-white rounded-[3rem] flex items-center justify-between shadow-2xl shadow-slate-900/30">
+                   <div>
+                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Total Consideration</p>
+                      <p className="text-4xl font-black italic font-serif leading-none tracking-tighter">₹{selectedBooking.price}</p>
+                   </div>
+                   <div className="text-right">
+                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Registry Status</p>
+                      <span className="text-[11px] font-black text-primary-500 uppercase tracking-[0.2em]">{selectedBooking.status}</span>
+                   </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };
