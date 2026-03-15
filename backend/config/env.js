@@ -36,4 +36,10 @@ const config = {
   }
 };
 
+console.log('🚀 SYSTEM STARTING WITH CONFIG:');
+console.log(`- SMTP Host: ${config.email.smtpHost}`);
+console.log(`- SMTP Port: ${config.email.smtpPort}`);
+console.log(`- SMTP User: ${config.email.smtpUser ? config.email.smtpUser.substring(0, 4) + '...' : 'MISSING'}`);
+console.log(`- SMTP Pass: ${config.email.smtpPass ? '******' : 'MISSING'}`);
+
 module.exports = config;
