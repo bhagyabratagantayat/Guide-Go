@@ -5,6 +5,7 @@ const {
   verifyOTP, 
   resendOTP,
   forgotPassword, 
+  verifyResetOTP,
   resetPassword,
   getProfile 
 } = require('../controllers/authController');
