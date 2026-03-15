@@ -41,7 +41,7 @@ const AdminPlaces = () => {
   const fetchPlaces = async () => {
     try {
       const { data } = await axios.get('/api/places');
-      setPlaces(data.data);
+      setPlaces(data.data || []);
     } catch (error) {
       console.error('Error fetching places:', error);
     } finally {
@@ -119,7 +119,7 @@ const AdminPlaces = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-        {places.map((place) => (
+        {places?.map((place) => (
           <motion.div 
             layout
             key={place._id} 

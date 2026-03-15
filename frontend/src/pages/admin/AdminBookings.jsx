@@ -25,7 +25,7 @@ const AdminBookings = () => {
     const fetchBookings = async () => {
       try {
         const { data } = await axios.get('/api/admin/bookings');
-        setBookings(data.data);
+        setBookings(data.data || []);
       } catch (error) {
         console.error('Error fetching bookings:', error);
       } finally {
@@ -35,10 +35,10 @@ const AdminBookings = () => {
     fetchBookings();
   }, []);
 
-  const filteredBookings = bookings.filter(b => 
-    b.touristId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.guideId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBookings = bookings?.filter(b => 
+    b.touristId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.guideId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) return (
@@ -80,7 +80,7 @@ const AdminBookings = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-50">
-              {filteredBookings.map((booking) => (
+              {filteredBookings?.map((booking) => (
                 <tr key={booking._id} className="hover:bg-slate-50/50 transition-all group">
                   <td className="px-10 py-8">
                     <div className="space-y-1.5">

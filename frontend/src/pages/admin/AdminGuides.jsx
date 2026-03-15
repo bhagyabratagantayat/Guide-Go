@@ -18,7 +18,7 @@ const AdminGuides = () => {
   const fetchGuides = async () => {
     try {
       const { data } = await axios.get('/api/admin/guides');
-      setGuides(data.data);
+      setGuides(data.data || []);
     } catch (error) {
       console.error('Error fetching guides:', error);
     } finally {
@@ -54,16 +54,16 @@ const AdminGuides = () => {
         </div>
         <div className="flex bg-white p-2 rounded-[1.5rem] shadow-premium border border-surface-50">
            <div className="px-6 py-3 bg-primary-500 text-slate-950 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-xl shadow-primary-500/20">
-             PENDING REVIEW ({guides.filter(g => g.status === 'pending').length})
+             PENDING REVIEW ({guides?.filter(g => g.status === 'pending').length || 0})
            </div>
            <div className="px-6 py-3 text-slate-400 font-black text-[9px] uppercase tracking-widest hover:text-primary-500 transition-colors cursor-pointer">
-             ALL CERTIFIED ({guides.filter(g => g.status === 'approved').length})
+             ALL CERTIFIED ({guides?.filter(g => g.status === 'approved').length || 0})
            </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-        {guides.length > 0 ? guides.map((guide) => (
+        {guides?.length > 0 ? guides.map((guide) => (
           <motion.div 
             layout
             initial={{ opacity: 0, y: 20 }}

@@ -27,7 +27,7 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       const { data } = await axios.get('/api/admin/users');
-      setUsers(data.data);
+      setUsers(data.data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -40,8 +40,8 @@ const AdminUsers = () => {
   }, []);
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -142,7 +142,7 @@ const AdminUsers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-50">
-              {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+              {filteredUsers?.length > 0 ? filteredUsers.map((user) => (
                 <tr key={user._id} className="hover:bg-slate-50/50 transition-all group">
                   <td className="px-10 py-8">
                     <div className="flex items-center space-x-5">
