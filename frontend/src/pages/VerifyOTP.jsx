@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { ShieldCheck, ArrowRight, RefreshCcw, Mail } from 'lucide-react';
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState('');
@@ -10,9 +13,10 @@ const VerifyOTP = () => {
   const { verifyOTP, resendOTP } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const email = location.state?.email || '';
 
-  React.useEffect(() => {
+  useEffect(() => {
     let interval;
     if (timer > 0) {
       interval = setInterval(() => {
@@ -69,52 +73,96 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <div className="max-w-md w-full glass-card p-8 rounded-2xl">
-        <h2 className="text-3xl font-bold text-center text-slate-800 mb-6">Verify OTP</h2>
-        <p className="text-center text-sm text-slate-600 mb-6">
-          Please enter the 6-digit OTP sent to <strong>{email || 'your email'}</strong>
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700">One Time Password</label>
+    <div className="mobile-container flex items-center justify-center p-6 bg-surface-50 min-h-screen">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md mx-auto"
+      >
+        <div className="text-center mb-12">
+          <motion.div 
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            className="w-20 h-20 bg-primary-500 rounded-[2rem] flex items-center justify-center text-white shadow-premium mx-auto mb-6"
+          >
+            <ShieldCheck className="w-10 h-10 stroke-[2.5]" />
+          </motion.div>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic font-serif mb-2 leading-none">
+            {t('auth.verify_otp')}
+          </h1>
+          <div className="flex items-center justify-center space-x-2 text-slate-400">
+             <Mail className="w-3 h-3" />
+             <p className="text-[10px] font-black uppercase tracking-widest">{email || 'Verified Gateway'}</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">
+              Enter 6-Digit Secure Code
+            </label>
             <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 transform rounded-lg focus:outline-none focus:ring-primary-500 text-center tracking-widest text-lg"
-              placeholder="123456"
+              className="w-full bg-white border-2 border-slate-100 rounded-[2rem] p-6 text-center text-4xl font-black tracking-[0.5em] text-slate-900 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all shadow-soft"
+              placeholder="000000"
               maxLength="6"
               required
             />
           </div>
-          <button 
+
+          <motion.button 
+            whileTap={{ scale: 0.98 }}
             type="submit" 
             disabled={verifying}
-            className={`w-full btn-primary mt-4 ${verifying ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`w-full py-6 bg-slate-900 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest shadow-premium flex items-center justify-center space-x-3 transition-all ${verifying ? 'opacity-70' : 'hover:bg-primary-600'}`}
           >
-            {verifying ? 'Verifying...' : 'Verify'}
-          </button>
+            {verifying ? (
+               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+               <>
+                 <span>Validate Code</span>
+                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+               </>
+            )}
+          </motion.button>
         </form>
         
-        <div className="text-center mt-6">
-          {timer > 0 ? (
-            <p className="text-sm text-slate-500">Resend OTP in {timer}s</p>
-          ) : (
-            <button 
-              onClick={handleResend}
-              disabled={resending}
-              className={`text-primary-600 font-medium hover:underline text-sm ${resending ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {resending ? 'Sending...' : 'Resend OTP'}
-            </button>
-          )}
+        <div className="mt-10 text-center">
+          <AnimatePresence mode="wait">
+            {timer > 0 ? (
+              <motion.p 
+                key="timer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-xs font-black text-slate-400 uppercase tracking-widest"
+              >
+                Code expires in <span className="text-primary-500">{timer}s</span>
+              </motion.p>
+            ) : (
+              <motion.button 
+                key="resend"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                onClick={handleResend}
+                disabled={resending}
+                className={`flex items-center space-x-2 mx-auto text-xs font-black text-primary-500 uppercase tracking-widest hover:text-primary-600 transition-colors ${resending ? 'opacity-50' : ''}`}
+              >
+                <RefreshCcw className={`w-4 h-4 ${resending ? 'animate-spin' : ''}`} />
+                <span>{resending ? 'Resending...' : 'Resend Secure Code'}</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
-        <p className="text-center text-sm text-slate-600 mt-4">
-          <Link to="/login" className="text-primary-600 hover:underline">Back to Login</Link>
-        </p>
-      </div>
+        <div className="mt-16 text-center">
+          <Link to="/login" className="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
+            {t('auth.back_to_login')}
+          </Link>
+        </div>
+      </motion.div>
     </div>
   );
 };

@@ -2,17 +2,20 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, Compass, Calendar, Sparkles, 
-  User, Search, LayoutGrid
+  User
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const BottomNavigation = () => {
+  const { t } = useTranslation();
+  
   const navItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Compass, label: 'Explore', path: '/explore-map' },
-    { icon: Sparkles, label: 'Oracle', path: '/ai-chat' },
-    { icon: Calendar, label: 'Bookings', path: '/bookings' },
-    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Home, label: t('common.home'), path: '/' },
+    { icon: Compass, label: t('common.explore'), path: '/explore-map' },
+    { icon: Sparkles, label: t('common.chat'), path: '/ai-chat' },
+    { icon: Calendar, label: t('common.bookings'), path: '/bookings' },
+    { icon: User, label: t('common.profile'), path: '/profile' },
   ];
 
   return (
@@ -40,7 +43,7 @@ const BottomNavigation = () => {
                 <span className={`text-[8px] font-black uppercase tracking-widest mt-1.5 transition-all duration-500 ${isActive ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-1'}`}>
                   {item.label}
                 </span>
-
+                
                 {isActive && (
                   <motion.div 
                     layoutId="active-pill"
@@ -52,7 +55,7 @@ const BottomNavigation = () => {
                 {isActive && (
                   <motion.div 
                     layoutId="nav-glow"
-                    className="absolute -bottom-1 w-1 h-1 bg-primary-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.8)]"
+                    className="absolute -bottom-1 w-1 h-1 bg-primary-500 rounded-full shadow-[0_0_10px_rgba(255,153,51,0.8)]"
                   />
                 )}
               </>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { 
   Calendar, Clock, CheckCircle, Clock3, XCircle, 
   MapPin, User, MessageSquare, Star, ChevronRight, 
   Filter, MoreHorizontal, History as HistoryIcon, 
-  Wallet, Bookmark
+  Wallet, Bookmark, Navigation
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,7 @@ const Bookings = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const fetchBookings = async () => {
     try {
@@ -57,57 +59,60 @@ const Bookings = () => {
 
   const getStatusConfig = (status) => {
     switch (status) {
-      case 'confirmed': return { color: 'bg-green-50 text-green-600 border-green-100', icon: CheckCircle };
-      case 'pending': return { color: 'bg-orange-50 text-orange-600 border-orange-100', icon: Clock3 };
+      case 'confirmed': return { color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: CheckCircle };
+      case 'pending': return { color: 'bg-primary-50 text-primary-600 border-primary-100', icon: Clock3 };
       case 'completed': return { color: 'bg-blue-50 text-blue-600 border-blue-100', icon: CheckCircle };
       case 'cancelled': return { color: 'bg-red-50 text-red-600 border-red-100', icon: XCircle };
-      default: return { color: 'bg-slate-50 text-slate-600 border-slate-100', icon: Clock3 };
+      default: return { color: 'bg-surface-100 text-slate-500 border-surface-200', icon: Clock3 };
     }
   };
 
   return (
     <div className="min-h-screen bg-surface-50 pb-32">
        {/* Header Section */}
-       <div className="bg-white border-b border-slate-100 pt-32 pb-12 px-8">
-          <div className="max-w-7xl mx-auto">
-             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+       <section className="bg-white pt-32 pb-16 px-8 border-b border-surface-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/5 rounded-full blur-[120px] -mr-64 -mt-64" />
+          <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-12">
+             <div className="space-y-6">
+                <div className="w-20 h-20 bg-slate-900 rounded-[2.5rem] flex items-center justify-center text-white shadow-premium rotate-3">
+                   <Bookmark className="w-10 h-10" />
+                </div>
                 <div>
-                   <h1 className="text-5xl font-black text-slate-900 tracking-tighter italic font-serif leading-tight mb-3">Reservations</h1>
-                   <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Manage your travel itinerary & experiences</p>
+                   <h1 className="text-6xl font-black text-slate-900 tracking-tighter italic font-serif leading-[0.9] mb-4">
+                     {t('common.bookings') || 'Travel Logs'}
+                   </h1>
+                   <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px]">Your chronicle of Odisha's finest guided journeys</p>
                 </div>
-                
-                {/* Filter Controls */}
-                <div className="flex bg-slate-50 p-1.5 rounded-[2.5rem] border border-slate-200">
-                   {[
-                      { id: 'all', label: 'Overview', icon: Bookmark },
-                      { id: 'pending', label: 'Active', icon: Clock3 },
-                      { id: 'history', label: 'History', icon: HistoryIcon }
-                   ].map(filter => (
-                      <button 
-                        key={filter.id}
-                        onClick={() => setActiveFilter(filter.id)}
-                        className={`flex items-center space-x-2 px-6 py-3 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === filter.id ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                         <filter.icon className="w-3.5 h-3.5" />
-                         <span>{filter.label}</span>
-                      </button>
-                   ))}
-                </div>
+             </div>
+             
+             {/* Filter Controls */}
+             <div className="flex bg-surface-50 p-2 rounded-[3rem] border border-surface-100 shadow-inner">
+                {[
+                   { id: 'all', label: 'Overview', icon: HistoryIcon },
+                   { id: 'pending', label: 'Active', icon: Clock3 },
+                   { id: 'history', label: 'Journies', icon: Navigation }
+                ].map(filter => (
+                   <button 
+                     key={filter.id}
+                     onClick={() => setActiveFilter(filter.id)}
+                     className={`flex items-center space-x-3 px-8 py-4 rounded-[2.2rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all ${activeFilter === filter.id ? 'bg-white text-slate-900 shadow-premium' : 'text-slate-400 hover:text-slate-600'}`}
+                   >
+                      <filter.icon className="w-4 h-4" />
+                      <span>{filter.label}</span>
+                   </button>
+                ))}
              </div>
           </div>
-       </div>
+       </section>
 
-       <div className="max-w-7xl mx-auto px-6 mt-12">
+       <div className="max-w-7xl mx-auto px-6 mt-16">
           {loading ? (
-             <div className="flex flex-col items-center justify-center py-32 space-y-4">
-                <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Retrieving Itinerary...</p>
+             <div className="flex flex-col items-center justify-center py-40 space-y-6">
+                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin shadow-xl shadow-primary-500/20" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest tracking-[0.5em]">Synchronizing Records...</p>
              </div>
           ) : (
-             <motion.div 
-               layout
-               className="grid grid-cols-1 gap-8"
-             >
+             <motion.div layout className="grid grid-cols-1 gap-8">
                 <AnimatePresence mode="popLayout">
                    {filteredBookings.map((booking) => {
                       const { color, icon: StatusIcon } = getStatusConfig(booking.status);
@@ -117,85 +122,84 @@ const Bookings = () => {
                          <motion.div 
                            key={booking._id}
                            layout
-                           initial={{ opacity: 0, scale: 0.95 }}
-                           animate={{ opacity: 1, scale: 1 }}
+                           initial={{ opacity: 0, y: 30 }}
+                           animate={{ opacity: 1, y: 0 }}
                            exit={{ opacity: 0, scale: 0.95 }}
-                           className="bg-white rounded-[3rem] p-8 lg:p-10 border border-slate-100 shadow-premium flex flex-col lg:flex-row lg:items-center justify-between gap-10 group relative overflow-hidden"
+                           className="bg-white rounded-[3.5rem] p-10 border border-surface-50 shadow-premium flex flex-col lg:flex-row lg:items-center justify-between gap-12 group hover:translate-y-[-4px] transition-all relative overflow-hidden"
                          >
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary-500/5 rounded-full blur-[80px] -mr-24 -mt-24 group-hover:bg-primary-500/10 transition-colors" />
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/5 rounded-full blur-[100px] -mr-40 -mt-40 group-hover:bg-primary-500/10 transition-colors" />
                             
-                            <div className="flex-grow flex items-center space-x-8 relative z-10">
-                               <div className="relative group">
-                                  <div className="w-24 h-24 rounded-[2.5rem] bg-slate-50 border border-slate-100 overflow-hidden shadow-inner group-hover:border-primary-200 transition-colors">
+                            <div className="flex-grow flex items-center space-x-10 relative z-10">
+                               <div className="relative">
+                                  <div className="w-28 h-28 rounded-[2.5rem] bg-surface-50 border-4 border-white overflow-hidden shadow-soft">
                                      {displayUser?.profilePicture ? (
                                         <img src={displayUser.profilePicture} className="w-full h-full object-cover" alt={displayUser.name} />
                                      ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-300 italic font-serif group-hover:text-primary-300">
+                                        <div className="w-full h-full flex items-center justify-center text-4xl font-black text-slate-300 italic font-serif uppercase">
                                            {displayUser?.name?.charAt(0)}
                                         </div>
                                      )}
                                   </div>
-                                  <div className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-2xl border-4 border-white flex items-center justify-center shadow-lg ${color}`}>
-                                     <StatusIcon className="w-4 h-4" />
+                                  <div className={`absolute -bottom-1 -right-1 w-11 h-11 rounded-[1.3rem] border-4 border-white flex items-center justify-center shadow-lg ${color}`}>
+                                     <StatusIcon className="w-5 h-5" />
                                   </div>
                                </div>
 
-                               <div className="space-y-3">
-                                  <div className="flex items-center space-x-4">
-                                     <h3 className="text-3xl font-black text-slate-900 tracking-tighter italic font-serif leading-none">{displayUser?.name}</h3>
-                                     <div className={`px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[9px] font-black uppercase tracking-widest text-slate-500 flex items-center`}>
-                                        <StatusIcon className="w-3 h-3 mr-1.5" /> {booking.status}
+                               <div className="space-y-5">
+                                  <div className="flex items-center space-x-6">
+                                     <h3 className="text-4xl font-black text-slate-900 tracking-tighter italic font-serif leading-none truncate max-w-xs">{displayUser?.name}</h3>
+                                     <div className={`px-5 py-2 rounded-full text-[8px] font-black uppercase tracking-[0.25em] shadow-sm border ${color} flex items-center`}>
+                                        <span className="w-2 h-2 rounded-full bg-current mr-2 animate-pulse" /> {booking.status}
                                      </div>
                                   </div>
-                                  <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                  <div className="flex flex-wrap items-center gap-x-12 gap-y-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">
                                      <div className="flex items-center group/info">
-                                        <Calendar className="w-3.5 h-3.5 mr-2 text-primary-500 group-hover/info:scale-125 transition-transform" /> 
-                                        {new Date(booking.bookingTime).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                        <Calendar className="w-4 h-4 mr-3 text-primary-500" />
+                                        {new Date(booking.bookingTime).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                                      </div>
                                      <div className="flex items-center group/info">
-                                        <Clock className="w-3.5 h-3.5 mr-2 text-orange-500 group-hover/info:scale-125 transition-transform" />
+                                        <Clock className="w-4 h-4 mr-3 text-secondary-500" />
                                         {new Date(booking.bookingTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                      </div>
                                      <div className="flex items-center group/info">
-                                        <MapPin className="w-3.5 h-3.5 mr-2 text-red-500 group-hover/info:scale-125 transition-transform" />
+                                        <MapPin className="w-4 h-4 mr-3 text-accent-500" />
                                         {booking.location}
                                      </div>
                                   </div>
                                </div>
                             </div>
 
-                            <div className="flex items-center justify-between lg:justify-end gap-12 pt-8 lg:pt-0 border-t lg:border-t-0 border-slate-50 relative z-10">
-                               <div className="text-left lg:text-right space-y-1">
-                                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Payment Amount</p>
-                                  <div className="flex items-baseline lg:justify-end space-x-1">
-                                     <span className="text-sm font-black text-slate-400">₹</span>
-                                     <span className="text-4xl font-black text-slate-900 tracking-tighter">{booking.price}</span>
+                            <div className="flex items-center justify-between lg:justify-end gap-16 pt-10 lg:pt-0 border-t lg:border-t-0 border-surface-50 relative z-10">
+                               <div className="text-left lg:text-right">
+                                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.4em] mb-2 leading-none">Net Reward</p>
+                                  <div className="flex items-baseline lg:justify-end space-x-2">
+                                     <span className="text-5xl font-black text-slate-900 tracking-tighter">₹{booking.price}</span>
                                   </div>
                                </div>
 
                                <div className="flex items-center gap-3">
                                   {user.role === 'guide' && booking.status === 'pending' && (
-                                     <>
+                                     <div className="flex gap-2">
                                         <button 
                                           onClick={() => handleStatusUpdate(booking._id, 'confirmed')}
-                                          className="h-14 px-8 bg-primary-600 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-primary-700 shadow-xl shadow-primary-500/20 active:scale-95 transition-all"
+                                          className="h-16 px-10 bg-slate-900 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-emerald-600 shadow-premium active:scale-95 transition-all"
                                         >
-                                          Confirm
+                                          Grant
                                         </button>
                                         <button 
                                           onClick={() => handleStatusUpdate(booking._id, 'cancelled')}
-                                          className="h-14 w-14 bg-red-50 text-red-500 rounded-[1.5rem] flex items-center justify-center hover:bg-red-100 transition-all border border-red-100"
+                                          className="h-16 w-16 bg-red-50 text-red-500 rounded-[1.8rem] flex items-center justify-center border-2 border-red-50 shadow-soft active:scale-95 transition-all"
                                         >
-                                          <XCircle className="w-6 h-6" />
+                                          <XCircle className="w-7 h-7" />
                                         </button>
-                                     </>
+                                     </div>
                                   )}
                                   {user.role === 'guide' && booking.status === 'confirmed' && (
                                      <button 
                                        onClick={() => handleStatusUpdate(booking._id, 'completed')}
-                                       className="h-14 px-8 bg-green-600 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-green-700 shadow-xl shadow-green-500/20 active:scale-95 transition-all"
+                                       className="h-16 px-12 bg-emerald-600 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-emerald-700 shadow-premium active:scale-95 transition-all"
                                      >
-                                       Complete Tour
+                                       Finalize Log
                                      </button>
                                   )}
                                   {user.role === 'tourist' && booking.status === 'completed' && !booking.reviewed && (
@@ -204,13 +208,13 @@ const Bookings = () => {
                                           setSelectedBooking(booking);
                                           setShowReviewModal(true);
                                        }}
-                                       className="h-14 px-8 bg-yellow-400 text-slate-900 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-yellow-500 shadow-xl shadow-yellow-500/20 active:scale-95 transition-all flex items-center"
+                                       className="h-16 px-10 bg-primary-500 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-slate-900 shadow-premium active:scale-95 transition-all flex items-center"
                                      >
-                                        <Star className="w-4 h-4 mr-2" /> Write Review
+                                        <Star className="w-5 h-5 mr-3 fill-white/20" /> Write Journal
                                      </button>
                                   )}
-                                  <Link to={`/chat/${displayUser._id}`} className="h-14 w-14 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center hover:bg-black shadow-xl shadow-slate-900/10 active:scale-95 transition-all">
-                                     <MessageSquare className="w-5 h-5" />
+                                  <Link to={`/chat/${displayUser._id}`} className="h-16 w-16 bg-white border-2 border-slate-100 text-slate-900 rounded-[1.8rem] flex items-center justify-center hover:border-slate-900 transition-all active:scale-95 shadow-soft">
+                                     <MessageSquare className="w-6 h-6" />
                                   </Link>
                                </div>
                             </div>
@@ -220,14 +224,14 @@ const Bookings = () => {
                 </AnimatePresence>
 
                 {filteredBookings.length === 0 && (
-                   <div className="text-center py-40 bg-white rounded-[4rem] border-2 border-dashed border-slate-100 mt-4">
-                      <div className="w-24 h-24 bg-primary-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary-100/50">
-                         <Wallet className="w-10 h-10 text-primary-300" />
+                   <div className="text-center py-48 bg-white rounded-[4rem] border-4 border-dashed border-surface-100 group">
+                      <div className="w-24 h-24 bg-surface-50 rounded-[3rem] flex items-center justify-center mx-auto mb-10 shadow-inner group-hover:rotate-12 transition-transform">
+                         <HistoryIcon className="w-12 h-12 text-slate-200" />
                       </div>
-                      <h3 className="text-3xl font-black text-slate-800 italic font-serif mb-4 leading-none">Your Itinerary is Empty</h3>
-                      <p className="text-slate-400 font-bold max-w-sm mx-auto mb-10 text-sm leading-relaxed">It seems you haven't booked any experiences yet. <br /> The world is waiting for you to explore.</p>
-                      <Link to="/home" className="btn-primary px-12 py-5 shadow-premium text-[11px]">
-                         FIND YOUR FIRST GUIDE
+                      <h3 className="text-4xl font-black text-slate-900 italic font-serif mb-6 leading-none tracking-tight">Your Voyage Logs are Empty</h3>
+                      <p className="subtitle max-w-sm mx-auto mb-12">Capture Odisha's soul through human-led storytelling. Your journey is waiting.</p>
+                      <Link to="/home" className="btn-primary px-16 py-6 text-[11px] tracking-[0.4em]">
+                         EXPLORE LOCALES
                       </Link>
                    </div>
                 )}
@@ -248,5 +252,6 @@ const Bookings = () => {
     </div>
   );
 };
+;
 
 export default Bookings;

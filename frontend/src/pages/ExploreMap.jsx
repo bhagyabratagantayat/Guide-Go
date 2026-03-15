@@ -6,11 +6,13 @@ import L from 'leaflet';
 import { 
   MapPin, User, Star, Volume2, Info, Compass, 
   Languages, DollarSign, X, Activity, Play, 
-  Pause, Square, Navigation, Layers
+  Pause, Square, Navigation, Layers, Clock, Gauge,
+  ChevronUp, ChevronDown, CheckCircle2, ArrowRight
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import useAudioGuide from '../hooks/useAudioGuide';
 import useGuideTracking from '../hooks/useGuideTracking';
 
@@ -60,14 +62,16 @@ const ReCenterMap = ({ center }) => {
 };
 
 const ExploreMap = () => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [places, setPlaces] = useState([]);
   const [guides, setGuides] = useState([]);
   const [mapCenter, setMapCenter] = useState([20.2961, 85.8245]);
   const [userLocation, setUserLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const { isPlaying, speak, stop, pause, resume } = useAudioGuide();
-  const [nearestPlace, setNearestPlace] = useState(null);
-  const [autoSuggested, setAutoSuggested] = useState(new Set());
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [sheetState, setSheetState] = useState('hidden'); // hidden, peek, expanded
   const { user } = useAuth();
   const { liveGuides } = useGuideTracking(user);
 
@@ -103,39 +107,14 @@ const ExploreMap = () => {
     return () => stop();
   }, []);
 
-  useEffect(() => {
-    if (userLocation && places.length > 0) {
-      const R = 6371000;
-      const deg2rad = (deg) => deg * (Math.PI / 180);
-      let closest = null;
-      let minDistance = 150; // Increased threshold for better discovery
-
-      places.forEach(place => {
-        const dLat = deg2rad(place.latitude - userLocation[0]);
-        const dLon = deg2rad(place.longitude - userLocation[1]);
-        const a = 
-          Math.sin(dLat/2) * Math.sin(dLat/2) +
-          Math.cos(deg2rad(userLocation[0])) * Math.cos(deg2rad(place.latitude)) * 
-          Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const distance = R * c;
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          closest = place;
-        }
-      });
-
-      if (closest && !autoSuggested.has(closest._id)) {
-        setNearestPlace(closest);
-      } else {
-        setNearestPlace(null);
-      }
-    }
-  }, [userLocation, places, autoSuggested]);
+  const handlePlaceSelect = (place) => {
+    setSelectedPlace(place);
+    setSheetState('peek');
+    setMapCenter([place.latitude, place.longitude]);
+  };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-slate-100 mt-[-96px]">
+    <div className="relative h-screen w-full overflow-hidden bg-surface-50 mt-[-96px]">
       <MapContainer 
         center={mapCenter} 
         zoom={14} 
@@ -149,29 +128,14 @@ const ExploreMap = () => {
         />
         
         {places.map((place) => (
-          <Marker key={place._id} position={[place.latitude, place.longitude]} icon={PlaceIcon}>
-            <Popup className="premium-discovery-popup">
-              <div className="p-0 min-w-[280px] bg-white rounded-3xl overflow-hidden">
-                <div className="h-40 relative group overflow-hidden">
-                   <img src={place.image} alt={place.name} className="w-full h-full object-cover" />
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                   <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1">Local Heritage</p>
-                      <h4 className="font-black text-xl italic font-serif leading-none tracking-tight">{place.name}</h4>
-                   </div>
-                </div>
-                <div className="p-5">
-                   <p className="text-xs font-bold text-slate-500 leading-relaxed line-clamp-2 mb-4">{place.description}</p>
-                   <button 
-                     onClick={() => speak(place.audioGuideText || place.description)}
-                     className="w-full btn-primary py-3.5 text-[10px] uppercase tracking-widest flex items-center justify-center"
-                   >
-                     <Play className="w-4 h-4 mr-2" /> Start Audio Guide
-                   </button>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
+          <Marker 
+            key={place._id} 
+            position={[place.latitude, place.longitude]} 
+            icon={PlaceIcon}
+            eventHandlers={{
+              click: () => handlePlaceSelect(place)
+            }}
+          />
         ))}
 
         {guides.map((guide) => {
@@ -181,20 +145,20 @@ const ExploreMap = () => {
           return (
             <Marker key={guide._id} position={position} icon={GuideIcon}>
               <Popup className="premium-discovery-popup">
-                <div className="p-6 min-w-[240px] bg-white rounded-3xl">
-                  <div className="flex items-center space-x-4 mb-5">
-                    <div className="w-14 h-14 rounded-2xl bg-orange-50 border-2 border-white overflow-hidden shadow-inner">
-                       {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : <User className="w-full h-full p-3 text-orange-500" />}
+                <div className="p-4 min-w-[200px] bg-white rounded-3xl">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary-50 border-2 border-white overflow-hidden shadow-inner">
+                       {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : <User className="w-full h-full p-2 text-primary-500" />}
                     </div>
                     <div>
                       <h4 className="font-black text-slate-900 tracking-tight leading-tight">{guide.userId?.name || 'Local Guide'}</h4>
-                      <div className="flex items-center text-[10px] font-black text-yellow-500 uppercase tracking-widest">
-                        <Star className="w-3 h-3 fill-yellow-500 mr-1" /> {guide.rating} Rating
+                      <div className="flex items-center text-[9px] font-black text-primary-500 uppercase tracking-widest">
+                        <Star className="w-2.5 h-2.5 fill-primary-500 mr-1" /> {guide.rating} Rating
                       </div>
                     </div>
                   </div>
-                  <Link to={`/guide/${guide.userId?._id || guide._id}`} className="block w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black tracking-widest uppercase text-center hover:bg-orange-500 transition-all">
-                    View & Book
+                  <Link to={`/guide/${guide.userId?._id || guide._id}`} className="block w-full py-3 bg-slate-900 text-white rounded-xl text-[9px] font-black tracking-widest uppercase text-center hover:bg-primary-500 transition-all">
+                    {t('guide.view_profile')}
                   </Link>
                 </div>
               </Popup>
@@ -205,64 +169,134 @@ const ExploreMap = () => {
         {userLocation && <Marker position={userLocation} icon={UserIcon} />}
       </MapContainer>
 
-      {/* Persistent Controls Overlay */}
+      {/* Floating Controls */}
       <div className="absolute top-28 left-6 z-[1000] space-y-3">
          <motion.button 
            whileTap={{ scale: 0.9 }}
            onClick={() => setMapCenter(userLocation || [20.2961, 85.8245])}
-           className="w-14 h-14 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-primary-600 shadow-2xl hover:bg-primary-50 transition-colors"
+           className="w-14 h-14 bg-white border border-surface-200 rounded-3xl flex items-center justify-center text-primary-500 shadow-premium hover:bg-primary-50 transition-colors"
          >
-           <Navigation className="w-7 h-7" />
-         </motion.button>
-         <motion.button 
-           whileTap={{ scale: 0.9 }}
-           className="w-14 h-14 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-900 shadow-2xl"
-         >
-           <Layers className="w-7 h-7" />
+           <Navigation className="w-6 h-6" />
          </motion.button>
       </div>
 
-      {/* Discovery Bottom Sheet / Pop-up */}
+      {/* Uber-Style Sliding Bottom Sheet */}
       <AnimatePresence>
-        {nearestPlace && (
+        {sheetState !== 'hidden' && selectedPlace && (
           <motion.div 
-            initial={{ y: 200, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 200, opacity: 0 }}
-            className="absolute bottom-24 left-6 right-6 z-[1000] glass-card p-6 rounded-[3rem] shadow-premium border-4 border-primary-500/20"
+            initial={{ y: '100%' }}
+            animate={{ y: sheetState === 'peek' ? '60%' : '5%' }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="absolute bottom-0 left-0 right-0 z-[1000] bg-white rounded-t-[3rem] shadow-premium flex flex-col max-h-[95vh]"
           >
-            <div className="flex items-start justify-between mb-4">
-               <div>
-                  <div className="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-[9px] font-black uppercase tracking-widest inline-block mb-3">Discovery nearby</div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight italic font-serif leading-none">{nearestPlace.name}</h3>
-               </div>
-               <button onClick={() => setNearestPlace(null)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+            {/* Handle Bar */}
+            <div 
+              className="py-4 flex justify-center cursor-pointer"
+              onClick={() => setSheetState(sheetState === 'peek' ? 'expanded' : 'peek')}
+            >
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+            </div>
+
+            <div className="px-6 pb-8 flex-grow overflow-y-auto">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <div className="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-[8px] font-black uppercase tracking-widest inline-block mb-2">
+                    Heritage Site
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight italic font-serif leading-none">
+                    {selectedPlace.name}
+                  </h3>
+                  <div className="flex items-center space-x-1 mt-1 text-slate-400">
+                    <MapPin className="w-3 h-3" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{selectedPlace.city}, Odisha</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSheetState('hidden')} 
+                  className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                >
                   <X className="w-5 h-5" />
-               </button>
-            </div>
-            <div className="flex items-center space-x-1 text-[10px] font-black text-slate-400 tracking-widest uppercase mb-6">
-               <Navigation className="w-3 h-3 text-primary-500" /> Less than 100m away
-            </div>
-            <div className="flex space-x-3">
-               <button 
-                 onClick={() => {
-                   speak(nearestPlace.audioGuideText || nearestPlace.description);
-                   setAutoSuggested(prev => new Set(prev).add(nearestPlace._id));
-                   setNearestPlace(null);
-                 }}
-                 className="flex-grow btn-primary py-4 text-[10px]"
-               >
-                 LISTEN TO STORY
-               </button>
-               <button 
-                 onClick={() => {
-                   setAutoSuggested(prev => new Set(prev).add(nearestPlace._id));
-                   setNearestPlace(null);
-                 }}
-                 className="px-6 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest"
-               >
-                 DISMISS
-               </button>
+                </button>
+              </div>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                 <div className="bg-surface-50 p-4 rounded-2xl flex items-center space-x-3 border border-surface-100">
+                    <div className="w-10 h-10 bg-white shadow-soft rounded-xl flex items-center justify-center text-primary-500">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Est. Trip</p>
+                      <p className="text-xs font-black text-slate-900">2.5 Hours</p>
+                    </div>
+                 </div>
+                 <div className="bg-surface-50 p-4 rounded-2xl flex items-center space-x-3 border border-surface-100">
+                    <div className="w-10 h-10 bg-white shadow-soft rounded-xl flex items-center justify-center text-secondary-500">
+                      <Compass className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Wait Time</p>
+                      <p className="text-xs font-black text-slate-900">~10 Mins</p>
+                    </div>
+                 </div>
+              </div>
+
+              {/* Audio Guide Quick Action */}
+              <button 
+                onClick={() => speak(selectedPlace.audioGuideText || selectedPlace.description)}
+                className="w-full bg-slate-900 text-white rounded-[2rem] p-5 flex items-center justify-between group hover:bg-primary-500 transition-all mb-8"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                    <Volume2 className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[8px] font-black uppercase tracking-widest opacity-60 mb-0.5">Narrator Ready</p>
+                    <p className="text-base font-black tracking-tight italic font-serif">Play Audio Guide</p>
+                  </div>
+                </div>
+                <Play className="w-5 h-5 opacity-40 group-hover:opacity-100" />
+              </button>
+
+              {/* Guide Selection Section */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{t('guide.nearby')}</h4>
+                  <span className="text-[10px] font-black text-primary-500">{guides.length} Online</span>
+                </div>
+
+                <div className="space-y-3">
+                  {guides.map((guide) => (
+                    <motion.div 
+                      key={guide._id}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/guide/${guide.userId?._id || guide._id}`)}
+                      className="p-4 border border-surface-100 rounded-[2rem] flex items-center justify-between hover:border-primary-500/30 hover:bg-primary-50/10 cursor-pointer transition-all bg-white shadow-soft"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-primary-50">
+                          {guide.userId?.profilePicture ? 
+                            <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : 
+                            <div className="w-full h-full bg-primary-50 flex items-center justify-center text-primary-500 font-bold text-lg">{guide.userId?.name.charAt(0)}</div>
+                          }
+                        </div>
+                        <div>
+                          <h5 className="font-black text-slate-900 text-base tracking-tight">{guide.userId?.name}</h5>
+                          <div className="flex items-center space-x-2 text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                            <span className="flex items-center text-primary-500"><Star className="w-3 h-3 fill-primary-500 mr-1" /> {guide.rating}</span>
+                            <span>•</span>
+                            <span className="text-slate-900">₹{guide.pricePerHr}/hr</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button className="w-10 h-10 rounded-xl bg-surface-50 text-slate-300 flex items-center justify-center">
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -275,31 +309,22 @@ const ExploreMap = () => {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            className="absolute top-28 right-6 z-[1000] glass-card px-6 py-4 rounded-[2.5rem] shadow-premium flex items-center space-x-4 border-2 border-primary-500/20"
+            className="absolute top-28 right-6 z-[1000] bg-white px-5 py-3 rounded-[2rem] shadow-premium flex items-center space-x-4 border border-primary-500/10"
           >
-            <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white relative">
-               <Volume2 className="w-6 h-6 animate-pulse" />
-               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-white relative">
+               <Volume2 className="w-5 h-5 animate-pulse" />
             </div>
             <div className="pr-4 border-r border-slate-100">
-               <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest block leading-none mb-1">Narrating</span>
-               <span className="text-xs font-black text-slate-900 tracking-tight block leading-none">Heritage Site</span>
+               <span className="text-[9px] font-black text-primary-500 uppercase tracking-widest block leading-none mb-1">Narrating</span>
+               <span className="text-xs font-black text-slate-900 block leading-none">{selectedPlace?.name || 'Local Guide'}</span>
             </div>
             <div className="flex space-x-2">
-               <button onClick={pause} className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-800"><Pause className="w-4 h-4" /></button>
-               <button onClick={stop} className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500"><Square className="w-4 h-4" /></button>
+               <button onClick={pause} className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-800"><Pause className="w-3 h-3" /></button>
+               <button onClick={stop} className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center text-red-500"><Square className="w-3 h-3" /></button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Scanning status */}
-      {loading && (
-        <div className="absolute inset-0 z-[2000] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center text-center">
-           <div className="w-20 h-20 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-6 shadow-xl shadow-primary-500/20" />
-           <p className="text-sm font-black text-slate-900 tracking-[0.3em] uppercase">Establishing GPS Link...</p>
-        </div>
-      )}
     </div>
   );
 };

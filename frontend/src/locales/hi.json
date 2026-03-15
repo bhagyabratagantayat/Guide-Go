@@ -1,0 +1,64 @@
+{
+  "common": {
+    "home": "मुख्य",
+    "explore": "खोजें",
+    "chat": "ओरैकल",
+    "bookings": "बुकिंग",
+    "profile": "प्रोफ़ाइल",
+    "login": "लॉगिन",
+    "register": "पंजीकरण",
+    "chat": "ओरैकल"
+  },
+  "home": {
+    "title": "स्मार्ट पर्यटन का नया रूप",
+    "subtitle": "प्रीमियम AI-संचालित मार्गदर्शन के साथ ओडिशा की विरासत की खोज करें।",
+    "greeting": "नमस्ते, {{name}}!",
+    "search_placeholder": "गंतव्य, गाइड खोजें...",
+    "quick_actions": "त्वरित क्रियाएं",
+    "find_guide": "गाइड खोजें",
+    "explore_map": "मैप देखें",
+    "audio_guide": "ऑडियो गाइड",
+    "trip_planner": "ट्रिप प्लानर",
+    "nearby_destinations": "पास के गंतव्य",
+    "nearby_guides": "अनुशंसित विशेषज्ञ"
+  },
+  "booking": {
+    "confirm": "बुकिंग की पुष्टि करें",
+    "success": "बुकिंग सफल!",
+    "experience": "अनुभव",
+    "departure": "प्रस्थान",
+    "boarding": "बोर्डिंग समय",
+    "pay_now": "अभी भुगतान करें",
+    "pay_spot": "मौके पर भुगतान",
+    "select_destination": "गंतव्य चुनें",
+    "select_guide": "गाइड चुनें",
+    "nearby_guides": "पास के गाइड",
+    "est_time": "अनुमानित समय",
+    "confirm_now": "पुष्टि करें और बुक करें"
+  },
+  "guide": {
+    "book": "गाइड बुक करें",
+    "view_profile": "प्रोफ़ाइल देखें",
+    "rating": "रेटिंग",
+    "nearby": "पास के गाइड"
+  },
+  "audio": {
+    "play": "ऑडियो गाइड शुरू करें",
+    "stop": "कथन बंद करें",
+    "pause": "विराम",
+    "resume": "जारी रखें"
+  },
+  "auth": {
+    "login_title": "नमस्ते",
+    "register_title": "खाता बनाएं",
+    "verify_otp": "पहचान सत्यापित करें",
+    "email": "ईमेल पता",
+    "email_placeholder": "आपका ईमेल",
+    "password": "सुरक्षित पासवर्ड",
+    "password_placeholder": "आपका पासवर्ड",
+    "forgot_password": "भूल गए?",
+    "no_account": "गाइडगो में नए हैं?",
+    "already_member": "पहले से सदस्य हैं?",
+    "back_to_login": "सुरक्षित लॉगिन पर वापस जाएं"
+  }
+}

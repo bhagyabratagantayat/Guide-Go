@@ -1,0 +1,64 @@
+{
+  "common": {
+    "home": "ମୁଖ୍ୟ",
+    "explore": "ଅନୁସନ୍ଧାନ",
+    "chat": "ଓରାକଲ୍",
+    "bookings": "ବୁକିଂ",
+    "profile": "ପ୍ରୋଫାଇଲ୍",
+    "login": "ଲଗଇନ୍",
+    "register": "ପଞ୍ଜୀକରଣ",
+    "chat": "ଓରାକଲ୍"
+  },
+  "home": {
+    "title": "ସ୍ମାର୍ଟ ପର୍ଯ୍ୟଟନର ନୂତନ ରୂପ",
+    "subtitle": "ପ୍ରିମିୟମ୍ AI-ଚାଳିତ ମାର୍ଗଦର୍ଶନ ସହିତ ଓଡ଼ିଶାର ଐତିହ୍ୟ ଆବିଷ୍କାର କରନ୍ତୁ |",
+    "greeting": "ନମସ୍କାର, {{name}}!",
+    "search_placeholder": "ଗନ୍ତବ୍ୟସ୍ଥଳ, ଗାଇଡ୍ ଖୋଜନ୍ତୁ...",
+    "quick_actions": "କ୍ଷିପ୍ର କାର୍ଯ୍ୟ",
+    "find_guide": "ଗାଇଡ୍ ଖୋଜନ୍ତୁ",
+    "explore_map": "ମାନଚିତ୍ର ଦେଖନ୍ତୁ",
+    "audio_guide": "ଅଡିଓ ଗାଇଡ୍",
+    "trip_planner": "ଟ୍ରିପ୍ ପ୍ଲାନର୍",
+    "nearby_destinations": "ନିକଟସ୍ଥ ଗନ୍ତବ୍ୟସ୍ଥଳ",
+    "nearby_guides": "ନିକଟସ୍ଥ ବିଶେଷଜ୍ଞ"
+  },
+  "booking": {
+    "confirm": "ବୁକିଂ ନିଶ୍ଚିତ କରନ୍ତୁ",
+    "success": "ବୁକିଂ ସଫଳ ହେଲା!",
+    "experience": "ଅନୁଭୂତି",
+    "departure": "ପ୍ରସ୍ଥାନ",
+    "boarding": "ବୋର୍ଡିଂ ସମୟ",
+    "pay_now": "ବର୍ତ୍ତମାନ ପେମେଣ୍ଟ କରନ୍ତୁ",
+    "pay_spot": "ସେହି ସ୍ଥାନରେ ପେମେଣ୍ଟ",
+    "select_destination": "ଗନ୍ତବ୍ୟସ୍ଥଳ ଚୟନ କରନ୍ତୁ",
+    "select_guide": "ଗାଇଡ୍ ଚୟନ କରନ୍ତୁ",
+    "nearby_guides": "ନିକଟସ୍ଥ ଗାଇଡ୍",
+    "est_time": "ଅନୁମାନିତ ସମୟ",
+    "confirm_now": "ନିଶ୍ଚିତ କରନ୍ତୁ ଏବଂ ବୁକ୍ କରନ୍ତୁ"
+  },
+  "guide": {
+    "book": "ଗାଇଡ୍ ବୁକ୍ କରନ୍ତୁ",
+    "view_profile": "ପ୍ରୋଫାଇଲ୍ ଦେଖନ୍ତୁ",
+    "rating": "ରେଟିଂ",
+    "nearby": "ନିକଟସ୍ଥ ଗାଇଡ୍"
+  },
+  "audio": {
+    "play": "ଅଡିଓ ଗାଇଡ୍ ଆରମ୍ଭ କରନ୍ତୁ",
+    "stop": "ବର୍ଣ୍ଣନା ବନ୍ଦ କରନ୍ତୁ",
+    "pause": "ବିରାମ",
+    "resume": "ପୁନର୍ବାର ଆରମ୍ଭ"
+  },
+  "auth": {
+    "login_title": "ନମସ୍କାର",
+    "register_title": "ଖାତା ଖୋଲନ୍ତୁ",
+    "verify_otp": "ପରିଚୟ ଯାଞ୍ଚ",
+    "email": "ଇମେଲ୍ ଠିକଣା",
+    "email_placeholder": "ଆପଣଙ୍କ ଇମେଲ୍",
+    "password": "ସୁରକ୍ଷିତ ପାସୱାର୍ଡ",
+    "password_placeholder": "ଆପଣଙ୍କ ପାସୱାର୍ଡ",
+    "forgot_password": "ଭୁଲିଗଲେ କି?",
+    "no_account": "ଗାଇଡଗୋରେ ନୂଆ କି?",
+    "already_member": "ପୂର୍ବରୁ ସଦସ୍ୟ କି?",
+    "back_to_login": "ସୁରକ୍ଷିତ ଲଗଇନ୍ କୁ ଫେରିଯାଆନ୍ତୁ"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "common": {
+    "home": "Home",
+    "explore": "Explore",
+    "chat": "Oracle",
+    "bookings": "Bookings",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "chat": "Oracle"
+  },
+  "home": {
+    "title": "Smart Tourism Redefined",
+    "subtitle": "Discover the heritage of Odisha with premium AI-powered guidance.",
+    "greeting": "Hello, {{name}}!",
+    "search_placeholder": "Search destinations, guides...",
+    "quick_actions": "Quick Actions",
+    "find_guide": "Find Guide",
+    "explore_map": "Explore Map",
+    "audio_guide": "Audio Guide",
+    "trip_planner": "Trip Planner",
+    "nearby_destinations": "Nearby Destinations",
+    "nearby_guides": "Recommended Experts"
+  },
+  "booking": {
+    "confirm": "Confirm Booking",
+    "success": "Booking Successful!",
+    "experience": "Experience",
+    "departure": "Departure",
+    "boarding": "Boarding Time",
+    "pay_now": "Pay Now",
+    "pay_spot": "Pay on Spot",
+    "select_destination": "Select Destination",
+    "select_guide": "Select Guide",
+    "nearby_guides": "Nearby Guides",
+    "est_time": "Est. Time",
+    "confirm_now": "Confirm and Book"
+  },
+  "guide": {
+    "book": "Book Guide",
+    "view_profile": "View Profile",
+    "rating": "Rating",
+    "nearby": "Nearby Guides"
+  },
+  "audio": {
+    "play": "Start Audio Guide",
+    "stop": "Stop Narration",
+    "pause": "Pause",
+    "resume": "Resume"
+  },
+  "auth": {
+    "login_title": "Welcome Back",
+    "register_title": "Create Account",
+    "verify_otp": "Verify Identity",
+    "email": "Email Address",
+    "email_placeholder": "Your email",
+    "password": "Secure Password",
+    "password_placeholder": "Your password",
+    "forgot_password": "Forgot?",
+    "no_account": "New to GuideGo?",
+    "already_member": "Member already?",
+    "back_to_login": "Back to Secure Login"
+  }
+}
