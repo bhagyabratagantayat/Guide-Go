@@ -27,6 +27,7 @@ import Guides from './pages/Guides';
 import AIChat from './pages/AIChat';
 import Bookings from './pages/Bookings';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import GuideProfile from './pages/GuideProfile';
 
 import Chat from './pages/Chat';
@@ -78,7 +79,7 @@ function AppContent() {
 
       <div className="flex flex-col min-h-screen bg-surface-50">
         <Navbar />
-        <main className="flex-grow pt-24 md:pb-0">
+        <main className="flex-grow pt-24 pb-24 md:pb-0">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               {/* Landing/Home */}

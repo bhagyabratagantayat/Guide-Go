@@ -77,7 +77,151 @@ const Navbar = () => {
             </Link>
           )}
         </div>
+<<<<<<< HEAD
       </div>
+=======
+
+        {/* Desktop Actions */}
+        <div className="hidden lg:flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-5">
+                <div className="flex items-center space-x-2">
+                  <button className={`p-3 rounded-2xl transition-colors relative ${isScrolled ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-primary-500'}`}>
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-3 right-3 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-900"></span>
+                  </button>
+                  <button 
+                    onClick={() => navigate('/explore-map')}
+                    className={`p-3 rounded-2xl transition-colors ${isScrolled ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-primary-500'}`}
+                  >
+                    <Search className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="h-8 w-px bg-white/10" />
+                
+                <Link to="/profile" className="flex items-center space-x-4 p-1 rounded-full group">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs uppercase overflow-hidden ring-4 transition-all group-hover:ring-primary-500/30 ${isScrolled ? 'bg-primary-500 text-slate-900 ring-white/10' : 'bg-slate-900 text-white ring-slate-100'}`}>
+                    {user.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user.name.charAt(0)}
+                  </div>
+                  <div className="flex flex-col">
+                     <p className={`text-[9px] font-black uppercase tracking-widest ${isScrolled ? 'text-primary-400' : 'text-slate-400'}`}>{user.role}</p>
+                     <p className={`text-sm font-bold leading-none ${isScrolled ? 'text-white' : 'text-slate-900'}`}>{user.name.split(' ')[0]}</p>
+                  </div>
+                </Link>
+
+                <button 
+                  onClick={handleLogout}
+                  className={`p-3 rounded-2xl transition-all active:scale-90 ${isScrolled ? 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-red-400' : 'bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500'}`}
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/login" className={`text-sm font-black uppercase tracking-widest px-6 py-2 transition-colors ${isScrolled ? 'text-white hover:text-primary-500' : 'text-slate-50 hover:text-primary-500'}`}>Login</Link>
+                <Link to="/register" className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 ${isScrolled ? 'bg-primary-500 text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-primary-500 hover:text-slate-900'}`}>Join Now</Link>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="flex items-center space-x-3 lg:hidden">
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className={`p-3 rounded-2xl transition-all active:scale-90 shadow-xl ${isScrolled ? 'bg-white/5 text-white' : 'bg-slate-900 text-white'}`}
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Mobile Sidebar Overlay */}
+       <AnimatePresence>
+         {isMobileMenuOpen && (
+           <>
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[90]"
+               onClick={() => setIsMobileMenuOpen(false)}
+             />
+             <motion.div 
+               initial={{ x: '100%' }}
+               animate={{ x: 0 }}
+               exit={{ x: '100%' }}
+               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+               className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-white z-[100] shadow-2xl p-8 flex flex-col"
+             >
+                <div className="flex items-center justify-between mb-12">
+                   <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold italic">G</div>
+                      <span className="text-xl font-black text-slate-900 italic font-serif italic">GuideGo</span>
+                   </div>
+                   <button onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-slate-50 rounded-2xl text-slate-400">
+                      <X className="w-6 h-6" />
+                   </button>
+                </div>
+
+                <div className="flex-grow space-y-4 overflow-y-auto pr-2">
+                   <div className="grid grid-cols-3 gap-3 mb-8">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => changeLanguage(lang.code)}
+                          className={`flex flex-col items-center justify-center p-4 rounded-3xl transition-all border-2 ${i18n.language?.startsWith(lang.code) ? 'bg-primary-50 border-primary-500 text-primary-600' : 'bg-slate-50 border-transparent text-slate-400'}`}
+                        >
+                          <span className="text-2xl mb-1">{lang.flag}</span>
+                          <span className="text-[10px] font-black uppercase tracking-tighter">{lang.name.slice(0, 3)}</span>
+                        </button>
+                      ))}
+                   </div>
+
+                   <MobileNavLink to="/" label={t('common.home')} icon={Home} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/explore-map" label={t('common.explore')} icon={Map} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/explore" label="Audio Guides" icon={Headset} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/guides" label="Local Experts" icon={User} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/ai-chat" label={t('common.chat')} icon={Sparkles} onClick={() => setIsMobileMenuOpen(false)} />
+                   <MobileNavLink to="/bookings" label={t('common.bookings')} icon={Calendar} onClick={() => setIsMobileMenuOpen(false)} />
+                </div>
+
+                {user ? (
+                   <div className="pt-8 border-t border-slate-100 flex flex-col space-y-4">
+                      <Link 
+                        to="/profile" 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center space-x-4 p-4 rounded-3xl bg-slate-50 text-slate-900 font-bold"
+                      >
+                         <div className="w-12 h-12 bg-primary-500 rounded-2xl flex items-center justify-center font-black text-white text-lg italic">
+                            {user.name.charAt(0)}
+                         </div>
+                         <div>
+                            <p className="text-xs font-black text-slate-400 tracking-widest uppercase">{user.role}</p>
+                            <p className="text-lg font-black tracking-tight">{user.name}</p>
+                         </div>
+                      </Link>
+                      <button 
+                        onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                        className="w-full py-5 bg-red-50 text-red-500 rounded-3xl font-black text-xs uppercase tracking-widest shadow-soft flex items-center justify-center space-x-3"
+                      >
+                         <LogOut className="w-5 h-5" />
+                         <span>{t('common.logout')}</span>
+                      </button>
+                   </div>
+                ) : (
+                   <div className="pt-8 border-t border-slate-100 space-y-4">
+                      <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block w-full py-5 bg-slate-50 text-slate-900 rounded-3xl font-black text-xs uppercase tracking-widest text-center">{t('common.login')}</Link>
+                      <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="block w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-xs uppercase tracking-widest text-center shadow-premium">Start Exploring</Link>
+                   </div>
+                )}
+             </motion.div>
+           </>
+         )}
+       </AnimatePresence>
+>>>>>>> a942ae1
     </nav>
   );
 };

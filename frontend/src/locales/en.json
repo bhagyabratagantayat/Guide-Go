@@ -2,11 +2,24 @@
   "common": {
     "home": "Home",
     "explore": "Explore",
+<<<<<<< HEAD
     "oracle": "Guide AI",
+=======
+    "chat": "Guide AI",
+>>>>>>> a942ae1
     "bookings": "Bookings",
     "profile": "Profile",
+    "settings": "Settings",
     "login": "Login",
+<<<<<<< HEAD
     "register": "Register"
+=======
+    "register": "Register",
+    "all": "All",
+    "guides": "Guides",
+    "places": "Places",
+    "hotels": "Hotels"
+>>>>>>> a942ae1
   },
   "home": {
     "title": "Smart Tourism Redefined",
@@ -59,5 +72,10 @@
     "no_account": "New to GuideGo?",
     "already_member": "Member already?",
     "back_to_login": "Back to Secure Login"
+  },
+  "settings": {
+    "language_realm": "Language Realm",
+    "communication": "Communication",
+    "push_notifications": "Push Notifications"
   }
 }
