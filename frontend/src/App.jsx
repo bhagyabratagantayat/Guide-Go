@@ -35,8 +35,6 @@ import Hotels from './pages/Hotels';
 import Restaurants from './pages/Restaurants';
 import Emergency from './pages/Emergency';
 import Support from './pages/Support';
-import Settings from './pages/Settings';
-
 // Admin
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
