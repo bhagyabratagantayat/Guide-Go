@@ -199,7 +199,7 @@ const ExploreMap = () => {
   };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-surface-50 mt-[-96px]">
+    <div className="relative h-screen w-full overflow-hidden bg-surface-50">
       <MapContainer 
         center={mapCenter} 
         zoom={14} 
@@ -241,7 +241,7 @@ const ExploreMap = () => {
       </MapContainer>
 
       {/* Floating Controls */}
-      <div className="absolute top-12 left-0 right-0 z-[1000] px-6">
+      <div className="absolute top-28 left-0 right-0 z-[1000] px-6 max-w-2xl mx-auto">
         <form onSubmit={handleSearchSubmit} className="relative flex items-center group mb-4">
           <Search className="absolute left-5 text-slate-300 w-5 h-5 group-focus-within:text-primary-500 transition-colors" />
           <input 
@@ -256,7 +256,7 @@ const ExploreMap = () => {
           </button>
         </form>
 
-        <div className="flex overflow-x-auto gap-2 no-scrollbar pb-2">
+        <div className="flex overflow-x-auto gap-2 no-scrollbar pb-2 justify-center">
           {['All', 'Guides', 'Places', 'Hotels'].map((filter) => (
             <button
               key={filter}
@@ -273,11 +273,11 @@ const ExploreMap = () => {
         </div>
       </div>
 
-      <div className="absolute top-44 left-6 z-[1000] space-y-3">
+      <div className="absolute bottom-32 right-6 z-[1000] space-y-3">
          <motion.button 
            whileTap={{ scale: 0.9 }}
            onClick={() => setMapCenter(userLocation || [20.2961, 85.8245])}
-           className="w-14 h-14 bg-white border border-surface-200 rounded-3xl flex items-center justify-center text-primary-500 shadow-premium hover:bg-primary-50 transition-colors"
+           className="w-14 h-14 bg-white border border-surface-200 rounded-full flex items-center justify-center text-primary-500 shadow-premium hover:bg-primary-50 transition-colors"
          >
            <Navigation className="w-6 h-6" />
          </motion.button>
