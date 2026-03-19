@@ -2,11 +2,7 @@
   "common": {
     "home": "मुख्य",
     "explore": "खोजें",
-<<<<<<< HEAD
-    "oracle": "गाइड AI",
-=======
     "chat": "Guide AI",
->>>>>>> a942ae1
     "bookings": "बुकिंग",
     "profile": "प्रोफ़ाइल",
     "login": "लॉगिन",

@@ -2,24 +2,16 @@
   "common": {
     "home": "Home",
     "explore": "Explore",
-<<<<<<< HEAD
-    "oracle": "Guide AI",
-=======
     "chat": "Guide AI",
->>>>>>> a942ae1
     "bookings": "Bookings",
     "profile": "Profile",
     "settings": "Settings",
     "login": "Login",
-<<<<<<< HEAD
-    "register": "Register"
-=======
     "register": "Register",
     "all": "All",
     "guides": "Guides",
     "places": "Places",
     "hotels": "Hotels"
->>>>>>> a942ae1
   },
   "home": {
     "title": "Smart Tourism Redefined",
