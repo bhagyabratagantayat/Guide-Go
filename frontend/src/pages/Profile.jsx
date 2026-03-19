@@ -7,19 +7,15 @@ import {
   Shield, Radio, Power, ChevronRight, 
   Settings, Heart, Star, Languages,
   Camera, Edit3, History, Bookmark,
-  LogOut, Bell, HelpCircle
+  LogOut, Bell, HelpCircle, CreditCard
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useGuideTracking from '../hooks/useGuideTracking';
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-<<<<<<< HEAD
   const { t, i18n } = useTranslation();
-=======
->>>>>>> a942ae1
   const [isLive, setIsLive] = useState(false);
   const { startTracking } = useGuideTracking(user);
 
@@ -53,71 +49,11 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-white pb-32">
-      {/* Simple Header */}
-      <div className="px-6 pt-12 pb-8 flex flex-col items-center">
-         <div className="relative mb-6">
-            <div className="w-28 h-28 rounded-full bg-slate-50 border-4 border-slate-50 shadow-soft overflow-hidden flex items-center justify-center">
-               {user.profilePicture ? (
-                 <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
-               ) : (
-                 <User className="w-12 h-12 text-slate-300" />
-               )}
-            </div>
-            <button className="absolute bottom-0 right-0 p-2.5 bg-white rounded-full shadow-lg border border-slate-100 text-slate-600 active:scale-90 transition-all">
-               <Camera className="w-4 h-4" />
-            </button>
-            {isLive && (
-               <div className="absolute top-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
-            )}
+      {/* Premium Header */}
+      <div className="bg-slate-900 pt-32 pb-48 px-8 relative overflow-hidden">
+         <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500 rounded-full blur-[120px] -mr-48 -mt-48" />
          </div>
-<<<<<<< HEAD
-
-         <div className="text-center space-y-1">
-            <h1 className="text-2xl font-bold text-slate-900">{user.name}</h1>
-            <p className="text-sm text-slate-400 font-medium">{user.email}</p>
-         </div>
-
-         <div className="mt-6 flex items-center space-x-3">
-            <div className="px-4 py-1.5 bg-slate-50 rounded-full flex items-center space-x-2 border border-slate-100">
-               <MapPin className="w-3.5 h-3.5 text-primary-500" />
-               <span className="text-xs font-bold text-slate-600">{user.location || 'Odisha, Bharat'}</span>
-            </div>
-            {user.role === 'guide' && (
-               <button 
-                 onClick={() => setIsLive(!isLive)}
-                 className={`px-4 py-1.5 rounded-full flex items-center space-x-2 border transition-all ${
-                   isLive ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-white border-slate-200 text-slate-400'
-                 }`}
-               >
-                  <Radio className={`w-3.5 h-3.5 ${isLive ? 'animate-pulse' : ''}`} />
-                  <span className="text-xs font-bold">{isLive ? 'Live Now' : 'Go Live'}</span>
-               </button>
-            )}
-         </div>
-      </div>
-
-      {/* Profile Menu List */}
-      <div className="px-6 space-y-8 mt-4">
-         <div>
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2">Account</h3>
-            <div className="bg-slate-50/50 rounded-3xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
-               <MenuItem 
-                 icon={History} 
-                 label="My Bookings" 
-                 onClick={() => navigate('/bookings')} 
-               />
-               <MenuItem 
-                 icon={Bookmark} 
-                 label="Saved Places" 
-                 onClick={() => navigate('/explore-map')} 
-               />
-               <MenuItem 
-                 icon={Languages} 
-                 label="Language" 
-                 value={i18n.language === 'en' ? 'English' : (i18n.language === 'hi' ? 'हिन्दी' : 'ଓଡ଼ିଆ')}
-                 onClick={() => navigate('/settings')} 
-               />
-=======
          
          <div className="max-w-7xl mx-auto relative z-10 text-center">
             <motion.div 
@@ -142,14 +78,25 @@ const Profile = () => {
                animate={{ opacity: 1, y: 0 }}
                className="space-y-4"
             >
-               <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter italic font-serif leading-none">
-                  {user.name.toUpperCase()}
+               <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter italic font-serif leading-none uppercase">
+                  {user.name}
                </h1>
                <div className="flex items-center justify-center space-x-4">
                   <div className="flex items-center space-x-2 text-primary-400 text-[10px] font-black uppercase tracking-[0.2em]">
                      <Mail className="w-3 h-3" />
                      <span>{user.email}</span>
                   </div>
+                  {user.role === 'guide' && (
+                    <button 
+                      onClick={() => setIsLive(!isLive)}
+                      className={`px-4 py-1.5 rounded-full flex items-center space-x-2 border transition-all ${
+                        isLive ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-white/10 border-white/20 text-white'
+                      }`}
+                    >
+                       <Radio className={`w-3.5 h-3.5 ${isLive ? 'animate-pulse' : ''}`} />
+                       <span className="text-[10px] font-black uppercase tracking-widest">{isLive ? 'Live Now' : 'Go Live'}</span>
+                    </button>
+                  )}
                </div>
             </motion.div>
          </div>
@@ -173,13 +120,15 @@ const Profile = () => {
                         <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">{user.location || 'Bhubaneswar, IN'}</p>
                      </div>
                   </div>
-                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center space-x-4 group hover:bg-slate-900 transition-all cursor-pointer">
+                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center space-x-4 group hover:bg-slate-900 transition-all cursor-pointer" onClick={() => navigate('/settings')}>
                      <div className="p-3 bg-white rounded-xl shadow-soft group-hover:bg-slate-800 transition-colors">
-                        <Star className="w-5 h-5 text-primary-500" />
+                        <Languages className="w-5 h-5 text-primary-500" />
                      </div>
                      <div>
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-500">Language</p>
-                        <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">{user.language || 'English'}</p>
+                        <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">
+                           {i18n.language === 'en' ? 'English' : (i18n.language === 'hi' ? 'हिन्दी' : 'ଓଡ଼ିଆ')}
+                        </p>
                      </div>
                   </div>
                </div>
@@ -190,7 +139,7 @@ const Profile = () => {
                     <h4 className="inline-block text-[9px] font-black text-slate-300 uppercase tracking-[0.6em] italic border-b border-slate-100 pb-2">Quick Realms</h4>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-8">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                      <ActionButton 
                         icon={History} 
                         label="History" 
@@ -201,7 +150,7 @@ const Profile = () => {
                         icon={Heart} 
                         label="Favorites" 
                         color="text-red-500"
-                        onClick={() => navigate('/explore')}
+                        onClick={() => navigate('/explore-map')}
                      />
                      <ActionButton 
                         icon={CreditCard} 
@@ -229,56 +178,26 @@ const Profile = () => {
                         </div>
                         <div className="text-left">
                            <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">Sign Out</p>
-                           <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">End Current Session</p>
+                           <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">End Session</p>
                         </div>
                      </motion.button>
                   </div>
                </div>
->>>>>>> a942ae1
             </div>
-         </div>
+         </motion.div>
 
-         <div>
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2">Settings & Support</h3>
-            <div className="bg-slate-50/50 rounded-3xl border border-slate-100 divide-y divide-slate-100 overflow-hidden">
+         <div className="mt-12 space-y-4">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-8">Quick Links</h3>
+            <div className="bg-slate-50/50 rounded-3xl border border-slate-100 divide-y divide-slate-100 overflow-hidden mx-4">
                <MenuItem icon={Bell} label="Notifications" onClick={() => {}} />
-               <MenuItem icon={Settings} label="Account Settings" onClick={() => navigate('/settings')} />
                <MenuItem icon={HelpCircle} label="Help & Support" onClick={() => navigate('/support')} />
             </div>
-         </div>
-
-         <div className="pt-4">
-            <button 
-              onClick={() => { logout(); navigate('/login'); }}
-              className="w-full bg-red-50 text-red-500 py-5 rounded-3xl font-bold text-sm flex items-center justify-center space-x-3 active:scale-[0.98] transition-all border border-red-100"
-            >
-               <LogOut className="w-5 h-5" />
-               <span>Sign Out</span>
-            </button>
          </div>
       </div>
     </div>
   );
 };
 
-<<<<<<< HEAD
-const MenuItem = ({ icon: Icon, label, value, onClick }) => (
-  <button 
-    onClick={onClick}
-    className="w-full p-5 flex items-center justify-between group active:bg-slate-100/50 transition-all"
-  >
-     <div className="flex items-center space-x-4">
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary-500 shadow-sm ring-1 ring-slate-100 group-hover:ring-primary-100 transition-all">
-           <Icon className="w-5 h-5" />
-        </div>
-        <span className="text-sm font-bold text-slate-700">{label}</span>
-     </div>
-     <div className="flex items-center space-x-2">
-        {value && <span className="text-xs font-bold text-slate-400">{value}</span>}
-        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-     </div>
-  </button>
-=======
 const ActionButton = ({ icon: Icon, label, color, onClick }) => (
   <motion.button 
     whileHover={{ y: -5 }}
@@ -290,9 +209,23 @@ const ActionButton = ({ icon: Icon, label, color, onClick }) => (
         <Icon className={`w-8 h-8 ${color} opacity-40 group-hover:opacity-100 transition-opacity`} />
         <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/10 to-transparent rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
      </div>
-     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-slate-900 transition-colors">{label}</span>
+     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-slate-900 transition-colors text-center">{label}</span>
   </motion.button>
->>>>>>> a942ae1
+);
+
+const MenuItem = ({ icon: Icon, label, onClick }) => (
+  <button 
+    onClick={onClick}
+    className="w-full p-6 flex items-center justify-between group active:bg-slate-100/50 transition-all"
+  >
+     <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-300 group-hover:text-primary-500 shadow-soft transition-all">
+           <Icon className="w-5 h-5" />
+        </div>
+        <span className="text-sm font-black tracking-tight text-slate-700">{label}</span>
+     </div>
+     <ChevronRight className="w-4 h-4 text-slate-200 group-hover:text-primary-500 transition-colors" />
+  </button>
 );
 
 export default Profile;

@@ -2,14 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, MapPin, Star, Headset, 
-  Sparkles, Heart, Menu, User,
+  Sparkles, Heart, User,
   ArrowRight, Hotel, Utensils, HeartPulse, Navigation,
-  Compass, ShieldCheck, HelpCircle, Plane
+  Compass, HelpCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import logo from '../assets/GuideGo Logo.jpeg';
 
 const Home = () => {
   const { user } = useAuth();
@@ -35,7 +34,7 @@ const Home = () => {
       image: 'https://images.unsplash.com/photo-1589136142558-196020588661?auto=format&fit=crop&q=80', 
       rating: 4.7, 
       location: 'Chilika',
-      description: 'Asias largest salt water lagoon, home to Irrawaddy dolphins.'
+      description: 'Asia\'s largest salt water lagoon, home to Irrawaddy dolphins.'
     },
     { 
       name: 'Lingaraj Temple', 
@@ -68,7 +67,7 @@ const Home = () => {
           className="space-y-1"
         >
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Hi Traveler 👋
+            Hi {user ? user.name.split(' ')[0] : 'Traveler'} 👋
           </h1>
           <p className="text-sm text-slate-500 font-medium">
             Where would you like to explore today?
@@ -88,10 +87,6 @@ const Home = () => {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {/* 3x3 Services Grid */}
-      <div className="px-6 mb-12">
-=======
       {/* City Browse (WhatsApp Style) */}
       <section className="mb-12">
         <div className="flex justify-between items-center px-6 mb-4">
@@ -99,7 +94,7 @@ const Home = () => {
         </div>
         <div className="flex overflow-x-auto gap-5 px-6 pb-2 no-scrollbar">
           {cities.map((city, idx) => (
-            <Link key={idx} to={`/explore?city=${city.name}`} className="flex flex-col items-center space-y-2 group">
+            <Link key={idx} to={`/guides?city=${city.name}`} className="flex flex-col items-center space-y-2 group">
               <motion.div 
                 whileTap={{ scale: 0.9 }}
                 className="w-20 h-20 rounded-full p-1 border-2 border-primary-500 ring-2 ring-white shadow-soft group-hover:border-accent-500 transition-all"
@@ -116,7 +111,6 @@ const Home = () => {
 
       {/* Quick Actions Grid */}
       <section className="px-6 mb-12">
->>>>>>> a942ae1
         <div className="flex justify-between items-center mb-6">
            <h2 className="text-xl font-bold text-slate-800">Our Services</h2>
            <div className="w-8 h-1 bg-primary-500 rounded-full opacity-20" />
@@ -134,7 +128,7 @@ const Home = () => {
           <ServiceItem icon={Navigation} label="Transport" color="bg-blue-600" path="/explore-map" />
           <ServiceItem icon={HelpCircle} label="Support" color="bg-slate-700" path="/support" />
         </div>
-      </div>
+      </section>
 
       {/* Popular Odisha Section - Horizontal Scroll */}
       <div className="mb-12">
