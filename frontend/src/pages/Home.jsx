@@ -19,6 +19,18 @@ const Home = () => {
     { label: t('home.trip_planner'), icon: Navigation2, path: '/ai-chat', color: 'bg-secondary-500' },
   ];
 
+  const cities = [
+    { name: 'Mumbai', image: 'https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=200&h=200&fit=crop' },
+    { name: 'Delhi', image: 'https://images.unsplash.com/photo-1585135497273-1a86b09fe707?w=200&h=200&fit=crop' },
+    { name: 'Bengaluru', image: 'https://images.unsplash.com/photo-1596422846543-75c6fc18a593?w=200&h=200&fit=crop' },
+    { name: 'Jaipur', image: 'https://images.unsplash.com/photo-1603262110263-ce0158e9f338?w=200&h=200&fit=crop' },
+    { name: 'Agra', image: 'https://images.unsplash.com/photo-1564507592333-c60657ece523?w=200&h=200&fit=crop' },
+    { name: 'Varanasi', image: 'https://images.unsplash.com/photo-1561047029-3000c6812cbb?w=200&h=200&fit=crop' },
+    { name: 'Bhubaneswar', image: 'https://images.unsplash.com/photo-1590733403305-675c9298585e?w=200&h=200&fit=crop' },
+    { name: 'Puri', image: 'https://images.unsplash.com/photo-1524492459422-ad5193910f54?w=200&h=200&fit=crop' },
+    { name: 'Konark', image: 'https://images.unsplash.com/photo-1590733403305-675c9298585e?w=200&h=200&fit=crop' },
+  ];
+
   return (
     <div className="mobile-container pt-8 pb-12 bg-surface-50">
       {/* Header & Greeting */}
@@ -51,6 +63,28 @@ const Home = () => {
             placeholder={t('home.search_placeholder')}
             className="input-field pl-14 shadow-soft"
           />
+        </div>
+      </section>
+
+      {/* City Browse (WhatsApp Style) */}
+      <section className="mb-12">
+        <div className="flex justify-between items-center px-6 mb-4">
+           <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Browse by City</h2>
+        </div>
+        <div className="flex overflow-x-auto gap-5 px-6 pb-2 no-scrollbar">
+          {cities.map((city, idx) => (
+            <Link key={idx} to={`/explore?city=${city.name}`} className="flex flex-col items-center space-y-2 group">
+              <motion.div 
+                whileTap={{ scale: 0.9 }}
+                className="w-20 h-20 rounded-full p-1 border-2 border-primary-500 ring-2 ring-white shadow-soft group-hover:border-accent-500 transition-all"
+              >
+                <div className="w-full h-full rounded-full overflow-hidden">
+                  <img src={city.image} alt={city.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                </div>
+              </motion.div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">{city.name}</span>
+            </Link>
+          ))}
         </div>
       </section>
 

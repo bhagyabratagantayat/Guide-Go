@@ -18,7 +18,7 @@ const getPlaceById = asyncHandler(async (req, res, next) => {
 });
 
 const createPlace = asyncHandler(async (req, res, next) => {
-  const { name, description, latitude, longitude, category, audioGuideText } = req.body;
+  const { name, description, latitude, longitude, category, city, audioGuideText } = req.body;
   
   let imageUrl = '';
   if (req.file) {
@@ -41,6 +41,7 @@ const createPlace = asyncHandler(async (req, res, next) => {
     latitude,
     longitude,
     category,
+    city,
     audioGuideText,
     image: imageUrl
   });
@@ -54,7 +55,7 @@ const updatePlace = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Place not found', 404));
   }
 
-  const { name, description, latitude, longitude, category, audioGuideText } = req.body;
+  const { name, description, latitude, longitude, category, city, audioGuideText } = req.body;
   
   if (req.file) {
     const result = await new Promise((resolve, reject) => {
@@ -75,6 +76,7 @@ const updatePlace = asyncHandler(async (req, res, next) => {
   place.latitude = latitude || place.latitude;
   place.longitude = longitude || place.longitude;
   place.category = category || place.category;
+  place.city = city || place.city;
   place.audioGuideText = audioGuideText || place.audioGuideText;
 
   await place.save();

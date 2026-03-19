@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -10,12 +11,34 @@ import {
 import useAudioGuide from '../hooks/useAudioGuide';
 
 const Explore = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const cityParam = searchParams.get('city') || 'All';
+  
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCity, setActiveCity] = useState(cityParam);
   const { isPlaying, speak, stop, pause, resume, currentText } = useAudioGuide();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Sync city from URL
+  useEffect(() => {
+    if (cityParam) {
+      setActiveCity(cityParam);
+    }
+  }, [cityParam]);
+
+  // Update URL when city changes
+  const handleCityChange = (city) => {
+    setActiveCity(city);
+    if (city === 'All') {
+      searchParams.delete('city');
+    } else {
+      searchParams.set('city', city);
+    }
+    setSearchParams(searchParams);
+  };
 
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -32,12 +55,15 @@ const Explore = () => {
   }, []);
 
   const categories = ['All', ...new Set(places.map(p => p.category))];
+  const cities = ['All', ...new Set(places.map(p => p.city).filter(Boolean))];
 
   const filteredPlaces = places.filter(place => {
     const matchesSearch = place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        place.category.toLowerCase().includes(searchTerm.toLowerCase());
+                        place.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (place.city && place.city.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = activeCategory === 'All' || place.category === activeCategory;
-    return matchesSearch && matchesCategory;
+    const matchesCity = activeCity === 'All' || place.city === activeCity;
+    return matchesSearch && matchesCategory && matchesCity;
   });
 
   return (
@@ -58,13 +84,13 @@ const Explore = () => {
                <div className="space-y-6 max-w-3xl">
                   <div className="inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10">
                      <Headset className="w-4 h-4 text-primary-400" />
-                     <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Sacred Narratives Active</span>
+                     <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">GuideGo Voice Active</span>
                   </div>
                   <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter italic font-serif leading-none">
-                     SACRED <span className="text-primary-500">VOICE</span>
+                     GUIDEGO <span className="text-primary-500">VOICE</span>
                   </h1>
                   <p className="text-slate-400 font-bold text-lg leading-relaxed italic max-w-xl">
-                     "The stones speak. The temples breathe." Immerse yourself in the eternal legends of Bharat through high-fidelity narration.
+                     "Hear the stories, feel the culture." Immerse yourself in the legends of Bharat with GuideGo's smart audio narration.
                   </p>
                </div>
 
@@ -83,19 +109,39 @@ const Explore = () => {
 
             {/* Category Pills */}
             <div className="flex items-center space-x-4 mt-12 overflow-x-auto pb-4 no-scrollbar">
-               {categories.map(cat => (
-                  <button 
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                       activeCategory === cat 
-                       ? 'bg-primary-500 text-slate-900 shadow-xl shadow-primary-500/20' 
-                       : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
-                    }`}
-                  >
-                     {cat}
-                  </button>
-               ))}
+               <div className="flex items-center space-x-2 mr-4 border-r border-white/10 pr-4">
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">City:</span>
+                 {cities.map(city => (
+                    <button 
+                      key={city}
+                      onClick={() => handleCityChange(city)}
+                      className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                         activeCity === city 
+                         ? 'bg-accent-500 text-slate-900 shadow-xl shadow-accent-500/20' 
+                         : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                      }`}
+                    >
+                       {city}
+                    </button>
+                 ))}
+               </div>
+               
+               <div className="flex items-center space-x-2">
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Type:</span>
+                 {categories.map(cat => (
+                    <button 
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                         activeCategory === cat 
+                         ? 'bg-primary-500 text-slate-900 shadow-xl shadow-primary-500/20' 
+                         : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                      }`}
+                    >
+                       {cat}
+                    </button>
+                 ))}
+               </div>
             </div>
          </div>
       </div>
@@ -145,7 +191,7 @@ const Explore = () => {
                                     {place.name}
                                  </h3>
                                  <div className="flex items-center mt-4 space-x-4 text-white/60 text-[10px] font-black uppercase tracking-widest">
-                                    <span className="flex items-center"><MapPin className="w-3.5 h-3.5 mr-1.5 text-primary-500" /> Odisha</span>
+                                    <span className="flex items-center"><MapPin className="w-3.5 h-3.5 mr-1.5 text-primary-500" /> {place.city || 'Odisha'}</span>
                                     <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1.5 text-blue-400" /> 12 Min Listen</span>
                                  </div>
                               </div>
@@ -199,7 +245,7 @@ const Explore = () => {
                         <h3 className="text-4xl font-black text-slate-800 tracking-tighter italic font-serif leading-none">THE SILENCE REMAINS</h3>
                         <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">No sacred sites were found in this realm.</p>
                      </div>
-                     <button onClick={() => { setSearchTerm(''); setActiveCategory('All'); }} className="btn-primary px-12 py-5 shadow-premium text-[10px]">REAWAKEN ALL LEGENDS</button>
+                     <button onClick={() => { setSearchTerm(''); setActiveCategory('All'); setActiveCity('All'); }} className="btn-primary px-12 py-5 shadow-premium text-[10px]">REAWAKEN ALL LEGENDS</button>
                   </div>
                )}
             </motion.div>
@@ -271,7 +317,7 @@ const Explore = () => {
                            {selectedPlace.name}
                         </h2>
                         <div className="flex items-center space-x-8 text-white/50 text-xs font-black uppercase tracking-[0.3em] pt-4">
-                           <div className="flex items-center"><MapPin className="w-4 h-4 mr-2.5 text-red-500" /> Puri, Odisha</div>
+                           <div className="flex items-center"><MapPin className="w-4 h-4 mr-2.5 text-red-500" /> {selectedPlace.city || 'Odisha'}</div>
                            <div className="flex items-center"><Activity className="w-4 h-4 mr-2.5 text-green-500" /> 108 Legends Found</div>
                         </div>
                      </motion.div>
@@ -330,7 +376,7 @@ const Explore = () => {
                               
                               <div className="space-y-2">
                                  <p className="text-sm font-black text-white italic tracking-tighter uppercase whitespace-pre-wrap">
-                                    {(isPlaying && currentText === selectedPlace.audioGuideText) ? 'THE ORACLE IS SPEAKING...' : 'COMMENCE SACRED NARRATIVE'}
+                                    {(isPlaying && currentText === selectedPlace.audioGuideText) ? 'GUIDEGO VOICE IS SPEAKING...' : 'COMMENCE AUDIO NARRATION'}
                                  </p>
                                  <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Crystal Clear 128kbps Audio</p>
                               </div>

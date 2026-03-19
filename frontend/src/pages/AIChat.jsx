@@ -11,7 +11,7 @@ import ReactMarkdown from 'react-markdown';
 const AIChat = () => {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState([
-    { role: 'oracle', text: '"The whispers of Odisha are eternal. Where shall your spirit wander next, seeker of truth?"', timestamp: new Date() }
+    { role: 'oracle', text: '"Namaste! I am Guide AI, your personal travel companion. Where shall we explore next, traveler?"', timestamp: new Date() }
   ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -71,7 +71,7 @@ const AIChat = () => {
       const oracleMsg = { role: 'oracle', text: data.answer, timestamp: new Date() };
       setMessages(prev => [...prev, oracleMsg]);
     } catch (error) {
-      const oracleMsg = { role: 'oracle', text: "The ancient scrolls are being transcribed. Please wait a moment, traveler.", timestamp: new Date() };
+      const oracleMsg = { role: 'oracle', text: "I'm checking my travel database for you. One moment, traveler.", timestamp: new Date() };
       setMessages(prev => [...prev, oracleMsg]);
     }
     setLoading(false);
@@ -83,14 +83,14 @@ const AIChat = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col pt-24 pb-32 lg:pb-0 font-sans">
-      {/* Sacred Background Layer */}
+      {/* Background Layer */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden h-screen">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[150px] -mr-64 -mt-64 animate-pulse" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary-500/10 rounded-full blur-[150px] -ml-64 -mb-64" />
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 contrast-125" />
       </div>
 
-      {/* Oracle Header */}
+      {/* Header */}
       <div className="max-w-4xl mx-auto w-full px-6 mb-12 relative z-10">
          <motion.div 
            initial={{ opacity: 0, scale: 0.95 }}
@@ -103,13 +103,13 @@ const AIChat = () => {
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-slate-950" />
                </div>
                <div>
-                  <h1 className="text-3xl font-black text-white italic font-serif tracking-tight leading-none uppercase">Sacred Oracle</h1>
+                  <h1 className="text-3xl font-black text-white italic font-serif tracking-tight leading-none uppercase">Guide AI</h1>
                   <div className="flex items-center space-x-3 mt-3">
                      <span className="flex h-2 w-2 relative">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                      </span>
-                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Ancient Soul • Digital Mind</span>
+                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Smart Travel Assistant • Local Expert</span>
                   </div>
                </div>
             </div>
@@ -172,7 +172,7 @@ const AIChat = () => {
                            />
                         ))}
                      </div>
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Oracle Conjuring...</span>
+                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Guide AI Thinking...</span>
                   </div>
                </motion.div>
             )}
@@ -203,7 +203,7 @@ const AIChat = () => {
          </div>
 
          {/* Input Terminal */}
-         <div className="pb-12 px-4">
+         <div className="pb-32 lg:pb-12 px-4">
             <form 
               onSubmit={handleSubmit}
               className="bg-white/[0.08] backdrop-blur-3xl border border-white/10 p-2.5 rounded-[4rem] shadow-2xl flex items-center space-x-4 focus-within:border-primary-500/40 transition-all group"
@@ -215,7 +215,7 @@ const AIChat = () => {
                   type="text"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Ask the Infinite..."
+                   placeholder="Ask me anything about your trip..."
                   className="flex-1 bg-transparent px-2 py-5 text-white font-black italic text-xl placeholder:text-slate-700 outline-none"
                />
                <button 
@@ -226,7 +226,7 @@ const AIChat = () => {
                   <Send className="w-7 h-7 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                </button>
             </form>
-            <p className="text-center mt-8 text-[9px] font-black text-slate-700 uppercase tracking-[0.6em]">GuideGo Sacred Intelligence • v4.0</p>
+            <p className="text-center mt-8 text-[9px] font-black text-slate-700 uppercase tracking-[0.6em]">Guide AI Smart Intelligence • v4.0</p>
          </div>
       </div>
     </div>

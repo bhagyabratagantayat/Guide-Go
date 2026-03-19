@@ -6,6 +6,7 @@ const placeSchema = new mongoose.Schema({
   latitude: { type: Number, required: true },
   longitude: { type: Number, required: true },
   category: { type: String, required: true },
+  city: { type: String, required: true },
   image: { type: String },
   images: [{ type: String }],
   audioGuideText: { type: String },
@@ -13,5 +14,6 @@ const placeSchema = new mongoose.Schema({
 });
 
 placeSchema.index({ latitude: 1, longitude: 1 });
+placeSchema.index({ city: 1 });
 
 module.exports = mongoose.model('Place', placeSchema);

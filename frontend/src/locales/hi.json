@@ -2,12 +2,11 @@
   "common": {
     "home": "मुख्य",
     "explore": "खोजें",
-    "chat": "ओरैकल",
+    "chat": "Guide AI",
     "bookings": "बुकिंग",
     "profile": "प्रोफ़ाइल",
     "login": "लॉगिन",
-    "register": "पंजीकरण",
-    "chat": "ओरैकल"
+    "register": "पंजीकरण"
   },
   "home": {
     "title": "स्मार्ट पर्यटन का नया रूप",

@@ -47,15 +47,15 @@ const AdminDashboard = () => {
          <Clock className="w-10 h-10" />
       </div>
       <div className="text-center space-y-3">
-         <h3 className="text-3xl font-black text-slate-900 tracking-tighter italic font-serif leading-none">Transmission Error</h3>
-         <p className="subtitle max-w-xs mx-auto italic opacity-60">The data feed has been interrupted. Security protocols are active.</p>
+         <h3 className="text-3xl font-black text-slate-900 tracking-tighter italic font-serif leading-none">Connection Error</h3>
+         <p className="subtitle max-w-xs mx-auto italic opacity-60">The data feed has been interrupted. Checking system status.</p>
          <div className="p-4 bg-red-50/50 rounded-2xl border border-red-100 text-red-600 font-bold text-[10px] uppercase tracking-widest">{error}</div>
       </div>
       <button 
         onClick={() => window.location.reload()}
         className="btn-primary px-12 py-5 text-[11px] tracking-[0.4em]"
       >
-        RE-INITIALIZE QUANTUM LINK
+        RETRY CONNECTION
       </button>
     </div>
   );
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
       <div className="w-20 h-20 bg-surface-100 text-slate-300 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner">
          <BookOpen className="w-10 h-10" />
       </div>
-      <p className="text-slate-400 font-black uppercase tracking-[0.5em] text-[10px] italic">Awaiting Telemetry...</p>
+      <p className="text-slate-400 font-black uppercase tracking-[0.5em] text-[10px] italic">Fetching Data...</p>
     </div>
   );
 
@@ -99,9 +99,9 @@ const AdminDashboard = () => {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
          <motion.div variants={item} className="space-y-3">
-            <h1 className="text-6xl font-black text-slate-950 tracking-tighter italic font-serif leading-[0.85]">Project Oracle</h1>
+            <h1 className="text-6xl font-black text-slate-950 tracking-tighter italic font-serif leading-[0.85]">Guide Admin</h1>
             <p className="text-slate-400 font-bold text-[11px] tracking-[0.4em] uppercase flex items-center">
-               <Activity className="w-4 h-4 mr-3 text-primary-500 animate-pulse" /> Live Telemetry Dashboard • v4.0.2
+               <Activity className="w-4 h-4 mr-3 text-primary-500 animate-pulse" /> Live Admin Dashboard • v4.0.2
             </p>
          </motion.div>
          <motion.div variants={item} className="flex items-center space-x-4">
@@ -164,7 +164,7 @@ const AdminDashboard = () => {
                   <BookOpen className="w-7 h-7" />
                </div>
                <div>
-                  <h3 className="text-2xl font-black text-slate-950 tracking-tighter uppercase italic font-serif leading-none">Journal Logs</h3>
+                  <h3 className="text-2xl font-black text-slate-950 tracking-tighter uppercase italic font-serif leading-none">System Logs</h3>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Live Transaction Stream</p>
                </div>
             </div>
@@ -223,7 +223,7 @@ const AdminDashboard = () => {
           
           <div className="p-10 border-t border-surface-50 bg-slate-50/50 flex justify-center mt-auto">
              <button className="text-[10px] font-black text-slate-900 flex items-center hover:translate-x-2 transition-transform uppercase tracking-[0.4em] group">
-                Access Deep Archives <ChevronRight className="w-4 h-4 ml-3 text-primary-500 group-hover:scale-125 transition-transform" />
+                View All Transaction History <ChevronRight className="w-4 h-4 ml-3 text-primary-500 group-hover:scale-125 transition-transform" />
              </button>
           </div>
         </motion.div>
@@ -240,12 +240,12 @@ const AdminDashboard = () => {
                   <span className="text-[10px] font-black text-emerald-400 bg-emerald-950/50 px-3 py-1 rounded-full border border-emerald-500/20">OPERATIONAL</span>
                </div>
                <div className="space-y-3">
-                  <h3 className="text-3xl font-black tracking-tighter italic font-serif leading-none">Global Pulse</h3>
+                  <h3 className="text-3xl font-black tracking-tighter italic font-serif leading-none">System Health</h3>
                   <p className="text-slate-500 text-sm font-bold leading-relaxed italic">Engine stability is at <span className="text-white">99.9%</span>. Throughput has peaked 12% above mean.</p>
                </div>
                <div className="space-y-4">
                   <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.3em] text-slate-600">
-                     <span>Thread Load</span>
+                     <span>CPU Load</span>
                      <span className="text-white">24.2%</span>
                   </div>
                   <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
@@ -258,7 +258,7 @@ const AdminDashboard = () => {
                   </div>
                </div>
                <button className="w-full py-5 bg-white text-slate-950 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary-500 transition-all shadow-2xl shadow-white/5">
-                 CORE TERMINAL
+                 ADMIN CONSOLE
                </button>
             </div>
             
@@ -268,13 +268,13 @@ const AdminDashboard = () => {
           {/* Activity Widget refinement */}
           <motion.div variants={item} className="bg-white rounded-[4rem] p-12 border border-surface-50 shadow-premium">
              <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.4em] mb-12 flex items-center">
-               <Clock className="w-4 h-4 mr-4 text-primary-500" /> Recent Chronicles
+               <Clock className="w-4 h-4 mr-4 text-primary-500" /> Recent Activity
              </h3>
              <div className="space-y-10 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-50">
-               <ActivityItem time="2m" text="Agent Onboarding" user="Karan S." color="bg-primary-500" />
-               <ActivityItem time="15m" text="Premium Ritual" user="Riya P." color="bg-indigo-500" />
-               <ActivityItem time="1h" text="Grid Calibration" user="System" color="bg-slate-200" />
-               <ActivityItem time="3h" text="Vortex Resolution" user="Admins" color="bg-red-400" />
+               <ActivityItem time="2m" text="New Guide Registered" user="Karan S." color="bg-primary-500" />
+               <ActivityItem time="15m" text="Premium Booking" user="Riya P." color="bg-indigo-500" />
+               <ActivityItem time="1h" text="System Optimization" user="System" color="bg-slate-200" />
+               <ActivityItem time="3h" text="Server Update" user="Admins" color="bg-red-400" />
              </div>
              
              <button className="w-full mt-12 py-5 border border-surface-100 text-slate-300 rounded-[1.8rem] font-black text-[9px] uppercase tracking-[0.4em] hover:text-slate-900 hover:border-slate-900 transition-all group">

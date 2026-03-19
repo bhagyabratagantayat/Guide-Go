@@ -2,13 +2,12 @@
   "common": {
     "home": "ମୁଖ୍ୟ",
     "explore": "ଅନୁସନ୍ଧାନ",
-    "chat": "ଓରାକଲ୍",
+    "chat": "Guide AI",
     "bookings": "ବୁକିଂ",
     "profile": "ପ୍ରୋଫାଇଲ୍",
     "settings": "ସେଟିଂସ",
     "login": "ଲଗଇନ୍",
-    "register": "ପଞ୍ଜୀକରଣ",
-    "chat": "ଓରାକଲ୍"
+    "register": "ପଞ୍ଜୀକରଣ"
   },
   "home": {
     "title": "ସ୍ମାର୍ଟ ପର୍ଯ୍ୟଟନର ନୂତନ ରୂପ",
