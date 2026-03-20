@@ -9,7 +9,8 @@ import {
   DollarSign,
   Info,
   ChevronRight,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react';
 
 const AdminBookings = () => {

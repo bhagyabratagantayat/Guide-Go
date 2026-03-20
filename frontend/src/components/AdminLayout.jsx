@@ -12,7 +12,7 @@ const AdminLayout = () => {
   const menuItems = [
     { title: 'Dashboard', path: '/admin' },
     { title: 'User Management', path: '/admin/users' },
-    { title: 'Guide Management', path: '/admin/guides' },
+    { title: 'Guide Approvals', path: '/admin/guides' },
     { title: 'Bookings', path: '/admin/bookings' },
     { title: 'Places', path: '/admin/places' },
   ];

@@ -7,7 +7,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Languages,
-  Clock
+  Clock,
+  CheckCircle
 } from 'lucide-react';
 
 const AdminGuides = () => {
