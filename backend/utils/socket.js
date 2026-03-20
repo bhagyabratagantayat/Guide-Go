@@ -1,4 +1,5 @@
 const socketio = require('socket.io');
+const User = require('../models/User');
 
 const initSocket = (server) => {
   const io = socketio(server, {
@@ -7,6 +8,35 @@ const initSocket = (server) => {
       methods: ["GET", "POST"]
     }
   });
+
+  // Demo Guide Simulator
+  const startSimulator = async () => {
+    const guides = await User.find({ role: 'guide' }).limit(3);
+    if (guides.length === 0) return;
+
+    // Base positions near landmarks
+    const bases = [
+      { lat: 20.2741, lng: 85.8080 }, // Tribal Museum
+      { lat: 20.2631, lng: 85.7863 }, // Udayagiri
+      { lat: 20.2382, lng: 85.8338 }  // Lingaraj
+    ];
+
+    setInterval(() => {
+      guides.forEach((guide, index) => {
+        const base = bases[index % bases.length];
+        // Add random jitter (approx 100-200 meters)
+        const lat = base.lat + (Math.random() - 0.5) * 0.005;
+        const lng = base.lng + (Math.random() - 0.5) * 0.005;
+
+        io.emit('guideLocationUpdate', {
+          guideId: guide._id,
+          location: { lat, lng }
+        });
+      });
+    }, 5000);
+  };
+
+  startSimulator();
 
   io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
@@ -19,10 +49,8 @@ const initSocket = (server) => {
 
     // Guide sends location update
     socket.on('updateLocation', (data) => {
-      // data: { guideId, location: { lat, lng } }
       console.log(`Location update from guide ${data.guideId}:`, data.location);
       
-      // Broadcast to all connected clients
       io.emit('guideLocationUpdate', {
         guideId: data.guideId,
         location: data.location

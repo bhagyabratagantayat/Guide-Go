@@ -9,7 +9,7 @@ import {
   Filter, MoreHorizontal, History as HistoryIcon, 
   Wallet, Bookmark, Navigation
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReviewModal from '../components/ReviewModal';
 
@@ -22,6 +22,7 @@ const Bookings = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { darkMode } = useTheme();
+  const navigate = useNavigate();
 
   const fetchBookings = async () => {
     try {
@@ -119,7 +120,7 @@ const Bookings = () => {
                 <AnimatePresence mode="popLayout">
                    {filteredBookings.map((booking) => {
                       const { color, icon: StatusIcon } = getStatusConfig(booking.status);
-                      const displayUser = user.role === 'guide' ? booking.touristId : booking.guideId;
+                      const displayUser = user.role === 'guide' ? booking.userId : booking.guideId;
 
                       return (
                          <motion.div 
@@ -205,7 +206,7 @@ const Bookings = () => {
                                        Finalize Log
                                      </button>
                                   )}
-                                  {user.role === 'tourist' && booking.status === 'completed' && !booking.reviewed && (
+                                  {user.role === 'user' && booking.status === 'completed' && !booking.reviewed && (
                                      <button 
                                        onClick={() => {
                                           setSelectedBooking(booking);
@@ -216,8 +217,16 @@ const Bookings = () => {
                                         <Star className="w-5 h-5 mr-3 fill-white/20" /> Write Journal
                                      </button>
                                   )}
+                                   {user.role === 'user' && booking.status === 'confirmed' && (
+                                      <button 
+                                        onClick={() => navigate('/user/explore-map', { state: { guideId: booking.guideId._id } })}
+                                        className="h-16 px-10 bg-indigo-500 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-indigo-600 shadow-premium active:scale-95 transition-all flex items-center"
+                                      >
+                                         <Navigation className="w-5 h-5 mr-3 animate-pulse" /> Track Guide
+                                      </button>
+                                   )}
                                    {['confirmed', 'completed'].includes(booking.status) ? (
-                                      <Link to={`/chat/${displayUser._id}`} className="h-16 w-16 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-[1.8rem] flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all active:scale-95 shadow-soft">
+                                      <Link to={`${user.role === 'guide' ? '/guide' : '/user'}/chat/${displayUser._id}`} className="h-16 w-16 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-[1.8rem] flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all active:scale-95 shadow-soft">
                                          <MessageSquare className="w-6 h-6" />
                                       </Link>
                                    ) : (
@@ -239,7 +248,7 @@ const Bookings = () => {
                       </div>
                       <h3 className="text-4xl font-black text-slate-900 dark:text-white italic font-serif mb-6 leading-none tracking-tight">Your Voyage Logs are Empty</h3>
                       <p className="subtitle max-w-sm mx-auto mb-12 dark:text-slate-400">Capture Odisha's soul through human-led storytelling. Your journey is waiting.</p>
-                      <Link to="/home" className="btn-primary px-16 py-6 text-[11px] tracking-[0.4em]">
+                      <Link to="/" className="btn-primary px-16 py-6 text-[11px] tracking-[0.4em]">
                          EXPLORE LOCALES
                       </Link>
                    </div>

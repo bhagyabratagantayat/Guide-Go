@@ -33,7 +33,7 @@ const AdminBookings = () => {
   }, []);
 
   const filteredBookings = bookings.filter(b => 
-    b.touristId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.userId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.guideId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -51,7 +51,7 @@ const AdminBookings = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input 
             type="text"
-            placeholder="Search booking ID, tourist, guide..."
+            placeholder="Search booking ID, user, guide..."
             className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-3xl shadow-sm focus:ring-2 focus:ring-primary-500 outline-none font-bold text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -70,7 +70,7 @@ const AdminBookings = () => {
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Booking Details</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tourist / Guide</th>
+                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">User / Guide</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Pricing</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
@@ -93,8 +93,8 @@ const AdminBookings = () => {
                   <td className="px-8 py-6">
                     <div className="space-y-2">
                        <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 rounded bg-primary-100 flex items-center justify-center text-[10px] font-black text-primary-600">T</div>
-                          <span className="text-xs font-bold text-slate-800">{booking.touristId?.name}</span>
+                          <div className="w-6 h-6 rounded bg-primary-100 flex items-center justify-center text-[10px] font-black text-primary-600">U</div>
+                          <span className="text-xs font-bold text-slate-800">{booking.userId?.name}</span>
                        </div>
                        <div className="flex items-center space-x-2">
                           <div className="w-6 h-6 rounded bg-secondary-100 flex items-center justify-center text-[10px] font-black text-secondary-600">G</div>
@@ -153,10 +153,10 @@ const AdminBookings = () => {
              <div className="p-10 space-y-8">
                <div className="grid grid-cols-2 gap-8">
                  <div className="space-y-4">
-                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tourist Details</h4>
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">User Details</h4>
                    <div className="space-y-1">
-                     <p className="text-sm font-black text-slate-900">{selectedBooking.touristId?.name}</p>
-                     <p className="text-xs font-bold text-slate-500">{selectedBooking.touristId?.email}</p>
+                     <p className="text-sm font-black text-slate-900">{selectedBooking.userId?.name}</p>
+                     <p className="text-xs font-bold text-slate-500">{selectedBooking.userId?.email}</p>
                    </div>
                  </div>
                  <div className="space-y-4 shadow-inner p-4 bg-slate-50 rounded-2xl">

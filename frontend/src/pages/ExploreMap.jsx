@@ -7,7 +7,8 @@ import {
   MapPin, User, Star, Volume2, Compass, 
   X, Activity, Play, Pause, Square, Navigation, 
   Shield, Zap, Award, Phone, MessageCircle, AlertCircle,
-  Search, ArrowRight, Clock
+  Search, ArrowRight, Clock, Hotel, Coffee, ShoppingBag, 
+  TrainFront, Heart, MoreHorizontal, ExternalLink
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -100,7 +101,7 @@ const ExploreMap = () => {
   const [bookingStage, setBookingStage] = useState('idle');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [assignedGuide, setAssignedGuide] = useState(null);
+  const [assignedGuideId, setAssignedGuideId] = useState(null);
   const { liveGuides } = useGuideTracking(user);
   const socketRef = useRef();
 
@@ -179,12 +180,10 @@ const ExploreMap = () => {
     }
 
     socketRef.current.on('notification', (data) => {
-      if (data.type === 'booking_status_update' && data.status === 'confirmed') {
-        setBookingStage('active_booking');
-        setNotification('Guide assigned! Your storyteller is on the way.');
-        // Assume data includes guide details or we fetch them
-        setTimeout(() => setNotification(null), 3000);
-      }
+      setBookingStage('active_booking');
+      setAssignedGuideId(data.guideId);
+      setNotification('Guide assigned! Your storyteller is on the way.');
+      setTimeout(() => setNotification(null), 3000);
     });
 
     return () => {
@@ -192,6 +191,20 @@ const ExploreMap = () => {
       stop();
     };
   }, [user]);
+
+  // Handle incoming state (from Bookings or Home)
+  useEffect(() => {
+    if (location.state?.guideId) {
+      setAssignedGuideId(location.state.guideId);
+      setBookingStage('active_booking');
+      setSheetState('hidden'); // Clear sheet to focus on map
+    }
+    if (location.state?.place) {
+      setSelectedPlace(location.state.place);
+      setSheetState('peek');
+      setMapCenter([location.state.place.latitude, location.state.place.longitude]);
+    }
+  }, [location.state]);
 
   // Handle cross-page navigation from Home
   useEffect(() => {
@@ -260,20 +273,34 @@ const ExploreMap = () => {
           url={darkMode ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"}
         />
         
-        {filteredMarkers.map((marker) => (
+        {filteredMarkers.map((marker) => {
+          // If we are tracking an assigned guide, skip other guide markers
+          if (bookingStage === 'active_booking' && marker.type === 'guide' && marker._id !== assignedGuideId) return null;
+          
+          return (
+            <Marker 
+              key={marker._id} 
+              position={[marker.latitude || marker.location?.coordinates[1], marker.longitude || marker.location?.coordinates[0]]} 
+              icon={marker.type === 'guide' ? GuideIcon : (marker.type === 'hotel' ? HotelIcon : (marker.type === 'food' ? FoodIcon : PlaceIcon))}
+              eventHandlers={{
+                click: () => {
+                  setSelectedPlace(marker);
+                  setSheetState('peek');
+                  setMapCenter([marker.latitude || marker.location?.coordinates[1], marker.longitude || marker.location?.coordinates[0]]);
+                }
+              }}
+            />
+          );
+        })}
+
+        {/* Live Tracking Marker for Assigned Guide */}
+        {bookingStage === 'active_booking' && assignedGuideId && liveGuides[assignedGuideId] && (
           <Marker 
-            key={marker._id} 
-            position={[marker.latitude || marker.location?.coordinates[1], marker.longitude || marker.location?.coordinates[0]]} 
-            icon={marker.type === 'guide' ? GuideIcon : (marker.type === 'hotel' ? HotelIcon : (marker.type === 'food' ? FoodIcon : PlaceIcon))}
-            eventHandlers={{
-              click: () => {
-                setSelectedPlace(marker);
-                setSheetState('peek');
-                setMapCenter([marker.latitude || marker.location?.coordinates[1], marker.longitude || marker.location?.coordinates[0]]);
-              }
-            }}
+            position={liveGuides[assignedGuideId]} 
+            icon={GuideIcon}
+            zIndexOffset={1000}
           />
-        ))}
+        )}
 
         {userLocation && <Marker position={userLocation} icon={UserIcon} />}
       </MapContainer>
@@ -381,36 +408,74 @@ const ExploreMap = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-surface-50 dark:bg-slate-800 p-4 rounded-2xl border border-surface-100 dark:border-slate-700">
-                               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rating</p>
-                               <p className="text-xs font-black text-slate-900 dark:text-white flex items-center"><Star className="w-3 h-3 mr-1 fill-primary-500 text-primary-500" /> {selectedPlace.rating || '4.5'}</p>
-                            </div>
-                            <div className="bg-surface-50 dark:bg-slate-800 p-4 rounded-2xl border border-surface-100 dark:border-slate-700">
-                               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Price Point</p>
-                               <p className="text-xs font-black text-slate-900 dark:text-white">₹{selectedPlace.pricePerNight || 'VARIES'}</p>
-                            </div>
-                         </div>
-                         
-                         <button 
-                            onClick={() => speak(selectedPlace.description)}
-                            className="w-full bg-slate-900 text-white rounded-[2rem] p-5 flex items-center justify-between group hover:bg-primary-500 transition-all"
-                          >
-                            <div className="flex items-center space-x-4">
-                              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center"><Volume2 className="w-5 h-5" /></div>
-                              <p className="text-base font-black tracking-tight italic font-serif">Play Audio Guide</p>
-                            </div>
-                            <Play className="w-5 h-5 opacity-40 group-hover:opacity-100" />
+                          <div className="grid grid-cols-2 gap-3">
+                             <div className="bg-surface-50 dark:bg-slate-800 p-4 rounded-2xl border border-surface-100 dark:border-slate-700">
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rating</p>
+                                <p className="text-xs font-black text-slate-900 dark:text-white flex items-center"><Star className="w-3 h-3 mr-1 fill-primary-500 text-primary-500" /> {selectedPlace.rating || '4.5'}</p>
+                             </div>
+                             <div className="bg-surface-50 dark:bg-slate-800 p-4 rounded-2xl border border-surface-100 dark:border-slate-700 flex flex-col justify-center">
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Opening Hours</p>
+                                <p className="text-[10px] font-black text-slate-900 dark:text-white">10:00 - 17:00</p>
+                             </div>
+                          </div>
+
+                          <div className="flex items-center justify-between p-4 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-900/20">
+                             <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30">
+                                   <Navigation className="w-5 h-5" />
+                                </div>
+                                <div>
+                                   <p className="text-xs font-black text-slate-900 dark:text-white">7 minutes</p>
+                                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Getting there</p>
+                                </div>
+                             </div>
+                             <div className="text-right">
+                                <p className="text-[10px] font-black text-slate-900 dark:text-white">1.8 km from you</p>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-wrap">(straight-line)</p>
+                             </div>
+                          </div>
+                          
+                          <button 
+                             onClick={() => speak(selectedPlace.description)}
+                             className="w-full bg-slate-900 text-white rounded-[2rem] p-5 flex items-center justify-between group hover:bg-primary-500 transition-all"
+                           >
+                             <div className="flex items-center space-x-4">
+                               <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center"><Volume2 className="w-5 h-5" /></div>
+                               <p className="text-base font-black tracking-tight italic font-serif">Play Audio Guide</p>
+                             </div>
+                             <Play className="w-5 h-5 opacity-40 group-hover:opacity-100" />
                           </button>
 
-                         <button 
-                            onClick={() => { setBookingStage('selecting_guide'); setSheetState('expanded'); }}
-                            className="w-full bg-primary-500 text-slate-950 rounded-[2rem] p-6 shadow-premium flex items-center justify-center space-x-3 group"
-                          >
+                          <button 
+                             onClick={() => { setBookingStage('selecting_guide'); setSheetState('expanded'); }}
+                             className="w-full bg-primary-500 text-slate-950 rounded-[2rem] p-6 shadow-premium flex items-center justify-center space-x-3 group"
+                           >
                              <Zap className="w-5 h-5 fill-current" />
                              <span className="text-sm font-black uppercase tracking-widest italic font-serif">Book a Guide Now</span>
                              <ArrowRight className="w-5 h-5" />
                           </button>
+
+                          <div className="pt-8 border-t border-slate-100 dark:border-slate-800">
+                             <h4 className="text-sm font-black text-slate-900 dark:text-white mb-6 italic font-serif">User reviews</h4>
+                             <div className="flex flex-col items-center py-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem]">
+                                <div className="w-32 h-32 mb-4 bg-white dark:bg-slate-800 rounded-full shadow-inner flex items-center justify-center relative">
+                                   <motion.div 
+                                      animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                                      transition={{ repeat: Infinity, duration: 4 }}
+                                      className="relative z-10"
+                                   >
+                                      <Star className="w-12 h-12 text-slate-100 dark:text-slate-700 fill-current" />
+                                   </motion.div>
+                                   <div className="absolute inset-4 bg-slate-50 dark:bg-slate-900 rounded-full" />
+                                </div>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No user reviews yet</p>
+                             </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 pb-12">
+                             <button className="py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-[9px] font-black uppercase tracking-widest text-primary-600 dark:text-primary-400 hover:bg-primary-50 transition-all">Nearby hotels</button>
+                             <button className="py-4 bg-primary-500 text-slate-950 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all">Explore the nearby area</button>
+                          </div>
                       </div>
                     )}
                   </motion.div>

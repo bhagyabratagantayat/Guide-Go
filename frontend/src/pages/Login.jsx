@@ -20,7 +20,7 @@ const Login = () => {
       const role = data.role;
       if (role === 'admin') navigate('/admin');
       else if (role === 'guide') navigate('/guide');
-      else navigate('/');
+      else navigate('/user');
     } catch (error) {
       if (error.response?.data?.errorCode === 'NOT_VERIFIED') {
         const normalizedEmail = email.trim().toLowerCase();

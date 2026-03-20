@@ -106,7 +106,7 @@ const AdminPlaces = () => {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 uppercase">Tourist Places</h2>
+          <h2 className="text-2xl font-black text-slate-900 uppercase">Destinations</h2>
           <p className="text-xs font-bold text-slate-400">Add and manage exploration locations</p>
         </div>
         <button 

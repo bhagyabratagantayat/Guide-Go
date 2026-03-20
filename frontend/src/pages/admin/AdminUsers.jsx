@@ -58,7 +58,7 @@ const AdminUsers = () => {
   };
 
   const handleToggleRole = async (id, currentRole) => {
-    const newRole = currentRole === 'admin' ? 'tourist' : 'admin';
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
     try {
       await axios.put(`/api/admin/users/${id}/role`, { role: newRole });
       setUsers(users.map(u => u._id === id ? { ...u, role: newRole } : u));
@@ -113,7 +113,7 @@ const AdminUsers = () => {
             <option value="all">All Roles</option>
             <option value="admin">Admins</option>
             <option value="guide">Guides</option>
-            <option value="tourist">Tourists</option>
+            <option value="user">Users</option>
           </select>
           <button 
             onClick={() => setIsModalOpen(true)}

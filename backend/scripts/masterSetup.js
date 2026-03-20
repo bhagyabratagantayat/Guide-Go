@@ -28,7 +28,7 @@ const seedData = async () => {
       console.log('Admin account already exists.');
     }
 
-    // 2. DEMO TOURIST PLACES
+    // 2. DEMO PLACES
     const placesCount = await Place.countDocuments();
     if (placesCount === 0) {
       const demoPlaces = [
@@ -74,7 +74,7 @@ const seedData = async () => {
         }
       ];
       await Place.insertMany(demoPlaces);
-      console.log('Seeded 5 demo tourist places.');
+      console.log('Seeded 5 demo places.');
     } else {
       console.log('Places collection is not empty.');
     }

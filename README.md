@@ -7,24 +7,23 @@ GuideGo is a professional, production-level travel and tourism platform designed
 ### 🛡️ Core Authentication & Security
 *   **Production-Ready Auth:** Secure login and registration with hashed passwords and JWT-based session management.
 *   **OTP Email Verification:** Mandatory mobile/email OTP verification for all new users to ensure a verified community.
-*   **Role-Based Access Control (RBAC):** Distinct permissions and UI dashboards for **Tourists**, **Guides**, and **Admins**.
+*   **Role-Based Access Control (RBAC):** Distinct permissions and UI dashboards for **Users**, **Guides**, and **Admins**.
 
-### 🗺️ For Tourists
-*   **Smart Discovery:** Explore tourist spots via an interactive map or list view (powered by Leaflet.js).
-*   **AI Travel Assistant:** Get personalized local insights and itinerary plans using our **Google Gemini-powered** chatbot.
-*   **Smart Audio Guides:** Listen to high-quality, auto-generated historic narratives using browser Text-to-Speech.
-*   **Guide Booking:** Browse verified local guides and book them securely with a built-in demo payment system.
-*   **Real-Time Tracking:** Watch your booked guide move towards you in real-time via **Socket.io** telemetry.
+### 🗺️ For Users (Travelers)
+*   **Smart Discovery:** Explore destinations via an interactive map or list view (powered by Leaflet.js).
+*   **Real-Time Booking:** Uber-style guide booking with live matching and status tracking.
+*   **Audio Guides:** Immersive, AI-generated audio stories for landmarks.
+*   **AI Itinerary:** Personalized travel planning based on preferences.
 
-### 🧭 For Guides
+### 🏠 For Local Guides
 *   **Professional Dashboard:** Manage your profile, expertise, and hourly rates.
-*   **Live Connectivity:** Toggle "Go Live" to broadcast your real-time location to nearby tourists.
-*   **Booking Management:** Seamlessly track and fulfill upcoming tourist bookings.
+*   **Live Connectivity:** Toggle "Go Live" to broadcast your real-time location to nearby users.
+*   **Booking Management:** Seamlessly track and fulfill upcoming user bookings.
+*   **Profile Customization:** Showcase expertise, languages, and pricing.
 
-### ⚙️ For Administrators
-*   **Centralized Analytics:** Monitor revenue, user growth, and active bookings.
-*   **Verification Pipeline:** Review and approve guide applications to maintain quality.
-*   **Content Management:** Full CRUD capabilities for tourist places with Cloudinary-hosted imagery.
+### ⚡ For Administrators
+*   **User Management:** Oversee and manage the community of users and guides.
+*   **Content Management:** Full CRUD capabilities for destination places with Cloudinary-hosted imagery.
 
 ## 🛠 Tech Stack
 

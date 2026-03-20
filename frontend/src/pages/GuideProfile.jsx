@@ -257,10 +257,10 @@ const GuideProfile = () => {
                           <div className="flex items-center justify-between">
                              <div className="flex items-center space-x-3">
                                 <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center font-black text-primary-600 overflow-hidden border-2 border-white dark:border-slate-800 shadow-soft">
-                                   {review.touristId.profilePicture ? <img src={review.touristId.profilePicture} className="w-full h-full object-cover" /> : review.touristId.name.charAt(0)}
+                                   {review.userId.profilePicture ? <img src={review.userId.profilePicture} className="w-full h-full object-cover" /> : review.userId.name.charAt(0)}
                                 </div>
                                 <div className="space-y-0.5">
-                                   <p className="font-black text-slate-900 dark:text-white text-base tracking-tight">{review.touristId.name}</p>
+                                   <p className="font-black text-slate-900 dark:text-white text-base tracking-tight">{review.userId.name}</p>
                                    <p className="text-[8px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Verified Guest Experience</p>
                                 </div>
                              </div>
@@ -407,7 +407,7 @@ const GuideProfile = () => {
           booking={bookedBooking} 
           onClose={() => {
             setShowReceipt(false);
-            navigate('/bookings');
+            navigate('/user/bookings');
           }} 
         />
       )}

@@ -20,7 +20,7 @@ const Chat = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([
     { _id: '1', role: 'guide', text: 'Namaste! I am your local guide for Puri. How can I help you plan your spiritual journey today?', timestamp: new Date(Date.now() - 3600000) },
-    { _id: '2', role: 'tourist', text: 'Hi! I want to visit the Jagannath Temple tomorrow morning. What is the best time?', timestamp: new Date(Date.now() - 1800000) },
+    { _id: '2', role: 'user', text: 'Hi! I want to visit the Jagannath Temple tomorrow morning. What is the best time?', timestamp: new Date(Date.now() - 1800000) },
     { _id: '3', role: 'guide', text: 'The morning Aarti is beautiful around 5:30 AM. I recommend reaching by 5:00 AM to avoid the crowd.', timestamp: new Date(Date.now() - 600000) },
   ]);
   const messagesEndRef = useRef(null);
@@ -63,7 +63,7 @@ const Chat = () => {
       setTimeout(() => {
          setMessages(prev => [...prev, {
             _id: Date.now() + 1,
-            role: user.role === 'guide' ? 'tourist' : 'guide',
+            role: user.role === 'guide' ? 'user' : 'guide',
             text: 'That sounds perfect! I will book the morning slot.',
             timestamp: new Date()
          }]);

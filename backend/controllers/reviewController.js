@@ -17,8 +17,8 @@ const createReview = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('You can only review completed tours', 400, 'TOUR_NOT_COMPLETED'));
   }
 
-  // Check if user is the tourist who booked
-  if (booking.touristId.toString() !== req.user._id.toString()) {
+  // Check if user is the traveler who booked
+  if (booking.userId.toString() !== req.user._id.toString()) {
     return next(new ErrorResponse('Not authorized to review this booking', 401, 'NOT_AUTHORIZED'));
   }
 
@@ -29,7 +29,7 @@ const createReview = asyncHandler(async (req, res, next) => {
   }
 
   const review = await Review.create({
-    touristId: req.user._id,
+    userId: req.user._id,
     guideId,
     bookingId,
     rating,
@@ -50,7 +50,7 @@ const createReview = asyncHandler(async (req, res, next) => {
 
 const getGuideReviews = asyncHandler(async (req, res, next) => {
   const reviews = await Review.find({ guideId: req.params.guideId })
-    .populate('touristId', 'name profilePicture');
+    .populate('userId', 'name profilePicture');
   res.json(reviews);
 });
 

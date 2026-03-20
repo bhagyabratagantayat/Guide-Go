@@ -4,9 +4,9 @@ const { authenticateUser, authorizeRole } = require('../middleware/auth');
 const { validateBooking } = require('../middleware/validator');
 const router = express.Router();
 
-router.post('/', authenticateUser, authorizeRole('tourist'), validateBooking, createBooking);
+router.post('/', authenticateUser, authorizeRole('user'), validateBooking, createBooking);
 router.put('/:id/status', authenticateUser, authorizeRole('guide'), updateBookingStatus);
-router.get('/user', authenticateUser, getUserBookings);
-router.get('/guide', authenticateUser, getGuideBookings);
+router.get('/user', authenticateUser, authorizeRole('user'), getUserBookings);
+router.get('/guide', authenticateUser, authorizeRole('guide'), getGuideBookings);
 
 module.exports = router;

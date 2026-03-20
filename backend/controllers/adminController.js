@@ -26,7 +26,7 @@ const getDashboardStats = asyncHandler(async (req, res, next) => {
   const recentBookings = await Booking.find()
     .sort({ createdAt: -1 })
     .limit(5)
-    .populate('touristId', 'name')
+    .populate('userId', 'name')
     .populate('guideId', 'name');
 
   res.json({
@@ -99,7 +99,7 @@ const updateGuideStatus = asyncHandler(async (req, res, next) => {
 // @access  Private/Admin
 const getAllBookings = asyncHandler(async (req, res, next) => {
   const bookings = await Booking.find()
-    .populate('touristId', 'name email')
+    .populate('userId', 'name email')
     .populate('guideId', 'name email')
     .sort({ createdAt: -1 });
   res.json({ success: true, data: bookings });

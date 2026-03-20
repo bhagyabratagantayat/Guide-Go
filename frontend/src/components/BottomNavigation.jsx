@@ -19,26 +19,26 @@ const BottomNavigation = () => {
 
   const { user, loading } = auth;
   
-  if (loading) return null;
+  if (loading || !user) return null;
 
   const navItems = user?.role === 'guide' ? [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/guide' },
-    { icon: Calendar, label: 'Requests', path: '/guide' }, // Mapped to /guide as requested
-    { icon: Calendar, label: 'Bookings', path: '/bookings' },
-    { icon: Sparkles, label: 'Chat', path: '/ai-chat' },
-    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Calendar, label: 'Requests', path: '/guide/requests' },
+    { icon: Calendar, label: 'Bookings', path: '/guide/bookings' },
+    { icon: Sparkles, label: 'Chat', path: '/guide/ai-chat' },
+    { icon: User, label: 'Profile', path: '/guide/profile' },
   ] : user?.role === 'admin' ? [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: User, label: 'Users', path: '/admin/users' },
     { icon: User, label: 'Guides', path: '/admin/guides' },
     { icon: Calendar, label: 'Bookings', path: '/admin/bookings' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ] : [
     { icon: Home, label: t('common.home') || 'Home', path: '/' },
-    { icon: Compass, label: t('common.explore') || 'Explore', path: '/explore-map' },
-    { icon: Calendar, label: t('common.bookings') || 'Bookings', path: '/bookings' },
-    { icon: Sparkles, label: t('common.chat') || 'Chat', path: '/ai-chat' },
-    { icon: User, label: t('common.profile') || 'Profile', path: '/profile' },
+    { icon: Compass, label: t('common.explore') || 'Explore', path: '/user/explore-map' },
+    { icon: Calendar, label: t('common.bookings') || 'Bookings', path: '/user/bookings' },
+    { icon: Sparkles, label: t('common.chat') || 'Chat', path: '/user/ai-chat' },
+    { icon: User, label: t('common.profile') || 'Profile', path: '/user/profile' },
   ];
 
   return (
@@ -46,7 +46,7 @@ const BottomNavigation = () => {
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-      className="fixed bottom-0 left-0 right-0 md:hidden z-[1000]"
+      className="fixed bottom-0 left-0 right-0 lg:hidden z-[1000]"
     >
       <div className="bg-slate-900 border-t border-white/10 p-2 flex items-center justify-around shadow-[0_-10px_30px_rgba(0,0,0,0.5)] safe-area-bottom">
         {navItems.map((item) => (

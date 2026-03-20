@@ -144,28 +144,28 @@ const Profile = () => {
                         icon={History} 
                         label="History" 
                         color="text-indigo-500"
-                        onClick={() => navigate('/bookings')} 
+                        onClick={() => navigate(user.role === 'guide' ? '/guide/bookings' : '/user/bookings')} 
                         darkMode={darkMode}
                      />
                      <ActionButton 
                         icon={Heart} 
                         label="Favorites" 
                         color="text-red-500"
-                        onClick={() => navigate('/explore-map')}
+                        onClick={() => navigate('/user/explore-map')}
                         darkMode={darkMode}
                      />
                      <ActionButton 
                         icon={CreditCard} 
                         label="Payments" 
                         color="text-emerald-500"
-                        onClick={() => navigate('/bookings')}
+                        onClick={() => navigate(user.role === 'guide' ? '/guide/bookings' : '/user/bookings')}
                         darkMode={darkMode}
                      />
                      <ActionButton 
                         icon={Settings} 
                         label="Settings" 
                         color="text-orange-500"
-                        onClick={() => navigate('/settings')}
+                        onClick={() => navigate(user.role === 'admin' ? '/admin/settings' : (user.role === 'guide' ? '/guide/profile' : '/user/settings'))}
                         darkMode={darkMode}
                      />
                   </div>

@@ -13,7 +13,7 @@ const createBooking = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Guide not found or not yet verified by admin', 404));
   }
   const booking = await Booking.create({
-    touristId: req.user._id,
+    userId: req.user._id,
     guideId,
     location,
     bookingTime,
@@ -51,9 +51,9 @@ const updateBookingStatus = asyncHandler(async (req, res, next) => {
   booking.status = status;
   await booking.save();
 
-  // Notify tourist
+  // Notify user
   if (req.io) {
-    req.io.to(booking.touristId.toString()).emit('notification', {
+    req.io.to(booking.userId.toString()).emit('notification', {
       title: status === 'confirmed' ? 'Booking Accepted!' : 'Booking Status Updated',
       message: `Your booking for ${booking.location} has been ${status}`,
       type: 'booking_status_update',
@@ -66,7 +66,7 @@ const updateBookingStatus = asyncHandler(async (req, res, next) => {
 });
 
 const getUserBookings = asyncHandler(async (req, res, next) => {
-  const bookings = await Booking.find({ touristId: req.user._id })
+  const bookings = await Booking.find({ userId: req.user._id })
     .populate('guideId', 'name email phone');
   res.json(bookings);
 });
@@ -81,7 +81,7 @@ const getGuideBookings = asyncHandler(async (req, res, next) => {
   }
 
   const bookings = await Booking.find({ guideId: guide._id })
-    .populate('touristId', 'name email phone');
+    .populate('userId', 'name email phone');
   res.json(bookings);
 });
 

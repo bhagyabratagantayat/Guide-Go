@@ -76,7 +76,7 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
     await sendEmail({
       email: user.email,
       subject: 'Welcome to GuideGo 🎉',
-      message: `Hello ${user.name},\n\nYour account has been successfully registered on GuideGo.\n\nExplore tourist destinations, find verified local guides, and use smart audio travel guides.\n\nVisit: https://guidego.vercel.app`,
+      message: `Hello ${user.name},\n\nYour account has been successfully registered on GuideGo.\n\nExplore destinations, find verified local guides, and use smart audio travel guides.\n\nVisit: https://guidego.vercel.app`,
       htmlMessage: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <h2 style="color: #3b82f6;">Welcome to GuideGo 🎉</h2>
@@ -84,7 +84,7 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
           <p>Your account has been successfully registered on GuideGo.</p>
           <p>You can now:</p>
           <ul>
-            <li>Explore tourist destinations</li>
+            <li>Explore destinations</li>
             <li>Find verified local guides</li>
             <li>Use smart audio travel guides</li>
             <li>Plan your trips</li>

@@ -13,7 +13,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('tourist');
+  const [role, setRole] = useState('user');
   const [mobile, setMobile] = useState('');
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
@@ -118,7 +118,7 @@ const Register = () => {
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium appearance-none"
               >
-                <option value="tourist">Tourist</option>
+                <option value="user">Traveler</option>
                 <option value="guide">Guide</option>
               </select>
             </div>

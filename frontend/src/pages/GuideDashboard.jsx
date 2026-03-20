@@ -207,7 +207,7 @@ const GuideDashboard = () => {
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-white dark:border-slate-900 rounded-full"></div>
                      </div>
                      <div className="space-y-2">
-                       <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter italic">{booking.touristId?.name || 'Curious Traveler'}</h4>
+                       <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter italic">{booking.userId?.name || 'Curious Traveler'}</h4>
                        <div className="flex flex-wrap items-center gap-4">
                           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center">
                              <MapPin className="w-4 h-4 mr-1 text-primary-500" /> {booking.location}

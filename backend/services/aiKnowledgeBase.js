@@ -46,7 +46,7 @@ const knowledgeBase = [
   },
   {
     keywords: ["safe", "safety", "security", "emergency", "women"],
-    answer: "Odisha is known as one of the safest states in India for tourists. People are generally helpful and humble. **Pro-tips**: Use authorized guides from GuideGo, avoid isolated areas late at night, and keep the local police helpline (112) saved. Your safety is our priority.",
+    answer: "Odisha is known as one of the safest states in India for travelers. People are generally helpful and humble. **Pro-tips**: Use authorized guides from GuideGo, avoid isolated areas late at night, and keep the local police helpline (112) saved. Your safety is our priority.",
     score: 2
   },
   {

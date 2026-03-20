@@ -186,9 +186,9 @@ const AdminDashboard = () => {
                     <td className="px-6 py-6 font-bold text-slate-800">
                        <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black shrink-0">
-                             {booking.touristId?.name?.charAt(0)}
+                             {booking.userId?.name?.charAt(0)}
                           </div>
-                          <span className="text-sm">{booking.touristId?.name}</span>
+                          <span className="text-sm">{booking.userId?.name}</span>
                        </div>
                     </td>
                     <td className="px-6 py-6">
