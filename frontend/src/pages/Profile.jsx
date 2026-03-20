@@ -3,25 +3,25 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User, Mail, Phone, MapPin, Calendar, 
-  Shield, Radio, Power, ChevronRight, 
-  Settings, Heart, Star, Languages,
-  Camera, Edit3, History, Bookmark,
-  LogOut, Bell, HelpCircle, CreditCard
+  User, Mail, MapPin, Radio, Power, ChevronRight, 
+  Settings, Heart, Languages, Camera, History, 
+  Bell, HelpCircle, CreditCard
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext.jsx';
 import useGuideTracking from '../hooks/useGuideTracking';
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { darkMode } = useTheme();
   const [isLive, setIsLive] = useState(false);
   const { startTracking } = useGuideTracking(user);
 
   useEffect(() => {
     let stopTracking;
-    if (isLive) {
+    if (isLive && user) {
       stopTracking = startTracking();
     }
     return () => stopTracking && stopTracking();
@@ -29,13 +29,13 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-8 text-center space-y-6">
-        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] px-8 text-center space-y-6 bg-white dark:bg-slate-950">
+        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-700">
            <User className="w-10 h-10" />
         </div>
         <div className="space-y-2">
-           <h2 className="text-2xl font-bold text-slate-900">Sign in to your profile</h2>
-           <p className="text-slate-500 text-sm">Join the GuideGo community to keep track of your journeys.</p>
+           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Sign in to your profile</h2>
+           <p className="text-slate-500 dark:text-slate-400 text-sm">Join the GuideGo community to keep track of your journeys.</p>
         </div>
         <button 
           onClick={() => navigate('/login')}
@@ -48,7 +48,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-32">
+    <div className="min-h-screen bg-white dark:bg-slate-950 pb-32 transition-colors duration-300">
       {/* Premium Header */}
       <div className="bg-slate-900 pt-32 pb-48 px-8 relative overflow-hidden">
          <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -106,37 +106,37 @@ const Profile = () => {
          <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-[4rem] shadow-premium overflow-hidden border border-slate-100"
+            className="bg-white dark:bg-slate-900 rounded-[4rem] shadow-premium dark:shadow-none overflow-hidden border border-slate-100 dark:border-slate-800"
          >
             <div className="p-10">
                {/* Quick Info Grid */}
                <div className="grid grid-cols-2 gap-4 mb-12">
-                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center space-x-4 group hover:bg-slate-900 transition-all cursor-pointer">
-                     <div className="p-3 bg-white rounded-xl shadow-soft group-hover:bg-slate-800 transition-colors">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center space-x-4 group hover:bg-slate-900 dark:hover:bg-primary-600 transition-all cursor-pointer">
+                     <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-soft group-hover:bg-slate-800 dark:group-hover:bg-primary-700 transition-colors">
                         <MapPin className="w-5 h-5 text-red-500" />
                      </div>
                      <div>
-                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-500">Location</p>
-                        <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">{user.location || 'Bhubaneswar, IN'}</p>
+                        <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest group-hover:text-slate-500 dark:group-hover:text-primary-200">Location</p>
+                        <p className="text-xs font-black text-slate-900 dark:text-slate-300 group-hover:text-white uppercase tracking-tight">{user.location || 'Bhubaneswar, IN'}</p>
                      </div>
                   </div>
-                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex items-center space-x-4 group hover:bg-slate-900 transition-all cursor-pointer" onClick={() => navigate('/settings')}>
-                     <div className="p-3 bg-white rounded-xl shadow-soft group-hover:bg-slate-800 transition-colors">
+                  <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center space-x-4 group hover:bg-slate-900 dark:hover:bg-primary-600 transition-all cursor-pointer" onClick={() => navigate('/settings')}>
+                     <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-soft group-hover:bg-slate-800 dark:group-hover:bg-primary-700 transition-colors">
                         <Languages className="w-5 h-5 text-primary-500" />
                      </div>
                      <div>
-                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest group-hover:text-slate-500">Language</p>
-                        <p className="text-xs font-black text-slate-900 group-hover:text-white uppercase tracking-tight">
+                        <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest group-hover:text-slate-500 dark:group-hover:text-primary-200">Language</p>
+                        <p className="text-xs font-black text-slate-900 dark:text-slate-300 group-hover:text-white uppercase tracking-tight">
                            {i18n.language === 'en' ? 'English' : (i18n.language === 'hi' ? 'हिन्दी' : 'ଓଡ଼ିଆ')}
                         </p>
                      </div>
                   </div>
                </div>
 
-               {/* Quick Realms - WhatsApp Style Action Grid */}
+               {/* Quick Realms - Action Grid */}
                <div className="space-y-8">
                   <div className="text-center">
-                    <h4 className="inline-block text-[9px] font-black text-slate-300 uppercase tracking-[0.6em] italic border-b border-slate-100 pb-2">Quick Realms</h4>
+                    <h4 className="inline-block text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.6em] italic border-b border-slate-100 dark:border-slate-800 pb-2">Quick Realms</h4>
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -145,24 +145,28 @@ const Profile = () => {
                         label="History" 
                         color="text-indigo-500"
                         onClick={() => navigate('/bookings')} 
+                        darkMode={darkMode}
                      />
                      <ActionButton 
                         icon={Heart} 
                         label="Favorites" 
                         color="text-red-500"
                         onClick={() => navigate('/explore-map')}
+                        darkMode={darkMode}
                      />
                      <ActionButton 
                         icon={CreditCard} 
                         label="Payments" 
                         color="text-emerald-500"
                         onClick={() => navigate('/bookings')}
+                        darkMode={darkMode}
                      />
                      <ActionButton 
                         icon={Settings} 
                         label="Settings" 
                         color="text-orange-500"
                         onClick={() => navigate('/settings')}
+                        darkMode={darkMode}
                      />
                   </div>
 
@@ -172,13 +176,13 @@ const Profile = () => {
                         onClick={logout}
                         className="flex items-center justify-center space-x-4 mx-auto group"
                      >
-                        <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all shadow-soft overflow-hidden relative">
+                        <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all shadow-soft overflow-hidden relative">
                            <Power className="w-5 h-5 relative z-10" />
                            <div className="absolute inset-0 bg-red-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                         </div>
                         <div className="text-left">
                            <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em]">Sign Out</p>
-                           <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">End Session</p>
+                           <p className="text-[8px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">End Session</p>
                         </div>
                      </motion.button>
                   </div>
@@ -187,8 +191,8 @@ const Profile = () => {
          </motion.div>
 
          <div className="mt-12 space-y-4">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-8">Quick Links</h3>
-            <div className="bg-slate-50/50 rounded-3xl border border-slate-100 divide-y divide-slate-100 overflow-hidden mx-4">
+            <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] mb-4 px-8">Quick Links</h3>
+            <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden mx-4">
                <MenuItem icon={Bell} label="Notifications" onClick={() => {}} />
                <MenuItem icon={HelpCircle} label="Help & Support" onClick={() => navigate('/support')} />
             </div>
@@ -198,33 +202,33 @@ const Profile = () => {
   );
 };
 
-const ActionButton = ({ icon: Icon, label, color, onClick }) => (
+const ActionButton = ({ icon: Icon, label, color, onClick, darkMode }) => (
   <motion.button 
     whileHover={{ y: -5 }}
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
     className="flex flex-col items-center justify-center space-y-4 group"
   >
-     <div className="w-24 h-24 rounded-[3rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-white group-hover:shadow-premium group-hover:border-transparent transition-all relative">
+     <div className="w-24 h-24 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600 group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-premium group-hover:border-transparent transition-all relative">
         <Icon className={`w-8 h-8 ${color} opacity-40 group-hover:opacity-100 transition-opacity`} />
         <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/10 to-transparent rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
      </div>
-     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-slate-900 transition-colors text-center">{label}</span>
+     <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] group-hover:text-slate-900 dark:group-hover:text-white transition-colors text-center">{label}</span>
   </motion.button>
 );
 
 const MenuItem = ({ icon: Icon, label, onClick }) => (
   <button 
     onClick={onClick}
-    className="w-full p-6 flex items-center justify-between group active:bg-slate-100/50 transition-all"
+    className="w-full p-6 flex items-center justify-between group active:bg-slate-100/50 dark:active:bg-slate-800/50 transition-all"
   >
      <div className="flex items-center space-x-4">
-        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-300 group-hover:text-primary-500 shadow-soft transition-all">
+        <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-300 dark:text-slate-600 group-hover:text-primary-500 shadow-soft transition-all">
            <Icon className="w-5 h-5" />
         </div>
-        <span className="text-sm font-black tracking-tight text-slate-700">{label}</span>
+        <span className="text-sm font-black tracking-tight text-slate-700 dark:text-slate-300">{label}</span>
      </div>
-     <ChevronRight className="w-4 h-4 text-slate-200 group-hover:text-primary-500 transition-colors" />
+     <ChevronRight className="w-4 h-4 text-slate-200 dark:text-slate-700 group-hover:text-primary-500 transition-colors" />
   </button>
 );
 

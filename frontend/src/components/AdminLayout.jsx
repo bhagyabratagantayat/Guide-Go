@@ -16,10 +16,10 @@ const AdminLayout = () => {
 
   const menuItems = [
     { title: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/admin' },
-    { title: 'Users', icon: <Users className="w-5 h-5" />, path: '/admin/users' },
-    { title: 'Guides', icon: <UserCheck className="w-5 h-5" />, path: '/admin/guides' },
-    { title: 'Places', icon: <MapPin className="w-5 h-5" />, path: '/admin/places' },
+    { title: 'User Management', icon: <Users className="w-5 h-5" />, path: '/admin/users' },
+    { title: 'Guide Management', icon: <UserCheck className="w-5 h-5" />, path: '/admin/guides' },
     { title: 'Bookings', icon: <BookOpen className="w-5 h-5" />, path: '/admin/bookings' },
+    { title: 'Reports', icon: <HelpCircle className="w-5 h-5" />, path: '/admin' }, // Mapping to dashboard for now
   ];
 
   const handleLogout = () => {

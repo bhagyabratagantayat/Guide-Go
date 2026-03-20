@@ -1,192 +1,188 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Search, MapPin, Star, Headset, 
-  Sparkles, Heart, User,
-  ArrowRight, Hotel, Utensils, HeartPulse, Navigation,
-  Compass, HelpCircle
+  Search, MapPin, Compass, Hotel, Coffee, 
+  HeartPulse, Bike, ArrowRight, Star,
+  LayoutDashboard, Calendar, User, Sparkles
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 const Home = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const destinations = [
-    { 
-      name: 'Jagannath Temple', 
-      image: 'https://images.unsplash.com/photo-1548013146-72479768b70e?auto=format&fit=crop&q=80', 
-      rating: 4.9, 
-      location: 'Puri',
-      description: 'The spiritual heart of Odisha, famous for its annual Rath Yatra.'
-    },
-    { 
-      name: 'Konark Sun Temple', 
-      image: 'https://images.unsplash.com/photo-1601058268499-e52658b8bb88?auto=format&fit=crop&q=80', 
-      rating: 4.8, 
-      location: 'Konark',
-      description: 'A 13th-century architectural marvel shaped like a giant chariot.'
-    },
-    { 
-      name: 'Chilika Lake', 
-      image: 'https://images.unsplash.com/photo-1589136142558-196020588661?auto=format&fit=crop&q=80', 
-      rating: 4.7, 
-      location: 'Chilika',
-      description: 'Asia\'s largest salt water lagoon, home to Irrawaddy dolphins.'
-    },
-    { 
-      name: 'Lingaraj Temple', 
-      image: 'https://images.unsplash.com/photo-1590422444101-6c2e2e77b670?auto=format&fit=crop&q=80', 
-      rating: 4.8, 
-      location: 'Bhubaneswar',
-      description: 'One of the oldest and largest temples in the Temple City.'
-    },
-  ];
-
-  const cities = [
-    { name: 'Mumbai', image: 'https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=200&h=200&fit=crop' },
-    { name: 'Delhi', image: 'https://images.unsplash.com/photo-1585135497273-1a86b09fe707?w=200&h=200&fit=crop' },
-    { name: 'Bengaluru', image: 'https://images.unsplash.com/photo-1596422846543-75c6fc18a593?w=200&h=200&fit=crop' },
-    { name: 'Jaipur', image: 'https://images.unsplash.com/photo-1603262110263-ce0158e9f338?w=200&h=200&fit=crop' },
-    { name: 'Agra', image: 'https://images.unsplash.com/photo-1564507592333-c60657ece523?w=200&h=200&fit=crop' },
-    { name: 'Varanasi', image: 'https://images.unsplash.com/photo-1561047029-3000c6812cbb?w=200&h=200&fit=crop' },
-    { name: 'Bhubaneswar', image: 'https://images.unsplash.com/photo-1590733403305-675c9298585e?w=200&h=200&fit=crop' },
-    { name: 'Puri', image: 'https://images.unsplash.com/photo-1524492459422-ad5193910f54?w=200&h=200&fit=crop' },
-    { name: 'Konark', image: 'https://images.unsplash.com/photo-1590733403305-675c9298585e?w=200&h=200&fit=crop' },
+  const quickActions = [
+    { icon: MapPin, label: 'Find Guide', path: '/explore-map?filter=guides', color: 'bg-primary-500' },
+    { icon: Compass, label: 'Explore Map', path: '/explore-map', color: 'bg-indigo-500' },
+    { icon: Hotel, label: 'Hotels', path: '/explore-map?filter=hotels', color: 'bg-pink-500' },
+    { icon: Coffee, label: 'Restaurants', path: '/explore-map?filter=restaurants', color: 'bg-orange-500' },
+    { icon: HeartPulse, label: 'Emergency', path: '/emergency', color: 'bg-red-500' },
+    { icon: Bike, label: 'Transport', path: '/explore-map?filter=transport', color: 'bg-blue-500' },
   ];
 
   return (
-    <div className="bg-[#f0f4f9] min-h-screen pb-32 pt-8">
-      {/* Welcome Header */}
-      <div className="px-6 mb-8 pt-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-32 pt-28 transition-colors duration-300">
+      {/* Header / Greeting */}
+      <div className="px-6 mb-8 flex items-center justify-between">
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-1"
         >
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Hi {user ? user.name.split(' ')[0] : 'Traveler'} 👋
-          </h1>
-          <p className="text-sm text-slate-500 font-medium">
-            Where would you like to explore today?
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
+            {user?.role === 'tourist' ? 'Namaste, Explorer' : 'Namaste, Local Expert'}
           </p>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter italic font-serif leading-none uppercase">
+            {user ? user.name.split(' ')[0] : 'Traveler'}
+          </h1>
         </motion.div>
+        
+        {user?.role === 'tourist' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center space-x-2 bg-primary-50 dark:bg-primary-900/20 px-4 py-2 rounded-2xl border border-primary-100 dark:border-primary-900/30"
+          >
+            <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
+            <span className="text-[10px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">Active Search</span>
+          </motion.div>
+        )}
       </div>
 
-      {/* Modern Search Bar */}
-      <div className="px-6 mb-10">
-        <div className="relative flex items-center group">
-          <Search className="absolute left-6 text-slate-400 w-5 h-5 group-focus-within:text-primary-500 transition-colors" />
+      {/* Hero Search */}
+      <div className="px-6 mb-12">
+        <div className="relative group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600 w-5 h-5 group-focus-within:text-primary-500 transition-colors" />
           <input 
-            type="text" 
-            placeholder="Search destinations, guides, places..." 
-            className="w-full bg-white border-none rounded-[2rem] py-5 pl-16 pr-6 shadow-premium ring-1 ring-slate-100 focus:ring-2 focus:ring-primary-500/20 transition-all text-sm font-medium placeholder:text-slate-300"
+            type="text"
+            placeholder={user?.role === 'guide' ? "Find fellow guides..." : "Where to next?"}
+            className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] py-6 pl-14 pr-6 shadow-premium dark:shadow-none font-bold text-lg placeholder:text-slate-300 dark:placeholder:text-slate-700 outline-none focus:border-primary-500/30 transition-all text-slate-900 dark:text-white"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      {/* City Browse (WhatsApp Style) */}
-      <section className="mb-12">
-        <div className="flex justify-between items-center px-6 mb-4">
-           <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Browse by City</h2>
-        </div>
-        <div className="flex overflow-x-auto gap-5 px-6 pb-2 no-scrollbar">
-          {cities.map((city, idx) => (
-            <Link key={idx} to={`/guides?city=${city.name}`} className="flex flex-col items-center space-y-2 group">
-              <motion.div 
-                whileTap={{ scale: 0.9 }}
-                className="w-20 h-20 rounded-full p-1 border-2 border-primary-500 ring-2 ring-white shadow-soft group-hover:border-accent-500 transition-all"
-              >
-                <div className="w-full h-full rounded-full overflow-hidden">
-                  <img src={city.image} alt={city.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                </div>
-              </motion.div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">{city.name}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Quick Actions Grid */}
-      <section className="px-6 mb-12">
-        <div className="flex justify-between items-center mb-6">
-           <h2 className="text-xl font-bold text-slate-800">Our Services</h2>
-           <div className="w-8 h-1 bg-primary-500 rounded-full opacity-20" />
-        </div>
-        <div className="grid grid-cols-3 gap-y-8 gap-x-4">
-          <ServiceItem icon={Compass} label="Guides" color="bg-blue-500" path="/guides" />
-          <ServiceItem icon={MapPin} label="Map" color="bg-orange-500" path="/explore-map" />
-          <ServiceItem icon={Headset} label="Audio Guide" color="bg-indigo-500" path="/explore" />
-          
-          <ServiceItem icon={Hotel} label="Hotels" color="bg-pink-500" path="/hotels" />
-          <ServiceItem icon={Utensils} label="Food" color="bg-orange-600" path="/restaurants" />
-          <ServiceItem icon={HeartPulse} label="Medical" color="bg-red-500" path="/emergency" />
-          
-          <ServiceItem icon={Sparkles} label="AI Plan" color="bg-teal-500" path="/ai-chat" />
-          <ServiceItem icon={Navigation} label="Transport" color="bg-blue-600" path="/explore-map" />
-          <ServiceItem icon={HelpCircle} label="Support" color="bg-slate-700" path="/support" />
-        </div>
-      </section>
-
-      {/* Popular Odisha Section - Horizontal Scroll */}
-      <div className="mb-12">
-        <div className="px-6 flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-800">Explore Odisha</h2>
-          <button className="text-[11px] font-black text-primary-500 uppercase tracking-widest bg-primary-50 px-4 py-2 rounded-full">See All</button>
-        </div>
-        <div className="flex space-x-5 overflow-x-auto px-6 pb-6 no-scrollbar">
-          {destinations.map((dest, idx) => (
-            <motion.div 
+      {/* Unified Quick Actions Grid - Uber Style */}
+      <div className="px-6 mb-16">
+        <h3 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.5em] mb-6 italic border-b border-slate-100 dark:border-slate-800 pb-2 inline-block">
+          {user?.role === 'guide' ? 'Guide Tools' : 'Fast Launch'}
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          {(user?.role === 'guide' ? [
+            { icon: LayoutDashboard, label: 'Dashboard', path: '/guide', color: 'bg-primary-500' },
+            { icon: Calendar, label: 'Bookings', path: '/bookings', color: 'bg-indigo-500' },
+            { icon: Sparkles, label: 'Guide AI', path: '/ai-chat', color: 'bg-pink-500' },
+            { icon: User, label: 'Profile', path: '/profile', color: 'bg-orange-500' },
+            { icon: MapPin, label: 'Locals', path: '/guides', color: 'bg-blue-500' },
+            { icon: Compass, label: 'Explore', path: '/explore-map', color: 'bg-slate-900' },
+          ] : quickActions).map((action, idx) => (
+            <motion.button
               key={idx}
-              whileTap={{ scale: 0.96 }}
-              className="flex-shrink-0 w-72 bg-white rounded-[2.5rem] p-4 shadow-premium border border-white/50"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate(action.path)}
+              className="flex flex-col items-center space-y-3 group"
             >
-              <div className="h-48 w-full rounded-[2rem] overflow-hidden mb-4 relative shadow-inner">
-                <img src={dest.image} className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700" alt={dest.name} />
-                <div className="absolute top-3 right-3 bg-white/30 backdrop-blur-md rounded-full p-2.5">
-                   <Heart className="w-4 h-4 text-white" />
-                </div>
-                <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                   <div className="flex items-center space-x-1">
-                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                      <span className="text-[10px] font-bold text-white">{dest.rating}</span>
-                   </div>
-                </div>
+              <div className={`w-20 h-20 ${action.color} rounded-[2rem] flex items-center justify-center text-white shadow-lg active:shadow-inner transition-all relative overflow-hidden`}>
+                 <action.icon className="w-8 h-8 relative z-10" />
+                 <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="px-1 space-y-1.5">
-                <div className="flex items-center justify-between">
-                   <h3 className="font-bold text-slate-900 text-lg leading-tight">{dest.name}</h3>
-                </div>
-                <p className="text-xs text-slate-400 font-medium line-clamp-2 leading-relaxed">
-                   {dest.description}
-                </p>
-                <div className="flex items-center space-x-1 text-primary-500 text-[10px] font-bold uppercase tracking-widest pt-2">
-                   <MapPin className="w-3 h-3" />
-                   <span>{dest.location}, Odisha</span>
-                </div>
-              </div>
-            </motion.div>
+              <span className="text-[9px] font-black text-slate-900 dark:text-slate-300 uppercase tracking-widest text-center leading-tight">
+                {action.label}
+              </span>
+            </motion.button>
           ))}
         </div>
       </div>
+
+      {user?.role !== 'guide' && (
+        <>
+          {/* Featured Cities - Horizontal Scroll */}
+          <div className="mb-16">
+             <div className="px-6 mb-6 flex justify-between items-end">
+                <h3 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.5em] italic">Top Havens</h3>
+                <button className="text-[8px] font-black uppercase tracking-widest text-primary-500">View All</button>
+             </div>
+             <div className="flex space-x-6 overflow-x-auto no-scrollbar px-6 pb-4">
+                {['Puri', 'Konark', 'Bhubaneswar', 'Cuttack'].map((city, idx) => (
+                   <motion.div 
+                      key={city}
+                      whileHover={{ y: -10 }}
+                      className="flex-shrink-0 w-64 h-80 bg-white dark:bg-slate-900 rounded-[3rem] shadow-premium dark:shadow-none overflow-hidden border border-slate-50 dark:border-slate-800 relative group cursor-pointer"
+                   >
+                      <img src={`https://source.unsplash.com/featured/?${city},temple`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={city} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 dark:from-slate-950 via-transparent to-transparent" />
+                      <div className="absolute bottom-8 left-8">
+                         <p className="text-[8px] font-black text-primary-500 dark:text-primary-400 uppercase tracking-[0.4em] mb-1">Odisha, IN</p>
+                         <p className="text-3xl font-black text-white italic font-serif uppercase tracking-tighter">{city}</p>
+                      </div>
+                      <div className="absolute top-6 right-6 w-10 h-10 bg-white/20 dark:bg-slate-800/40 backdrop-blur-md rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Compass className="w-5 h-5" />
+                      </div>
+                   </motion.div>
+                ))}
+             </div>
+          </div>
+
+          {/* Guide Preview Section */}
+          <div className="px-6 pb-12">
+             <div className="bg-slate-900 dark:bg-primary-900/20 rounded-[3.5rem] p-10 relative overflow-hidden group shadow-2xl">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-[80px] -mr-32 -mt-32" />
+                <div className="relative z-10 space-y-6">
+                   <div className="space-y-2">
+                      <p className="text-[9px] font-black text-primary-400 uppercase tracking-[0.4em]">Expert Storytellers</p>
+                      <h4 className="text-3xl font-black text-white italic font-serif uppercase leading-none">Find your Perfect Guide</h4>
+                   </div>
+                   <p className="text-slate-400 dark:text-slate-500 text-sm leading-relaxed max-w-[240px]">Connect with verified locals who know every secret corner of the city.</p>
+                   <button 
+                     onClick={() => navigate('/guides')}
+                     className="bg-white dark:bg-white text-slate-950 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-primary-500 hover:text-white transition-all active:scale-95 flex items-center space-x-3"
+                   >
+                     <span>Explore Guides</span>
+                     <ArrowRight className="w-4 h-4" />
+                   </button>
+                </div>
+                
+                <div className="absolute -bottom-10 -right-10 opacity-20 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                   <MapPlaceholder className="w-64 h-64" />
+                </div>
+             </div>
+          </div>
+        </>
+      )}
+
+      {user?.role === 'guide' && (
+        <div className="px-6 pb-12">
+          <div className="bg-primary-500 rounded-[3.5rem] p-10 relative overflow-hidden group shadow-2xl">
+            <div className="relative z-10 space-y-6">
+              <div className="space-y-2">
+                <p className="text-[9px] font-black text-slate-900 uppercase tracking-[0.4em]">Ready to Roll?</p>
+                <h4 className="text-3xl font-black text-slate-900 italic font-serif uppercase leading-none">Go Live to Get Bookings</h4>
+              </div>
+              <button 
+                onClick={() => navigate('/guide')}
+                className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all active:scale-95"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const ServiceItem = ({ icon: Icon, label, color, path }) => (
-  <Link to={path} className="group">
-    <motion.div 
-      whileTap={{ scale: 0.92 }}
-      className="flex flex-col items-center space-y-3"
-    >
-      <div className={`w-16 h-16 ${color} rounded-[1.8rem] flex items-center justify-center text-white shadow-xl shadow-current/20 transition-all group-hover:rotate-6 group-hover:scale-105`}>
-        <Icon className="w-7 h-7" />
-      </div>
-      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest text-center">{label}</span>
-    </motion.div>
-  </Link>
+const MapPlaceholder = ({ className }) => (
+  <svg className={className} viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="80" stroke="white" strokeWidth="2" strokeDasharray="10 10" />
+    <path d="M100 60V140M60 100H140" stroke="white" strokeWidth="2" />
+    <circle cx="100" cy="100" r="20" fill="white" />
+  </svg>
 );
 
 export default Home;

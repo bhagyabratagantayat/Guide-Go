@@ -6,9 +6,10 @@ const bookingSchema = new mongoose.Schema({
   location: { type: String, required: true },
   bookingTime: { type: Date, required: true },
   price: { type: Number, required: true },
-  status: { type: String, enum: ['pending', 'confirmed', 'completed'], default: 'pending' },
-  paymentMethod: { type: String, enum: ['cash', 'upi'], default: 'cash' },
-  paymentStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
+  paymentMethod: { type: String, enum: ['cash', 'upi', 'card'], default: 'cash' },
+  paymentStatus: { type: String, enum: ['pending', 'paid', 'refunded'], default: 'pending' },
+  transactionId: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

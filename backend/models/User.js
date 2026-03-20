@@ -12,6 +12,9 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: true },
   location: { type: String },
   profilePicture: { type: String, default: '' },
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Place' }],
+  experience: { type: Number, default: 0 }, // For guides
+  specialization: [{ type: String }], // For guides
   resetPasswordOTP: { type: String },
   resetPasswordOTPExpiry: { type: Date },
   createdAt: { type: Date, default: Date.now },

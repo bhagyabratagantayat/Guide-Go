@@ -1,15 +1,9 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { 
-  ChevronLeft, Globe, Bell, Shield, 
-  Languages, Check, ChevronRight
-} from 'lucide-react';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { darkMode } = useTheme();
 
   const languages = [
     { code: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
@@ -22,9 +16,9 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-20">
+    <div className="min-h-screen bg-surface-50 dark:bg-slate-950 pb-20 transition-colors duration-300">
       {/* Premium Header */}
-      <div className="bg-slate-900 pt-32 pb-48 px-8 relative overflow-hidden">
+      <div className="bg-slate-900 dark:bg-slate-900 pt-32 pb-48 px-8 relative overflow-hidden">
          <div className="absolute inset-0 opacity-10 pointer-events-none">
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary-500 rounded-full blur-[120px] -mr-48 -mt-48" />
          </div>
@@ -46,14 +40,14 @@ const Settings = () => {
          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[4rem] shadow-premium overflow-hidden border border-slate-100"
+            className="bg-white dark:bg-slate-900 rounded-[4rem] shadow-premium dark:shadow-none overflow-hidden border border-slate-100 dark:border-slate-800"
          >
             <div className="p-10 space-y-12">
                {/* Language Section */}
                <section className="space-y-6">
                   <div className="flex items-center space-x-3 mb-2">
-                     <Globe className="w-5 h-5 text-primary-500" />
-                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{t('settings.language_realm')}</h3>
+                     <Globe className="w-5 h-5 text-primary-500 font-black" />
+                     <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">{t('settings.language_realm')}</h3>
                   </div>
                   
                   <div className="space-y-4">
@@ -65,8 +59,8 @@ const Settings = () => {
                            onClick={() => changeLanguage(lang.code)}
                            className={`w-full p-6 rounded-3xl border flex items-center justify-between transition-all ${
                              isActive 
-                             ? 'bg-slate-900 border-transparent text-white shadow-xl' 
-                             : 'bg-slate-50 border-slate-100 text-slate-800 hover:bg-white hover:shadow-soft'
+                             ? 'bg-slate-900 dark:bg-primary-600 border-transparent text-white shadow-xl' 
+                             : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:shadow-soft'
                            }`}
                          >
                             <div className="flex items-center space-x-4">
@@ -75,7 +69,7 @@ const Settings = () => {
                                </div>
                                <div className="text-left">
                                   <p className="text-sm font-black tracking-tight">{lang.native}</p>
-                                  <p className={`text-[9px] font-bold uppercase tracking-widest ${isActive ? 'text-white/40' : 'text-slate-400'}`}>
+                                  <p className={`text-[9px] font-bold uppercase tracking-widest ${isActive ? 'text-white/40' : 'text-slate-400 dark:text-slate-500'}`}>
                                     {lang.name}
                                   </p>
                                </div>
@@ -91,20 +85,20 @@ const Settings = () => {
                <section className="space-y-6 opacity-40 grayscale pointer-events-none">
                   <div className="flex items-center space-x-3 mb-2">
                      <Bell className="w-5 h-5 text-indigo-500" />
-                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{t('settings.communication')}</h3>
+                     <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">{t('settings.communication')}</h3>
                   </div>
-                  <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-between">
-                     <span className="text-sm font-black tracking-tight text-slate-800">{t('settings.push_notifications')}</span>
-                     <div className="w-12 h-6 bg-slate-200 rounded-full relative">
+                  <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                     <span className="text-sm font-black tracking-tight text-slate-800 dark:text-slate-300">{t('settings.push_notifications')}</span>
+                     <div className="w-12 h-6 bg-slate-200 dark:bg-slate-700 rounded-full relative">
                         <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full" />
                      </div>
                   </div>
                </section>
 
                {/* Footer Info */}
-               <div className="pt-12 border-t border-slate-50 text-center space-y-2">
-                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest italic">GuideGo Global Version 1.0.4</p>
-                  <p className="text-[8px] font-bold text-slate-200 uppercase tracking-[0.4em] mb-4">Crafted for Modern Travelers</p>
+               <div className="pt-12 border-t border-slate-50 dark:border-slate-800 text-center space-y-2">
+                  <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest italic">GuideGo Global Version 1.0.4</p>
+                  <p className="text-[8px] font-bold text-slate-200 dark:text-slate-700 uppercase tracking-[0.4em] mb-4">Crafted for Modern Travelers</p>
                </div>
             </div>
          </motion.div>

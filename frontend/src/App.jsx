@@ -60,6 +60,23 @@ function AppContent() {
       });
 
       socketRef.current.on('notification', (data) => {
+        if (data.type === 'booking_received') {
+          // Add handlers for the notification
+          data.onAccept = async (id) => {
+            try {
+              await axios.put(`/api/bookings/${id}/status`, { status: 'confirmed' });
+            } catch (err) {
+              console.error('Failed to accept booking:', err);
+            }
+          };
+          data.onDecline = async (id) => {
+            try {
+              await axios.put(`/api/bookings/${id}/status`, { status: 'rejected' });
+            } catch (err) {
+              console.error('Failed to decline booking:', err);
+            }
+          };
+        }
         setNotification(data);
       });
 
@@ -75,7 +92,7 @@ function AppContent() {
         {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       </AnimatePresence>
 
-      <div className="flex flex-col min-h-screen bg-surface-50">
+      <div className="flex flex-col min-h-screen bg-surface-50 dark:bg-slate-950 transition-colors duration-300">
         <Navbar />
         <main className="flex-grow pt-24 pb-24 md:pb-0">
           <AnimatePresence mode="wait">
@@ -108,7 +125,8 @@ function AppContent() {
               <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
 
               {/* Protected Roles */}
-              <Route path="/guide-dashboard" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />
+              {/* Role-Specific Dashboards */}
+              <Route path="/guide" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />
               
               {/* Admin Layout */}
               <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
@@ -146,13 +164,17 @@ const PageWrapper = ({ children }) => (
   </motion.div>
 );
 
+import { ThemeProvider } from './context/ThemeContext.jsx';
+
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

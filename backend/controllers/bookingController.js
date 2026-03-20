@@ -4,6 +4,14 @@ const asyncHandler = require('../middleware/asyncHandler');
 
 const createBooking = asyncHandler(async (req, res, next) => {
   const { guideId, location, bookingTime, price, paymentMethod } = req.body;
+
+  // Check if guide exists and is approved
+  const Guide = require('../models/Guide');
+  const guide = await Guide.findOne({ _id: guideId, status: 'approved' });
+
+  if (!guide) {
+    return next(new ErrorResponse('Guide not found or not yet verified by admin', 404));
+  }
   const booking = await Booking.create({
     touristId: req.user._id,
     guideId,
@@ -64,7 +72,15 @@ const getUserBookings = asyncHandler(async (req, res, next) => {
 });
 
 const getGuideBookings = asyncHandler(async (req, res, next) => {
-  const bookings = await Booking.find({ guideId: req.user._id })
+  // Check if guide is approved
+  const Guide = require('../models/Guide');
+  const guide = await Guide.findOne({ userId: req.user._id });
+
+  if (!guide || guide.status !== 'approved') {
+    return res.json([]); // Return empty if not verified yet
+  }
+
+  const bookings = await Booking.find({ guideId: guide._id })
     .populate('touristId', 'name email phone');
   res.json(bookings);
 });

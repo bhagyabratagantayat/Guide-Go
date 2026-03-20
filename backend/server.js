@@ -85,6 +85,7 @@ app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/restaurants', require('./routes/restaurantRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
+app.use('/api/hotels', require('./routes/hotelRoutes'));
 
 app.get('/', (req, res) => {
   res.send('GuideGo API is running...');

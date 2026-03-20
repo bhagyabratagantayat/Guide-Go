@@ -8,11 +8,14 @@ import {
   X, Headset, BookOpen, Clock, 
   Waves, ListMusic, Sparkles, Share2
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext.jsx';
 import useAudioGuide from '../hooks/useAudioGuide';
 
 const Explore = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const cityParam = searchParams.get('city') || 'All';
+  const { darkMode } = useTheme();
   
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +70,7 @@ const Explore = () => {
   });
 
   return (
-    <div className="min-h-screen bg-surface-50 pb-40">
+    <div className="min-h-screen bg-surface-50 dark:bg-slate-950 pb-40 transition-colors duration-300">
       {/* Immersive Header */}
       <div className="bg-slate-900 pt-32 pb-24 px-8 relative overflow-hidden">
          <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -150,7 +153,7 @@ const Explore = () => {
          {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-[600px] bg-white rounded-[4rem] animate-pulse shadow-premium border border-slate-50"></div>
+                  <div key={i} className="h-[600px] bg-white dark:bg-slate-900 rounded-[4rem] animate-pulse shadow-premium dark:shadow-none border border-slate-50 dark:border-slate-800"></div>
                ))}
             </div>
          ) : (
@@ -170,7 +173,7 @@ const Explore = () => {
                            animate={{ opacity: 1, scale: 1 }}
                            exit={{ opacity: 0, scale: 0.95 }}
                            whileHover={{ y: -12 }}
-                           className="group bg-white rounded-[4rem] overflow-hidden border border-slate-100 shadow-premium transition-all duration-700 relative flex flex-col h-[600px]"
+                           className="group bg-white dark:bg-slate-900 rounded-[4rem] overflow-hidden border border-slate-100 dark:border-slate-800 shadow-premium dark:shadow-none transition-all duration-700 relative flex flex-col h-[600px]"
                         >
                            <div className="relative h-2/3 overflow-hidden cursor-pointer" onClick={() => setSelectedPlace(place)}>
                               <img
@@ -198,14 +201,14 @@ const Explore = () => {
                            </div>
 
                            <div className="p-10 flex flex-col justify-between flex-grow">
-                              <p className="text-slate-500 font-bold leading-relaxed line-clamp-2 text-sm italic italic tracking-tight">
+                              <p className="text-slate-500 dark:text-slate-400 font-bold leading-relaxed line-clamp-2 text-sm italic italic tracking-tight">
                                  "{place.description}"
                               </p>
                               
-                              <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                              <div className="flex items-center justify-between pt-6 border-t border-slate-50 dark:border-slate-800">
                                  <button 
                                     onClick={() => setSelectedPlace(place)}
-                                    className="flex items-center text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] italic hover:text-primary-600 transition-colors group/btn"
+                                    className="flex items-center text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-[0.2em] italic hover:text-primary-600 transition-colors group/btn"
                                  >
                                     EXPLORE HUB 
                                     <ChevronRight className="w-4 h-4 ml-1.5 transform group-hover/btn:translate-x-1.5 transition-transform" />
@@ -237,13 +240,13 @@ const Explore = () => {
                </AnimatePresence>
 
                {filteredPlaces.length === 0 && !loading && (
-                  <div className="col-span-full py-40 bg-white rounded-[4rem] border-2 border-dashed border-slate-100 flex flex-col items-center justify-center space-y-8 text-center shadow-inner">
-                     <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-slate-200">
+                  <div className="col-span-full py-40 bg-white dark:bg-slate-900 rounded-[4rem] border-2 border-dashed border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center space-y-8 text-center shadow-inner">
+                     <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center text-slate-200 dark:text-slate-700">
                         <Waves className="w-12 h-12" />
                      </div>
                      <div className="space-y-3">
-                        <h3 className="text-4xl font-black text-slate-800 tracking-tighter italic font-serif leading-none">THE SILENCE REMAINS</h3>
-                        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">No sacred sites were found in this realm.</p>
+                        <h3 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter italic font-serif leading-none">THE SILENCE REMAINS</h3>
+                        <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.2em] text-xs">No sacred sites were found in this realm.</p>
                      </div>
                      <button onClick={() => { setSearchTerm(''); setActiveCategory('All'); setActiveCity('All'); }} className="btn-primary px-12 py-5 shadow-premium text-[10px]">REAWAKEN ALL LEGENDS</button>
                   </div>
@@ -269,7 +272,7 @@ const Explore = () => {
                initial={{ y: 100, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
                exit={{ y: 200, opacity: 0 }}
-               className="relative bg-white w-full max-w-7xl md:h-[90vh] overflow-hidden md:rounded-[5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col lg:flex-row"
+               className="relative bg-white dark:bg-slate-900 w-full max-w-7xl md:h-[90vh] overflow-hidden md:rounded-[5rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col lg:flex-row"
             >
                {/* Close Hub */}
                <button 
@@ -325,14 +328,14 @@ const Explore = () => {
                </div>
 
                {/* Right: The Narrative Experience */}
-               <div className="lg:w-1/2 p-12 lg:p-24 overflow-y-auto custom-scrollbar flex flex-col bg-white h-full">
+               <div className="lg:w-1/2 p-12 lg:p-24 overflow-y-auto custom-scrollbar flex flex-col bg-white dark:bg-slate-900 h-full">
                   <div className="flex-grow space-y-16">
                      <div className="space-y-8">
                         <div className="flex items-center space-x-4">
                            <BookOpen className="w-6 h-6 text-primary-600" />
-                           <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em]">Written Chronicle</h4>
+                           <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.4em]">Written Chronicle</h4>
                         </div>
-                        <p className="text-2xl md:text-3xl font-black text-slate-800 leading-[1.6] italic font-serif tracking-tight pr-4">
+                        <p className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-200 leading-[1.6] italic font-serif tracking-tight pr-4">
                            "{selectedPlace.description}"
                         </p>
                      </div>
@@ -385,12 +388,12 @@ const Explore = () => {
                      </div>
                   </div>
 
-                  <div className="mt-20 pt-10 border-t border-slate-100 flex items-center justify-between">
+                  <div className="mt-20 pt-10 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                      <div className="flex items-center space-x-4">
-                        <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:text-primary-600 hover:scale-110 transition-all cursor-pointer"><Share2 className="w-5 h-5" /></div>
-                        <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:text-primary-600 hover:scale-110 transition-all cursor-pointer"><ListMusic className="w-5 h-5" /></div>
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-2xl hover:text-primary-600 hover:scale-110 transition-all cursor-pointer"><Share2 className="w-5 h-5" /></div>
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-2xl hover:text-primary-600 hover:scale-110 transition-all cursor-pointer"><ListMusic className="w-5 h-5" /></div>
                      </div>
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic">Powered by GuideGo Spatial Audio</p>
+                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] italic">Powered by GuideGo Spatial Audio</p>
                   </div>
                </div>
             </motion.div>

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Users, UserCheck, MapPin, BookOpen, 
   TrendingUp, DollarSign, ArrowUpRight, 
-  Clock, Calendar, MoreHorizontal, ChevronRight
+  Clock, Calendar, MoreHorizontal, ChevronRight, Activity
 } from 'lucide-react';
 
 const AdminDashboard = () => {

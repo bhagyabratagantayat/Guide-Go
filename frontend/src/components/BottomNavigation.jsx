@@ -2,20 +2,43 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, Compass, Calendar, Sparkles, 
-  User
+  User, LayoutDashboard, Settings
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 const BottomNavigation = () => {
   const { t } = useTranslation();
+  const auth = useAuth();
   
-  const navItems = [
-    { icon: Home, label: t('common.home'), path: '/' },
-    { icon: Compass, label: t('common.explore'), path: '/explore-map' },
-    { icon: Sparkles, label: t('common.chat'), path: '/ai-chat' },
-    { icon: Calendar, label: t('common.bookings'), path: '/bookings' },
-    { icon: User, label: t('common.profile'), path: '/profile' },
+  if (!auth) {
+    console.error('Auth context not found in BottomNavigation');
+    return null;
+  }
+
+  const { user, loading } = auth;
+  
+  if (loading) return null;
+
+  const navItems = user?.role === 'guide' ? [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/guide' },
+    { icon: Calendar, label: 'Requests', path: '/guide' }, // Mapped to /guide as requested
+    { icon: Calendar, label: 'Bookings', path: '/bookings' },
+    { icon: Sparkles, label: 'Chat', path: '/ai-chat' },
+    { icon: User, label: 'Profile', path: '/profile' },
+  ] : user?.role === 'admin' ? [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+    { icon: User, label: 'Users', path: '/admin/users' },
+    { icon: User, label: 'Guides', path: '/admin/guides' },
+    { icon: Calendar, label: 'Bookings', path: '/admin/bookings' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+  ] : [
+    { icon: Home, label: t('common.home') || 'Home', path: '/' },
+    { icon: Compass, label: t('common.explore') || 'Explore', path: '/explore-map' },
+    { icon: Calendar, label: t('common.bookings') || 'Bookings', path: '/bookings' },
+    { icon: Sparkles, label: t('common.chat') || 'Chat', path: '/ai-chat' },
+    { icon: User, label: t('common.profile') || 'Profile', path: '/profile' },
   ];
 
   return (
