@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import { 
   Users, UserCheck, MapPin, BookOpen, 
   TrendingUp, DollarSign, ArrowUpRight, 
-  Clock, Calendar, MoreHorizontal, ChevronRight, Activity
+  Clock, Calendar, MoreHorizontal, ChevronRight, Activity,
+  ShieldCheck
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [data, setData] = useState(null);
@@ -72,8 +74,8 @@ const AdminDashboard = () => {
   const stats = [
     { label: 'Platform Revenue', value: `₹${data.stats.totalRevenue.toLocaleString()}`, icon: <DollarSign className="w-6 h-6" />, color: 'primary', trend: '+14.2%', desc: 'Current Month' },
     { label: 'Active Explorers', value: data.stats.totalUsers, icon: <Users className="w-6 h-6" />, color: 'secondary', trend: '+5.8%', desc: 'Across India' },
-    { label: 'Verified Guides', value: data.stats.totalGuides, icon: <UserCheck className="w-6 h-6" />, color: 'primary', trend: '+2.4%', desc: 'Hand-picked' },
-    { label: 'Total Journeys', value: data.stats.totalBookings, icon: <MapPin className="w-6 h-6" />, color: 'secondary', trend: '+8.1%', desc: 'Completed' },
+    { label: 'Verified Guides', value: data.stats.totalGuides, icon: <UserCheck className="w-6 h-6" />, color: 'primary', trend: '+2.4%', desc: 'Overall' },
+    { label: 'Guide Approvals', value: data.stats.pendingGuides || 0, icon: <ShieldCheck className="w-6 h-6" />, color: 'secondary', trend: 'Action Required', desc: 'Pending Review', path: '/admin/guides' },
   ];
 
   const container = {
@@ -117,35 +119,38 @@ const AdminDashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {stats.map((stat) => (
-          <motion.div 
-            key={stat.label} 
-            variants={item}
-            whileHover={{ y: -5 }}
-            className="glass-card p-8 rounded-[2.5rem] relative overflow-hidden group"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 ${
-                stat.color === 'primary' ? 'bg-primary-100 text-primary-600' : 'bg-secondary-100 text-secondary-600'
-              }`}>
-                {stat.icon}
+          <Link key={stat.label} to={stat.path || '#'}>
+            <motion.div 
+              variants={item}
+              whileHover={{ y: -5 }}
+              className="glass-card p-8 rounded-[2.5rem] relative overflow-hidden group h-full"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 ${
+                  stat.color === 'primary' ? 'bg-primary-100 text-primary-600' : 'bg-secondary-100 text-secondary-600'
+                }`}>
+                  {stat.icon}
+                </div>
+                <div className="flex flex-col items-end">
+                   <span className={`text-[10px] font-black px-2 py-1 rounded-full flex items-center mb-1 ${
+                     stat.label === 'Guide Approvals' && stat.value > 0 ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'
+                   }`}>
+                     {stat.trend} <ArrowUpRight className="w-3 h-3 ml-1" />
+                   </span>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{stat.desc}</span>
+                </div>
               </div>
-              <div className="flex flex-col items-end">
-                 <span className="text-[10px] font-black text-green-500 bg-green-50 px-2 py-1 rounded-full flex items-center mb-1">
-                   {stat.trend} <ArrowUpRight className="w-3 h-3 ml-1" />
-                 </span>
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{stat.desc}</span>
+              <div>
+                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                 <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stat.value}</h3>
               </div>
-            </div>
-            <div>
-               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-               <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stat.value}</h3>
-            </div>
-            
-            {/* Background Accent */}
-            <div className={`absolute -bottom-8 -right-8 w-24 h-24 rounded-full blur-3xl opacity-20 ${
-               stat.color === 'primary' ? 'bg-primary-500' : 'bg-secondary-500'
-            }`}></div>
-          </motion.div>
+              
+              {/* Background Accent */}
+              <div className={`absolute -bottom-8 -right-8 w-24 h-24 rounded-full blur-3xl opacity-20 ${
+                 stat.color === 'primary' ? 'bg-primary-500' : 'bg-secondary-500'
+              }`}></div>
+            </motion.div>
+          </Link>
         ))}
       </div>
 

@@ -11,6 +11,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const getDashboardStats = asyncHandler(async (req, res, next) => {
   const totalUsers = await User.countDocuments();
   const totalGuides = await Guide.countDocuments();
+  const pendingGuides = await Guide.countDocuments({ status: 'pending' });
   const totalBookings = await Booking.countDocuments();
   const totalPlaces = await Place.countDocuments();
 
@@ -35,6 +36,7 @@ const getDashboardStats = asyncHandler(async (req, res, next) => {
       stats: {
         totalUsers,
         totalGuides,
+        pendingGuides,
         totalBookings,
         totalPlaces,
         totalRevenue

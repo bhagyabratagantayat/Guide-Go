@@ -40,7 +40,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     admin: [
       { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/admin/users', label: 'User Management', icon: User },
-      { path: '/admin/guides', label: 'Guide Management', icon: ShieldCheck },
+      { path: '/admin/guides', label: 'Guide Approvals', icon: ShieldCheck },
       { path: '/admin/bookings', label: 'Bookings', icon: Calendar },
       { path: '/admin/places', label: 'Places', icon: Map },
       { path: '/admin/reports', label: 'Reports', icon: BarChart3 },
