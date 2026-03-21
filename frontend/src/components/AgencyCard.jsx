@@ -11,7 +11,7 @@ const AgencyCard = ({ agency }) => {
       className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden group hover:border-primary-500/50 hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-300 flex flex-col"
     >
       {/* Banner */}
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-56 rounded-t-[2.5rem] overflow-hidden">
         <img 
            src={agency.bannerUrl} 
            alt={agency.name} 
@@ -32,11 +32,13 @@ const AgencyCard = ({ agency }) => {
              </div>
            )}
         </div>
-        
-        {/* Logo overlay on image bottom */}
-        <div className="absolute -bottom-6 left-6 w-16 h-16 rounded-2xl border-4 border-slate-900 bg-white overflow-hidden shadow-xl z-20">
-           <img src={agency.logoUrl} className="w-full h-full object-cover" />
-        </div>
+      </div>
+      
+      {/* Logo overlay on image bottom (Moved outside overflow-hidden) */}
+      <div className="relative w-full h-0 z-20">
+         <div className="absolute -top-6 left-6 w-16 h-16 rounded-2xl border-4 border-slate-900 bg-white overflow-hidden shadow-xl">
+            <img src={agency.logoUrl} className="w-full h-full object-cover" />
+         </div>
       </div>
 
       {/* Content */}

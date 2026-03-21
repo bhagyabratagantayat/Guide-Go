@@ -35,6 +35,7 @@ import Chat from './pages/Chat';
 import Hotels from './pages/Hotels';
 import HotelDetail from './pages/HotelDetail';
 import Restaurants from './pages/Restaurants';
+import RestaurantDetail from './pages/RestaurantDetail';
 import Emergency from './pages/Emergency';
 import Support from './pages/Support';
 import Weather from './pages/Weather';
@@ -125,6 +126,7 @@ function AppContent() {
                 <Route path="/hotels" element={<PageWrapper><Hotels /></PageWrapper>} />
                 <Route path="/hotels/:id" element={<PageWrapper><HotelDetail /></PageWrapper>} />
                 <Route path="/restaurants" element={<PageWrapper><Restaurants /></PageWrapper>} />
+                <Route path="/restaurants/:id" element={<PageWrapper><RestaurantDetail /></PageWrapper>} />
                 <Route path="/weather" element={<PageWrapper><Weather /></PageWrapper>} />
                 <Route path="/subscription" element={<PageWrapper><Subscription /></PageWrapper>} />
                 <Route path="/trip-planner" element={<PageWrapper><TripPlanner /></PageWrapper>} />
