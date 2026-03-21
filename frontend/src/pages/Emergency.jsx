@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Phone, HeartPulse, Pill, Siren, 
@@ -10,6 +12,45 @@ import { useNavigate } from 'react-router-dom';
 const Emergency = () => {
   const navigate = useNavigate();
   const [sosActive, setSosActive] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSosToggle = () => {
+    if (sosActive) {
+      setSosActive(false);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+       toast.error('Geolocation is not supported by your browser');
+       return;
+    }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(async (position) => {
+       const { latitude, longitude } = position.coords;
+       try {
+          const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+          await axios.post('/api/sos/alert', {
+             latitude,
+             longitude,
+             userId: userInfo?._id
+          });
+          setSosActive(true);
+          toast.success('SOS Alert Dispatched with your Location!', {
+             icon: '🚨',
+             style: { background: '#ef4444', color: '#fff', fontWeight: 'bold' }
+          });
+       } catch (error) {
+          toast.error('Failed to send SOS signal. Please call 100 directly.');
+          console.error('SOS Error:', error);
+       } finally {
+          setLoading(false);
+       }
+    }, (error) => {
+       setLoading(false);
+       toast.error('Permission Denied. Please enable location to use SOS.');
+    });
+  };
   
   const services = [
     {
@@ -42,6 +83,7 @@ const Emergency = () => {
 
   return (
     <div className="bg-surface-50 dark:bg-slate-950 min-h-screen pb-32 pt-24 transition-colors duration-300">
+      <Toaster position="top-center" />
       {/* Premium Header */}
       <div className="absolute top-0 left-0 right-0 h-64 bg-slate-900 rounded-b-[4rem] overflow-hidden -z-0">
           <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/10 rounded-full blur-[100px] -mr-40 -mt-40" />
@@ -74,13 +116,17 @@ const Emergency = () => {
                  className="absolute inset-0 bg-red-500/20 rounded-full blur-2xl"
                />
                <button 
-                 onClick={() => setSosActive(!sosActive)}
+                 onClick={handleSosToggle}
+                 disabled={loading}
                  className={`w-32 h-32 rounded-full flex flex-col items-center justify-center text-white font-black shadow-2xl transition-all active:scale-90 relative z-10 ${
                    sosActive ? 'bg-slate-900 border-4 border-red-500 animate-pulse' : 'bg-red-500 hover:bg-red-600'
-                 }`}
+                 } ${loading ? 'opacity-50 cursor-wait' : ''}`}
                >
-                  <AlertTriangle className="w-8 h-8 mb-1" />
-                  <span className="text-lg tracking-tighter italic">SOS</span>
+                  {loading ? (
+                     <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                     <><AlertTriangle className="w-8 h-8 mb-1" /><span className="text-lg tracking-tighter italic">SOS</span></>
+                  )}
                </button>
             </div>
             <div>
