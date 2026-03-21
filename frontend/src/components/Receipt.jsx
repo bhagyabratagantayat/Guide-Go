@@ -18,15 +18,13 @@ const Receipt = ({ booking, onClose }) => {
          exit={{ opacity: 0, scale: 0.9, y: 30 }}
          className="w-full max-w-md relative"
        >
-          {/* Close Button */}
-          <button 
-            onClick={onClose}
-            className="absolute -top-14 right-0 p-3 bg-white/10 hover:bg-white/20 rounded-2xl text-white transition-all active:scale-90"
-          >
-             <X className="w-5 h-5" />
-          </button>
-
-          <div className="bg-white rounded-[3.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden relative border border-white/20">
+          <div className="bg-white rounded-[3.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden relative border border-white/20 w-[90vw] max-w-md mx-auto">
+             <button 
+               onClick={onClose}
+               className="absolute top-6 right-6 z-[100] p-2.5 bg-black/10 hover:bg-black/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90 shadow-sm"
+             >
+                <X className="w-5 h-5" />
+             </button>
              {/* Ticket "Cut-out" effect circles - Matching pure background color */}
              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-slate-950 rounded-full z-[20] shadow-inner" />
              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-10 h-10 bg-slate-950 rounded-full z-[20] shadow-inner" />
@@ -131,8 +129,14 @@ const Receipt = ({ booking, onClose }) => {
                 {/* Action Buttons */}
                 <div className="flex flex-col space-y-4 pt-4">
                    <button 
+                     onClick={onClose}
+                     className="w-full flex items-center justify-center py-6 bg-primary-500 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-primary-600 transition-all active:scale-95 shadow-xl shadow-primary-500/20"
+                   >
+                      BACK TO BOOKINGS
+                   </button>
+                   <button 
                      onClick={() => navigate(`/chat/${booking.guideId?._id || booking.guideId}`)}
-                     className="w-full flex items-center justify-center py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-primary-500 transition-all active:scale-95 shadow-xl shadow-slate-900/10 hover:shadow-primary-500/20"
+                     className="w-full flex items-center justify-center py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-900/10 hover:shadow-primary-500/20"
                    >
                       <MessageCircle className="w-4 h-4 mr-2 text-primary-400 animate-pulse" /> Chat with Guide
                    </button>

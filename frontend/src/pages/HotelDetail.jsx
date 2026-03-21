@@ -140,33 +140,34 @@ const HotelDetail = () => {
          </div>
 
          {/* Right Column (Sticky Booking Widget & Map preview) */}
-         <div className="lg:col-span-1 space-y-8">
-            <motion.div 
-               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-               className="bg-primary-500 p-8 rounded-[2.5rem] text-slate-900 shadow-xl shadow-primary-500/20 sticky top-24"
-            >
-               <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-2 opacity-80">Starting at</h3>
-               <p className="text-5xl font-black tracking-tighter mb-8">₹{hotel.pricePerNight.toLocaleString()}</p>
-               
-               <div className="space-y-4 mb-8">
-                  <div className="bg-white/20 p-4 rounded-2xl flex justify-between items-center backdrop-blur-sm">
-                     <span className="font-bold">Check-in</span>
-                     <span className="font-black">Select Date</span>
+         <div className="lg:col-span-1 h-fit relative">
+            <div className="sticky top-28 space-y-8 pb-8">
+               <motion.div 
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                  className="bg-primary-500 p-8 rounded-[2.5rem] text-slate-900 shadow-xl shadow-primary-500/20"
+               >
+                  <h3 className="text-sm font-black uppercase tracking-[0.2em] mb-2 opacity-80">Starting at</h3>
+                  <p className="text-5xl font-black tracking-tighter mb-8">₹{hotel.pricePerNight.toLocaleString()}</p>
+                  
+                  <div className="space-y-4 mb-8">
+                     <div className="bg-white/20 p-4 rounded-2xl flex justify-between items-center backdrop-blur-sm">
+                        <span className="font-bold">Check-in</span>
+                        <span className="font-black">Select Date</span>
+                     </div>
+                     <div className="bg-white/20 p-4 rounded-2xl flex justify-between items-center backdrop-blur-sm">
+                        <span className="font-bold">Check-out</span>
+                        <span className="font-black">Select Date</span>
+                     </div>
                   </div>
-                  <div className="bg-white/20 p-4 rounded-2xl flex justify-between items-center backdrop-blur-sm">
-                     <span className="font-bold">Check-out</span>
-                     <span className="font-black">Select Date</span>
-                  </div>
-               </div>
 
-               <button onClick={handleBookNow} className="w-full bg-slate-900 text-white rounded-2xl py-5 font-black uppercase tracking-widest text-sm hover:bg-slate-800 active:scale-95 transition-all">
-                  Book Now
-               </button>
-               <p className="text-center text-xs font-bold mt-4 opacity-70">You won't be charged yet</p>
-            </motion.div>
+                  <button onClick={handleBookNow} className="w-full bg-slate-900 text-white rounded-2xl py-5 font-black uppercase tracking-widest text-sm hover:bg-slate-800 active:scale-95 transition-all">
+                     Book Now
+                  </button>
+                  <p className="text-center text-xs font-bold mt-4 opacity-70">You won't be charged yet</p>
+               </motion.div>
 
-            {/* Map Preview Mock */}
-            <div className="bg-slate-200 dark:bg-slate-800 h-64 rounded-[2.5rem] overflow-hidden relative group cursor-pointer border border-slate-300 dark:border-slate-700">
+               {/* Map Preview Mock */}
+               <div className="bg-slate-200 dark:bg-slate-800 h-64 rounded-[2.5rem] overflow-hidden relative group cursor-pointer border border-slate-300 dark:border-slate-700">
                <img src="https://static.mapzen.com/images/peel-and-stick/peel-and-stick-2x.png" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt="Map Preview" />
                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 text-center">
@@ -174,6 +175,7 @@ const HotelDetail = () => {
                      <p className="text-xs font-black uppercase">{hotel.city}</p>
                   </div>
                </div>
+            </div>
             </div>
          </div>
       </div>

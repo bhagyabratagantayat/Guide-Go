@@ -13,6 +13,37 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReviewModal from '../components/ReviewModal';
 
+const getMockBookings = (role) => [
+  {
+    _id: 'mock_1',
+    status: 'pending',
+    bookingTime: new Date(Date.now() + 86400000).toISOString(),
+    location: 'Konark Sun Temple',
+    price: 1200,
+    userId: { _id: 'u1', name: 'Tourist', profilePicture: '' },
+    guideId: { _id: 'g1', name: 'Ashok Patnaik', profilePicture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80' }
+  },
+  {
+    _id: 'mock_2',
+    status: 'confirmed',
+    bookingTime: new Date(Date.now() + 172800000).toISOString(),
+    location: 'Lingaraj Temple',
+    price: 800,
+    userId: { _id: 'u1', name: 'Tourist', profilePicture: '' },
+    guideId: { _id: 'g2', name: 'Priya Dash', profilePicture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80' }
+  },
+  {
+    _id: 'mock_3',
+    status: 'completed',
+    bookingTime: new Date(Date.now() - 172800000).toISOString(),
+    location: 'Chilika Lake Tour',
+    price: 2500,
+    reviewed: false,
+    userId: { _id: 'u1', name: 'Tourist', profilePicture: '' },
+    guideId: { _id: 'g3', name: 'Sanjay Rout', profilePicture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80' }
+  }
+];
+
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +61,8 @@ const Bookings = () => {
       const { data } = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
-      setBookings(data);
+      // Fallback to beautiful mock UI if db is empty so interface is visible
+      setBookings(data.length > 0 ? data : getMockBookings(user.role));
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {

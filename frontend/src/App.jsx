@@ -37,6 +37,11 @@ import HotelDetail from './pages/HotelDetail';
 import Restaurants from './pages/Restaurants';
 import Emergency from './pages/Emergency';
 import Support from './pages/Support';
+import Weather from './pages/Weather';
+import Subscription from './pages/Subscription';
+import TripPlanner from './pages/TripPlanner';
+import Agencies from './pages/Agencies';
+import AgencyDetail from './pages/AgencyDetail';
 // Admin
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -49,7 +54,7 @@ function AppContent() {
   const { user } = useAuth();
   const [notification, setNotification] = useState(null);
   const [showSplash, setShowSplash] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const socketRef = useRef();
   const location = useLocation();
 
@@ -73,6 +78,16 @@ function AppContent() {
     }
   }, [user]);
 
+  // Adjust sidebar state on resize
+  useEffect(() => {
+     const handleResize = () => {
+        if (window.innerWidth < 1024) setIsSidebarOpen(false);
+        else setIsSidebarOpen(true);
+     };
+     window.addEventListener('resize', handleResize);
+     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -82,12 +97,12 @@ function AppContent() {
       <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         
-        <div className="flex-grow flex flex-col min-w-0 lg:ml-[280px]">
-          {/* Mobile Header (Floating) */}
-          <div className="lg:hidden fixed top-6 left-6 z-[1000]">
+        <div className={`flex-grow flex flex-col min-w-0 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-[280px]' : 'lg:ml-0'}`}>
+          {/* Header Toggle (Floating) */}
+          <div className={`fixed top-6 left-6 z-[1000] ${isSidebarOpen ? 'lg:hidden' : ''}`}>
              <button 
                onClick={() => setIsSidebarOpen(true)}
-               className="w-12 h-12 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center shadow-premium dark:shadow-none border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white"
+               className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg border border-slate-800 text-white hover:bg-slate-800 transition-colors"
              >
                 <Menu className="w-6 h-6" />
              </button>
@@ -110,6 +125,11 @@ function AppContent() {
                 <Route path="/hotels" element={<PageWrapper><Hotels /></PageWrapper>} />
                 <Route path="/hotels/:id" element={<PageWrapper><HotelDetail /></PageWrapper>} />
                 <Route path="/restaurants" element={<PageWrapper><Restaurants /></PageWrapper>} />
+                <Route path="/weather" element={<PageWrapper><Weather /></PageWrapper>} />
+                <Route path="/subscription" element={<PageWrapper><Subscription /></PageWrapper>} />
+                <Route path="/trip-planner" element={<PageWrapper><TripPlanner /></PageWrapper>} />
+                <Route path="/agencies" element={<PageWrapper><Agencies /></PageWrapper>} />
+                <Route path="/agencies/:id" element={<PageWrapper><AgencyDetail /></PageWrapper>} />
                 <Route path="/emergency" element={<PageWrapper><Emergency /></PageWrapper>} />
                 <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
 

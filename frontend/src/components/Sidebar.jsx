@@ -5,7 +5,7 @@ import {
   Home, Map, Compass, Headphones, Sparkles, 
   Calendar, Hotel, Utensils, User, Settings,
   LayoutDashboard, Bell, MessageSquare, BarChart3,
-  LogOut, X, Menu, ShieldCheck, MapPin
+  LogOut, X, Menu, ShieldCheck, MapPin, Cloud, Star, Building2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/GuideGo Logo.jpeg';
@@ -23,7 +23,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       { path: '/user/ai-chat', label: 'AI Assistant', icon: Sparkles },
       { path: '/user/bookings', label: 'My Bookings', icon: Calendar },
       { path: '/hotels', label: 'Hotels', icon: Hotel },
+      { path: '/agencies', label: 'Agencies', icon: Building2 },
       { path: '/restaurants', label: 'Restaurants', icon: Utensils },
+      { path: '/weather', label: 'Weather', icon: Cloud },
+      { path: '/trip-planner', label: 'Trip Planner', icon: Map },
+      { path: '/subscription', label: 'Premium', icon: Star },
       { path: '/user/profile', label: 'Profile', icon: User },
       { path: '/user/settings', label: 'Settings', icon: Settings },
     ],
@@ -72,8 +76,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       {/* Sidebar Container */}
       <motion.aside
-        initial={window.innerWidth >= 1024 ? "open" : "closed"}
-        animate={isOpen || window.innerWidth >= 1024 ? "open" : "closed"}
+        initial={isOpen ? "open" : "closed"}
+        animate={isOpen ? "open" : "closed"}
         variants={sidebarVariants}
         className="fixed top-0 left-0 bottom-0 w-[280px] bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 z-[1002] flex flex-col shadow-2xl lg:shadow-none"
       >
@@ -83,7 +87,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-xl object-cover ring-2 ring-primary-500/20" />
             <span className="text-xl font-black italic tracking-tighter text-slate-900 dark:text-white">GuideGo</span>
           </div>
-          <button onClick={toggleSidebar} className="lg:hidden p-2 text-slate-400">
+          <button onClick={toggleSidebar} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
