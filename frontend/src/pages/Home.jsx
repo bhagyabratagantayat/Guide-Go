@@ -8,6 +8,34 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { popularLocations, recommendedDestinations, trendingPlaces } from '../data/mockHomeData';
+import { mockHotels } from '../data/mockHotels';
+import { mockRestaurants } from '../data/mockRestaurants';
+import { mockAgencies } from '../data/mockAgencies';
+
+// Local Weather Component Wrapper
+const MiniWeather = () => (
+  <motion.div 
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    className="absolute top-10 right-10 z-20 hidden lg:flex bg-slate-950/40 backdrop-blur-3xl border border-white/20 p-6 rounded-[2.5rem] items-center space-x-6 shadow-2xl"
+  >
+    <div className="text-right">
+       <p className="text-[10px] font-black uppercase text-white/50 tracking-widest leading-none mb-2">Current Climate</p>
+       <p className="text-3xl font-black text-white italic font-serif leading-none tracking-tighter">Odisha, IN</p>
+    </div>
+    <div className="w-[2px] h-10 bg-white/10" />
+    <div className="flex items-center space-x-4">
+       <div className="relative">
+          <Zap className="w-10 h-10 text-yellow-400 fill-yellow-400 group-hover:scale-110 transition-transform" />
+          <div className="absolute inset-0 bg-yellow-400/20 blur-xl rounded-full" />
+       </div>
+       <div>
+          <p className="text-3xl font-black text-white tracking-tighter">32°C</p>
+          <p className="text-[9px] font-black uppercase text-yellow-400 tracking-widest leading-none">Sunny Sky</p>
+       </div>
+    </div>
+  </motion.div>
+);
 
 const Home = () => {
   const { user } = useAuth();
@@ -37,6 +65,9 @@ const Home = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-900/40" />
         </div>
+
+        {/* Floating Weather Widget */}
+        <MiniWeather />
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-20 flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
@@ -157,7 +188,124 @@ const Home = () => {
         </section>
       )}
 
-      {/* 4. RECOMMENDED FOR YOU */}
+      {/* 4. PREMIUM HOTELS SECTION */}
+      {user?.role !== 'guide' && (
+      <section className="max-w-7xl mx-auto pl-6 md:px-6 mt-20">
+        <div className="flex justify-between items-end mb-8 pr-6 md:pr-0">
+          <div>
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Luxury Collection</h3>
+            <h2 className="text-4xl font-black italic font-serif uppercase tracking-tighter text-white">Premium Stays</h2>
+          </div>
+          <button onClick={() => navigate('/hotels')} className="text-[10px] font-black uppercase tracking-widest text-primary-500 hover:text-primary-400 hidden sm:block">View All Stays</button>
+        </div>
+
+        <div className="flex overflow-x-auto gap-6 pb-12 pt-4 custom-scrollbar snap-x snap-mandatory pr-6">
+          {mockHotels.slice(0, 4).map(hotel => (
+            <div key={hotel._id} className="w-[300px] md:w-[380px] shrink-0 snap-center bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden group hover:border-primary-500/30 transition-all">
+              <div className="h-56 relative overflow-hidden">
+                <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700 flex items-center">
+                  <Star className="w-3.5 h-3.5 fill-primary-500 text-primary-500 mr-1.5" />
+                  <span className="text-xs font-black text-white">{hotel.rating}</span>
+                </div>
+              </div>
+              <div className="p-8">
+                <h4 className="text-2xl font-black italic font-serif text-white mb-2 truncate">{hotel.name}</h4>
+                <div className="flex items-center text-slate-500 text-[10px] font-black uppercase tracking-widest mb-6">
+                   <MapPin className="w-3.5 h-3.5 mr-1.5 text-primary-500" /> {hotel.city}
+                </div>
+                <div className="flex justify-between items-center pt-5 border-t border-slate-800">
+                  <span className="text-2xl font-black text-white tracking-tighter">₹{hotel.pricePerNight.toLocaleString()} <span className="text-[10px] uppercase text-slate-500 ml-1">/ Night</span></span>
+                  <button 
+                    onClick={() => navigate(`/hotels/${hotel._id}`)}
+                    className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center hover:bg-primary-500 hover:text-white text-slate-900 transition-all shadow-lg active:scale-90"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      )}
+
+      {/* 5. LOCAL GASTRONOMY SECTION */}
+      {user?.role !== 'guide' && (
+      <section className="max-w-7xl mx-auto pl-6 md:px-6 mt-10">
+        <div className="flex justify-between items-end mb-8 pr-6 md:pr-0">
+          <div>
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Taste of Odisha</h3>
+            <h2 className="text-4xl font-black italic font-serif uppercase tracking-tighter text-white">Local Gastronomy</h2>
+          </div>
+          <button onClick={() => navigate('/restaurants')} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 hidden sm:block">Explore Kitchens</button>
+        </div>
+
+        <div className="flex overflow-x-auto gap-6 pb-12 pt-4 custom-scrollbar snap-x snap-mandatory pr-6">
+          {mockRestaurants.slice(0, 4).map(res => (
+            <div key={res.id} className="w-[280px] md:w-[320px] shrink-0 snap-center bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden group hover:border-orange-500/30 transition-all">
+              <div className="h-44 relative overflow-hidden">
+                <img src={res.bannerUrl} alt={res.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
+                   {res.category}
+                </div>
+              </div>
+              <div className="p-6">
+                <h4 className="text-xl font-black italic font-serif text-white mb-2">{res.name}</h4>
+                <div className="flex items-center space-x-3 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6">
+                   <div className="flex items-center text-orange-400 font-bold">
+                      <Star className="w-3 h-3 fill-orange-500 mr-1" />
+                      {res.rating}
+                   </div>
+                   <span className="text-slate-800">•</span>
+                   <span className="font-bold">{res.priceLevel}</span>
+                </div>
+                <button 
+                  onClick={() => navigate(`/restaurants/${res.id}`)}
+                  className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all active:scale-95"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      )}
+
+      {/* 6. VERIFIED AGENCIES SECTION */}
+      {user?.role !== 'guide' && (
+      <section className="max-w-7xl mx-auto pl-6 md:px-6 mt-10">
+        <div className="flex justify-between items-end mb-8 pr-6 md:pr-0">
+          <div>
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2">Verified Partners</h3>
+            <h2 className="text-4xl font-black italic font-serif uppercase tracking-tighter text-white">Tour Operators</h2>
+          </div>
+          <button onClick={() => navigate('/agencies')} className="text-[10px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 hidden sm:block">All Agencies</button>
+        </div>
+
+        <div className="flex overflow-x-auto gap-4 pb-12 pt-4 custom-scrollbar snap-x snap-mandatory pr-6">
+          {mockAgencies.slice(0, 5).map(agency => (
+            <div 
+              key={agency.id} 
+              onClick={() => navigate(`/agencies/${agency.id}`)}
+              className="w-[200px] shrink-0 snap-center bg-slate-900 border border-slate-800 p-6 rounded-[2.5rem] flex flex-col items-center text-center cursor-pointer group hover:bg-slate-800 hover:border-blue-500/30 transition-all"
+            >
+              <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-slate-950 shadow-2xl mb-4 group-hover:scale-105 transition-transform">
+                <img src={agency.logoUrl} alt={agency.name} className="w-full h-full object-cover" />
+              </div>
+              <h4 className="text-sm font-black italic font-serif text-white truncate w-full mb-1">{agency.name}</h4>
+              <div className="flex items-center space-x-1 justify-center">
+                 <Star className="w-3 h-3 text-blue-500 fill-blue-500" />
+                 <span className="text-[10px] font-black text-slate-400">{agency.rating}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      )}
+
+      {/* 7. CURATED EXPERIENCES (Was Recommended For You) */}
       {user?.role !== 'guide' && (
       <section className="max-w-7xl mx-auto pl-6 md:px-6 mt-20">
         <div className="flex justify-between items-end mb-8 pr-6 md:pr-0">
