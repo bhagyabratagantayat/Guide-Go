@@ -10,6 +10,9 @@ const authenticateUser = asyncHandler(async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, config.jwtSecret);
     req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) {
+      return next(new ErrorResponse('User no longer exists', 401, 'UNAUTHORIZED'));
+    }
     return next();
   }
 
@@ -20,8 +23,8 @@ const authenticateUser = asyncHandler(async (req, res, next) => {
 
 const authorizeRole = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return next(new ErrorResponse(`Role ${req.user.role} is not authorized to access this route`, 403, 'FORBIDDEN'));
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next(new ErrorResponse(`Role ${req.user ? req.user.role : 'unauthorized'} is not authorized to access this route`, 403, 'FORBIDDEN'));
     }
     next();
   };

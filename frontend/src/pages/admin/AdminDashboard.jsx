@@ -209,9 +209,10 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-6 text-right sm:text-left">
                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border ${
-                         booking.status === 'confirmed' 
-                           ? 'bg-green-50 text-green-600 border-green-100' 
-                           : 'bg-orange-50 text-orange-600 border-orange-100'
+                         booking.status === 'confirmed' ? 'bg-green-50 text-green-600 border-green-100' : 
+                         booking.status === 'completed' ? 'bg-primary-50 text-primary-600 border-primary-100' :
+                         booking.status === 'rejected' || booking.status === 'cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
+                         'bg-orange-50 text-orange-600 border-orange-100'
                        }`}>
                          {booking.status}
                        </span>

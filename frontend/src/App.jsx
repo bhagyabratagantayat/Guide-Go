@@ -30,6 +30,7 @@ import Bookings from './pages/Bookings';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import GuideProfile from './pages/GuideProfile';
+import Notifications from './pages/Notifications';
 
 import Chat from './pages/Chat';
 import Hotels from './pages/Hotels';
@@ -46,10 +47,15 @@ import AgencyDetail from './pages/AgencyDetail';
 // Admin
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminReports from './pages/admin/AdminReports';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminGuides from './pages/admin/AdminGuides';
 import AdminPlaces from './pages/admin/AdminPlaces';
 import AdminBookings from './pages/admin/AdminBookings';
+
+// Guide Pages
+import Earnings from './pages/guide/Earnings';
+import ChatList from './pages/guide/ChatList';
 
 function AppContent() {
   const { user } = useAuth();
@@ -96,7 +102,11 @@ function AppContent() {
       </AnimatePresence>
 
       <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+          liveNotification={notification}
+        />
         
         <div className={`flex-grow flex flex-col min-w-0 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-[280px]' : 'lg:ml-0'}`}>
           {/* Header Toggle (Floating) */}
@@ -134,6 +144,7 @@ function AppContent() {
                 <Route path="/agencies/:id" element={<PageWrapper><AgencyDetail /></PageWrapper>} />
                 <Route path="/emergency" element={<PageWrapper><Emergency /></PageWrapper>} />
                 <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
+                <Route path="/notifications" element={<PageWrapper><Notifications /></PageWrapper>} />
 
                 {/* User Routes */}
                 <Route path="/user" element={<ProtectedRoute role="user"><PageWrapper><Home /></PageWrapper></ProtectedRoute>} />
@@ -141,15 +152,19 @@ function AppContent() {
                 <Route path="/user/explore-map" element={<ProtectedRoute role="user"><PageWrapper><ExploreMap /></PageWrapper></ProtectedRoute>} />
                 <Route path="/user/bookings" element={<ProtectedRoute role="user"><PageWrapper><Bookings /></PageWrapper></ProtectedRoute>} />
                 <Route path="/user/chat/:id" element={<ProtectedRoute role="user"><PageWrapper><Chat /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/profile" element={<ProtectedRoute role="user"><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
+                <Route path="/user/profile" element={<PageWrapper><Profile /></PageWrapper>} />
                 <Route path="/user/settings" element={<ProtectedRoute role="user"><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
                 <Route path="/user/ai-chat" element={<ProtectedRoute role="user"><PageWrapper><AIChat /></PageWrapper></ProtectedRoute>} />
 
                 {/* Guide Routes */}
                 <Route path="/guide" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />
+                <Route path="/guide/requests" element={<ProtectedRoute role="guide"><PageWrapper><Bookings type="requests" /></PageWrapper></ProtectedRoute>} />
                 <Route path="/guide/bookings" element={<ProtectedRoute role="guide"><PageWrapper><Bookings /></PageWrapper></ProtectedRoute>} />
+                <Route path="/guide/chat" element={<ProtectedRoute role="guide"><PageWrapper><ChatList /></PageWrapper></ProtectedRoute>} />
                 <Route path="/guide/chat/:id" element={<ProtectedRoute role="guide"><PageWrapper><Chat /></PageWrapper></ProtectedRoute>} />
                 <Route path="/guide/profile" element={<ProtectedRoute role="guide"><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
+                <Route path="/guide/earnings" element={<ProtectedRoute role="guide"><PageWrapper><Earnings /></PageWrapper></ProtectedRoute>} />
+                <Route path="/guide/settings" element={<ProtectedRoute role="guide"><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
                 <Route path="/guide/ai-chat" element={<ProtectedRoute role="guide"><PageWrapper><AIChat /></PageWrapper></ProtectedRoute>} />
 
                 {/* Admin Routes */}
@@ -159,6 +174,7 @@ function AppContent() {
                   <Route path="guides" element={<PageWrapper><AdminGuides /></PageWrapper>} />
                   <Route path="places" element={<PageWrapper><AdminPlaces /></PageWrapper>} />
                   <Route path="bookings" element={<PageWrapper><AdminBookings /></PageWrapper>} />
+                  <Route path="reports" element={<PageWrapper><AdminReports /></PageWrapper>} />
                   <Route path="settings" element={<PageWrapper><Settings /></PageWrapper>} />
                 </Route>
 
@@ -224,15 +240,18 @@ const RoleRedirect = ({ path }) => {
 };
 
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { CurrencyProvider } from './context/CurrencyContext.jsx';
 
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
+      <CurrencyProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </CurrencyProvider>
     </ThemeProvider>
   );
 }

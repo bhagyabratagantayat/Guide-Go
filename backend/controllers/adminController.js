@@ -158,6 +158,45 @@ const createAdmin = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Moderate guide (block/unblock)
+// @route   PUT /api/admin/guides/:id/moderate
+// @access  Private/Admin
+const updateGuideModeration = asyncHandler(async (req, res, next) => {
+  const { action, durationDays } = req.body;
+  const guide = await Guide.findById(req.params.id);
+
+  if (!guide) {
+    return next(new ErrorResponse('Guide not found', 404));
+  }
+
+  if (action === 'block') {
+    guide.status = 'blocked';
+    guide.blockedUntil = null;
+  } else if (action === 'temp_block') {
+    guide.status = 'temporarily_blocked';
+    const until = new Date();
+    until.setDate(until.getDate() + (durationDays || 7));
+    guide.blockedUntil = until;
+  } else if (action === 'unblock') {
+    guide.status = 'approved';
+    guide.blockedUntil = null;
+  }
+
+  await guide.save();
+
+  // Notify guide via socket
+  if (req.io) {
+    req.io.to(guide.userId.toString()).emit('notification', {
+      title: 'Account Status Update',
+      message: `Your guide account has been ${action}ed by the admin.`,
+      type: 'guide_moderation',
+      action: action
+    });
+  }
+
+  res.json({ success: true, data: guide });
+});
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -165,6 +204,7 @@ module.exports = {
   deleteUser,
   getAllGuides,
   updateGuideStatus,
+  updateGuideModeration,
   getAllBookings,
   createAdmin
 };

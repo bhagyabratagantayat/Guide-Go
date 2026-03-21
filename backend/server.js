@@ -80,6 +80,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/guides', require('./routes/guideRoutes'));
 app.use('/api/places', require('./routes/placeRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/restaurants', require('./routes/restaurantRoutes'));

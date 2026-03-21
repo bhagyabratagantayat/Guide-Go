@@ -99,6 +99,34 @@ const Login = () => {
           </motion.button>
         </form>
 
+        {/* Demo Login System */}
+        <div className="mt-10 pt-8 border-t border-slate-100">
+           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center mb-6">Demo Access</p>
+           <div className="grid grid-cols-1 gap-3">
+              <button 
+                onClick={() => { setEmail('user@demo.com'); setPassword('demo123'); }}
+                className="flex items-center justify-between px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-primary-50 hover:border-primary-200 transition-all group"
+              >
+                 <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">Explore as User</span>
+                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-primary-500 transition-colors" />
+              </button>
+              <button 
+                onClick={() => { setEmail('guide@demo.com'); setPassword('demo123'); }}
+                className="flex items-center justify-between px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-indigo-50 hover:border-indigo-200 transition-all group"
+              >
+                 <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">Manage as Guide</span>
+                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+              </button>
+              <button 
+                onClick={() => { setEmail('admin@demo.com'); setPassword('demo123'); }}
+                className="flex items-center justify-between px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-red-50 hover:border-red-200 transition-all group"
+              >
+                 <span className="text-[11px] font-black uppercase tracking-widest text-slate-900">Oversee as Admin</span>
+                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-red-500 transition-colors" />
+              </button>
+           </div>
+        </div>
+
         <div className="mt-10 text-center">
           <p className="text-xs font-bold text-slate-400">
             Don't have an account? {' '}

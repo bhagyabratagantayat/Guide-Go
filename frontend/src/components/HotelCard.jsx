@@ -2,9 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../context/CurrencyContext.jsx';
 
 const HotelCard = ({ hotel }) => {
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
 
   return (
     <motion.div 
@@ -61,7 +63,7 @@ const HotelCard = ({ hotel }) => {
             <div className="w-full md:w-auto text-left">
                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Price per night</p>
                <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
-                 ₹{hotel.pricePerNight.toLocaleString()}
+                 {formatPrice(hotel.pricePerNight)}
                </p>
             </div>
 

@@ -10,12 +10,14 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { useCurrency } from '../context/CurrencyContext.jsx';
 import Receipt from '../components/Receipt';
 
 const GuideProfile = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const { darkMode } = useTheme();
+  const { formatPrice, currency, convertPrice, exchangeRate } = useCurrency();
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -338,8 +340,8 @@ const GuideProfile = () => {
                              </div>
                              {paymentMethod === 'upi' && (
                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col items-center">
-                                   <div className="bg-white p-3 rounded-[2rem] shadow-soft border border-surface-100"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=guidego@upi&pn=GuideGo&am=${guide.pricePerHour * duration}`} className="w-32 h-32" /></div>
-                                   <p className="mt-4 font-black text-[9px] text-slate-400 dark:text-slate-500 tracking-widest uppercase">ID: guidego@upi</p>
+                                   <div className="bg-white p-3 rounded-[2rem] shadow-soft border border-surface-100"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=guidego@upi&pn=GuideGo&am=${guide.pricePerHour * duration}&cu=INR`} className="w-32 h-32" /></div>
+                                   <p className="mt-4 font-black text-[9px] text-slate-400 dark:text-slate-500 tracking-widest uppercase">ID: guidego@upi (Always INR)</p>
                                 </motion.div>
                              )}
                           </button>
@@ -348,7 +350,7 @@ const GuideProfile = () => {
                       <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
                          <div className="flex justify-between items-center mb-6">
                             <span className="text-2xl font-black text-slate-900 dark:text-white italic font-serif">Total</span>
-                            <span className="text-2xl font-black text-primary-500">₹{guide.pricePerHour * duration}</span>
+                            <span className="text-2xl font-black text-primary-500">{formatPrice(guide.pricePerHour * duration)}</span>
                          </div>
                          <button onClick={confirmBooking} disabled={bookingLoading} className="w-full btn-primary py-5 text-[10px] tracking-[0.25em]">{bookingLoading ? 'PROCCESSING...' : 'CONFIRM NOW'}</button>
                       </div>
@@ -363,7 +365,7 @@ const GuideProfile = () => {
                       <div className="flex justify-between items-end">
                          <div>
                             <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5 opacity-60">Honorarium</p>
-                            <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">₹{guide.pricePerHour}<span className="text-slate-300 dark:text-slate-700 text-sm font-bold">/hr</span></h4>
+                            <h4 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{formatPrice(guide.pricePerHour)}<span className="text-slate-300 dark:text-slate-700 text-sm font-bold">/hr</span></h4>
                          </div>
                          <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-xl">
                             <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
@@ -391,7 +393,7 @@ const GuideProfile = () => {
                       <div className="pt-6 border-t border-slate-100 dark:border-slate-800 mt-2">
                          <div className="flex justify-between items-center mb-6">
                             <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Net Value</span>
-                            <span className="text-2xl font-black text-primary-500">₹{guide.pricePerHour * duration}</span>
+                            <span className="text-2xl font-black text-primary-500">{formatPrice(guide.pricePerHour * duration)}</span>
                          </div>
                          <button onClick={proceedToPaymentSelection} className="w-full btn-primary py-5 text-[10px] tracking-[0.25em]">RESERVE EXPERIENCE</button>
                       </div>

@@ -7,9 +7,11 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../context/CurrencyContext.jsx';
 
 const Receipt = ({ booking, onClose }) => {
   const navigate = useNavigate();
+  const { formatPrice, currency } = useCurrency();
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl">
        <motion.div 
@@ -107,8 +109,8 @@ const Receipt = ({ booking, onClose }) => {
                       <p className="text-xs font-bold text-white/50 italic font-serif">Includes security tax</p>
                    </div>
                    <div className="text-right relative z-10">
-                      <span className="text-[10px] font-black text-primary-500 mr-2 italic">INR</span>
-                      <span className="text-4xl font-black text-white tracking-tighter">₹{booking.price}</span>
+                      <span className="text-[10px] font-black text-primary-500 mr-2 italic">{currency}</span>
+                      <span className="text-4xl font-black text-white tracking-tighter">{formatPrice(booking.price)}</span>
                    </div>
                 </div>
 

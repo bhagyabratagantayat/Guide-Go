@@ -232,11 +232,11 @@ const ExploreMap = () => {
     setBookingStage('requesting');
     
     try {
-      // Find a nearby guide who is live and matches category (stubbed logic for now)
-      const targetGuide = guides[0]; // Pick first available guide for demo
+      // Find a nearby guide who is live and matches category
+      const targetGuide = guides.find(g => g.category === selectedCategory.id);
       
       if (!targetGuide) {
-        setNotification('No guides available in this area right now.');
+        setNotification(`No ${selectedCategory.name} guides available nearby.`);
         setBookingStage('selecting_guide');
         return;
       }

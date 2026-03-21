@@ -2,11 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Search, SlidersHorizontal, Hotel, ArrowDownUp, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../context/CurrencyContext.jsx';
 import { mockHotels } from '../data/mockHotels';
 import HotelCard from '../components/HotelCard';
 
 const Hotels = () => {
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recommended'); // recommended, price_low, price_high, rating
   const [showFilters, setShowFilters] = useState(false);
@@ -118,7 +120,7 @@ const Hotels = () => {
                <div>
                   <div className="flex justify-between items-center mb-4">
                      <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider text-sm">Max Price (per night)</span>
-                     <span className="font-bold text-primary-500">₹{maxPrice.toLocaleString()}</span>
+                     <span className="font-bold text-primary-500">{formatPrice(maxPrice)}</span>
                   </div>
                   <input 
                     type="range" 

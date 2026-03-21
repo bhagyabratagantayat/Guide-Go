@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Star, ShieldCheck, MapPin, CheckCircle, PackageSearch, Users, CalendarDays, KeyRound, Globe, Send } from 'lucide-react';
+import { ChevronLeft, Star, ShieldCheck, MapPin, CheckCircle, PackageSearch, Users, CalendarDays, KeyRound, Globe, Send, Ticket } from 'lucide-react';
 import { mockAgencies } from '../data/mockAgencies';
+import { useCurrency } from '../context/CurrencyContext.jsx';
 import toast, { Toaster } from 'react-hot-toast';
 
 const AgencyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [agency, setAgency] = useState(null);
   
   // Form State
@@ -143,7 +145,7 @@ const AgencyDetail = () => {
                        <p className="text-slate-500 font-bold mb-6 flex items-center text-sm"><CalendarDays className="w-4 h-4 mr-2" /> {pkg.duration}</p>
                        <div className="flex justify-between items-baseline pt-6 border-t border-slate-800">
                           <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">Fixed Rate</span>
-                          <span className="text-3xl font-black tracking-tighter text-white">₹{pkg.price}</span>
+                          <span className="text-3xl font-black tracking-tighter text-white">{formatPrice(pkg.price)}</span>
                        </div>
                     </div>
                  ))}

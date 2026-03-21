@@ -165,7 +165,7 @@ const Profile = () => {
                         icon={Settings} 
                         label="Settings" 
                         color="text-orange-500"
-                        onClick={() => navigate(user.role === 'admin' ? '/admin/settings' : (user.role === 'guide' ? '/guide/profile' : '/user/settings'))}
+                        onClick={() => navigate(user.role === 'admin' ? '/admin/settings' : (user.role === 'guide' ? '/guide/settings' : '/user/settings'))}
                         darkMode={darkMode}
                      />
                   </div>

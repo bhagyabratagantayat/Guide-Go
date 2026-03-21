@@ -21,6 +21,9 @@ const registerUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('User already exists', 400, 'USER_EXISTS'));
   }
 
+  const otp = generateOTP();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
   const user = await User.create({ 
     name, 
     email: normalizedEmail, 
@@ -28,13 +31,45 @@ const registerUser = asyncHandler(async (req, res, next) => {
     role, 
     mobile, 
     location,
-    isVerified: true
+    isVerified: false,
+    otp,
+    otpExpiry
   });
 
   if (user) {
-    logger.info(`User registered successfully: ${user.email}`);
+    const welcomeHtml = `
+      <div style="font-family: 'Inter', sans-serif; background-color: #f8fafc; padding: 40px; color: #1e293b;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+          <div style="background: #0f172a; padding: 40px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-style: italic; font-weight: 900; letter-spacing: -0.05em; font-size: 32px;">GuideGo</h1>
+            <p style="margin-top: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 10px; color: #38bdf8;">Your Journey Starts Here</p>
+          </div>
+          <div style="padding: 40px;">
+            <h2 style="margin-top: 0; font-weight: 900; tracking-tighter; letter-spacing: -0.02em;">Welcome to GuideGo, ${name}!</h2>
+            <p style="line-height: 1.6; color: #64748b;">To activate your explorer profile and start your journey, please use the verification code below:</p>
+            <div style="background: #f1f5f9; padding: 30px; border-radius: 16px; text-align: center; margin: 30px 0;">
+              <span style="font-size: 48px; font-weight: 900; letter-spacing: 0.2em; color: #0f172a;">${otp}</span>
+            </div>
+            <p style="font-size: 12px; color: #94a3b8; text-align: center;">Code expires in 10 minutes. Safe travels!</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Verify your GuideGo Account',
+        htmlMessage: welcomeHtml,
+        message: `Your verification code is ${otp}`
+      });
+    } catch (err) {
+      logger.error('Failed to send registration OTP');
+    }
+
     res.status(201).json({
-      message: 'Registration successful. You can now login.',
+      success: true,
+      message: 'OTP sent to your email. Please verify to continue.',
       email: user.email
     });
   } else {
@@ -71,34 +106,35 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
   user.otpExpiry = undefined;
   logger.info(`User verified successfully: ${user.email}`);
 
-  // Send Welcome Email
+  // Send Professional Welcome Email
   try {
+    const successHtml = `
+      <div style="font-family: 'Inter', sans-serif; background-color: #f8fafc; padding: 40px; color: #1e293b;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 24px; overflow: hidden; shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+          <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 60px 40px; text-align: center; color: white;">
+            <div style="background: #38bdf8; width: 60px; hieght: 60px; border-radius: 20px; display: inline-flex; items-center: center; justify-content: center; margin-bottom: 20px;">
+              <span style="font-size: 30px;">✈️</span>
+            </div>
+            <h1 style="margin: 0; font-style: italic; font-weight: 900; letter-spacing: -0.05em; font-size: 36px;">Verified!</h1>
+            <p style="margin-top: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3em; font-size: 11px; color: #38bdf8;">Access Granted to GuideGo</p>
+          </div>
+          <div style="padding: 40px; text-align: center;">
+            <h2 style="font-weight: 900; letter-spacing: -0.02em; color: #0f172a;">Welcome to the Fold, ${user.name}</h2>
+            <p style="line-height: 1.6; color: #64748b; margin-bottom: 30px;">Your explorer profile is now live. You can start booking verified local guides or managing your tour operations immediately.</p>
+            <a href="https://guidego-travel.vercel.app/login" style="display: inline-block; background: #0f172a; color: white; padding: 18px 40px; border-radius: 16px; text-decoration: none; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; shadow: 0 10px 15px rgba(0,0,0,0.2);">Enter the Platform</a>
+          </div>
+        </div>
+      </div>
+    `;
+
     await sendEmail({
       email: user.email,
-      subject: 'Welcome to GuideGo 🎉',
-      message: `Hello ${user.name},\n\nYour account has been successfully registered on GuideGo.\n\nExplore destinations, find verified local guides, and use smart audio travel guides.\n\nVisit: https://guidego.vercel.app`,
-      htmlMessage: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-          <h2 style="color: #3b82f6;">Welcome to GuideGo 🎉</h2>
-          <p>Hello <strong>${user.name}</strong>,</p>
-          <p>Your account has been successfully registered on GuideGo.</p>
-          <p>You can now:</p>
-          <ul>
-            <li>Explore destinations</li>
-            <li>Find verified local guides</li>
-            <li>Use smart audio travel guides</li>
-            <li>Plan your trips</li>
-          </ul>
-          <div style="text-align: center; margin-top: 30px;">
-            <a href="https://guidego.vercel.app" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Get Started</a>
-          </div>
-          <p style="margin-top: 30px; color: #666; font-size: 12px;">If you didn't create this account, please ignore this email.</p>
-        </div>
-      `
+      subject: 'Welcome to GuideGo - Profile Verified 🎉',
+      htmlMessage: successHtml,
+      message: `Your GuideGo profile is verified! Login at: https://guidego-travel.vercel.app/login`
     });
-    console.log(`Welcome email sent to: ${user.email}`);
   } catch (error) {
-    console.error(`Failed to send welcome email to ${user.email}:`, error);
+    logger.error(`Welcome email failure: ${error.message}`);
   }
   
   res.json({
@@ -114,7 +150,31 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
 
 const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const normalizedEmail = email?.trim().toLowerCase();
+  
+  // Special Demo Login Logic
+  let user;
+  if (password === 'demo123') {
+    if (normalizedEmail === 'user@demo.com') user = await User.findOne({ role: 'user' });
+    else if (normalizedEmail === 'guide@demo.com') user = await User.findOne({ role: 'guide' });
+    else if (normalizedEmail === 'admin@demo.com') user = await User.findOne({ role: 'admin' });
+    
+    if (user) {
+      logger.info(`Demo login successful for role: ${user.role}`);
+      return res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        mobile: user.mobile,
+        location: user.location,
+        isDemo: true,
+        token: generateToken(user._id, user.role),
+      });
+    }
+  }
+
+  user = await User.findOne({ email: normalizedEmail });
   
   if (!user) {
     return next(new ErrorResponse('Invalid email or password', 401, 'INVALID_CREDENTIALS'));
@@ -123,7 +183,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
   if (!(await user.comparePassword(password))) {
     return next(new ErrorResponse('Invalid email or password', 401, 'INVALID_CREDENTIALS'));
   }
-
 
   logger.info(`User logged in: ${user.email}`);
   res.json({
@@ -153,10 +212,30 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   try {
     console.log(`Sending password reset OTP to: ${user.email}. Stored Reset OTP: ${otp}`);
     logger.info(`Sending password reset OTP email to ${user.email}...`);
+    const resetHtml = `
+      <div style="font-family: 'Inter', sans-serif; background-color: #fff1f2; padding: 40px; color: #1e293b;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+          <div style="background: #e11d48; padding: 40px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-style: italic; font-weight: 900; letter-spacing: -0.05em; font-size: 32px;">Security Protocol</h1>
+            <p style="margin-top: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 10px; color: #fda4af;">Password Reset Authorized</p>
+          </div>
+          <div style="padding: 40px; text-align: center;">
+            <h2 style="margin-top: 0; font-weight: 900; tracking-tighter; letter-spacing: -0.02em;">Account Access Recovery</h2>
+            <p style="line-height: 1.6; color: #64748b; margin-bottom: 30px;">A secure request was made to unlock your GuideGo account. Use the unique code below to set a new password:</p>
+            <div style="background: #fff1f2; padding: 30px; border-radius: 16px; text-align: center; margin: 30px 0;">
+              <span style="font-size: 48px; font-weight: 900; letter-spacing: 0.2em; color: #e11d48;">${otp}</span>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8;">This protocol expires in 5 minutes. If this wasn't you, secure your email immediately.</p>
+          </div>
+        </div>
+      </div>
+    `;
+
     await sendEmail({
       email: user.email,
-      subject: 'GuideGo - Password Reset Request',
-      message: `Your password reset OTP is ${otp}. It will expire in 5 minutes.`
+      subject: 'CRITICAL: GuideGo Security Reset',
+      htmlMessage: resetHtml,
+      message: `Your password reset code is ${otp}`
     });
     
     console.log(`Password reset OTP sent to: ${user.email}`);

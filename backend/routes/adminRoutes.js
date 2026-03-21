@@ -19,7 +19,7 @@ router.post('/users/admin', require('../controllers/adminController').createAdmi
 router.put('/users/:id/role', require('../controllers/adminController').updateUserRole);
 router.delete('/users/:id', require('../controllers/adminController').deleteUser);
 router.get('/guides', getAllGuides);
-router.put('/guides/:id/status', updateGuideStatus);
+router.put('/guides/:id/moderate', require('../controllers/adminController').updateGuideModeration);
 router.get('/bookings', getAllBookings);
 
 module.exports = router;

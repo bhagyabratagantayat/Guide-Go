@@ -7,11 +7,12 @@ import {
   Calendar, Clock, CheckCircle, Clock3, XCircle, 
   MapPin, User, MessageSquare, Star, ChevronRight, 
   Filter, MoreHorizontal, History as HistoryIcon, 
-  Wallet, Bookmark, Navigation
+  Wallet, Bookmark, Navigation, ShieldAlert
 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReviewModal from '../components/ReviewModal';
+import ReportModal from '../components/ReportModal';
 
 const getMockBookings = (role) => [
   {
@@ -44,12 +45,13 @@ const getMockBookings = (role) => [
   }
 ];
 
-const Bookings = () => {
+const Bookings = ({ type }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(type === 'requests' ? 'pending' : 'all');
   const { user } = useAuth();
   const { t } = useTranslation();
   const { darkMode } = useTheme();
@@ -249,6 +251,18 @@ const Bookings = () => {
                                         <Star className="w-5 h-5 mr-3 fill-white/20" /> Write Journal
                                      </button>
                                   )}
+                                  {user.role === 'user' && booking.status === 'completed' && (
+                                     <button 
+                                       onClick={() => {
+                                          setSelectedBooking(booking);
+                                          setShowReportModal(true);
+                                       }}
+                                       className="h-16 w-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[1.8rem] flex items-center justify-center border-2 border-red-100 dark:border-red-900/30 shadow-soft hover:bg-red-600 hover:text-white transition-all active:scale-95 ml-2"
+                                       title="Report Issue"
+                                     >
+                                        <ShieldAlert className="w-6 h-6" />
+                                     </button>
+                                  )}
                                    {user.role === 'user' && booking.status === 'confirmed' && (
                                       <button 
                                         onClick={() => navigate('/user/explore-map', { state: { guideId: booking.guideId._id } })}
@@ -297,6 +311,16 @@ const Bookings = () => {
                setShowReviewModal(false);
                fetchBookings();
             }}
+          />
+       )}
+
+       {showReportModal && selectedBooking && (
+          <ReportModal 
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            guideId={selectedBooking.guideId._id}
+            guideName={selectedBooking.guideId.name}
+            bookingId={selectedBooking._id}
           />
        )}
     </div>
