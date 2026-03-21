@@ -33,6 +33,7 @@ import GuideProfile from './pages/GuideProfile';
 
 import Chat from './pages/Chat';
 import Hotels from './pages/Hotels';
+import HotelDetail from './pages/HotelDetail';
 import Restaurants from './pages/Restaurants';
 import Emergency from './pages/Emergency';
 import Support from './pages/Support';
@@ -107,6 +108,7 @@ function AppContent() {
                 <Route path="/guides" element={<PageWrapper><Guides /></PageWrapper>} />
                 <Route path="/guides/:id" element={<PageWrapper><GuideProfile /></PageWrapper>} />
                 <Route path="/hotels" element={<PageWrapper><Hotels /></PageWrapper>} />
+                <Route path="/hotels/:id" element={<PageWrapper><HotelDetail /></PageWrapper>} />
                 <Route path="/restaurants" element={<PageWrapper><Restaurants /></PageWrapper>} />
                 <Route path="/emergency" element={<PageWrapper><Emergency /></PageWrapper>} />
                 <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
