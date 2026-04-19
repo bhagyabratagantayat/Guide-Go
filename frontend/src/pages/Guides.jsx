@@ -81,7 +81,7 @@ const Guides = () => {
   }, []);
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen mt-[-64px] overflow-hidden bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div className="flex flex-col lg:flex-row h-screen overflow-hidden bg-[var(--bg-base)] transition-colors duration-300">
       {/* Sidebar Discovery List */}
       <div className="w-full lg:w-[480px] bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 overflow-y-auto custom-scrollbar flex flex-col shadow-inner z-10 pt-16">
         <div className="p-10 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-10 border-b border-slate-100 dark:border-slate-800">

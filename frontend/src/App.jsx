@@ -7,7 +7,6 @@ import { io } from 'socket.io-client';
 
 // Components
 import Sidebar from './components/Sidebar';
-import BottomNavigation from './components/BottomNavigation';
 import SplashScreen from './components/SplashScreen';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotificationToast from './components/NotificationToast';
@@ -22,28 +21,27 @@ import ForgotPassword from './pages/ForgotPassword';
 import VerifyResetOTP from './pages/VerifyResetOTP';
 import ResetPassword from './pages/ResetPassword';
 import GuideDashboard from './pages/GuideDashboard';
-import Explore from './pages/Explore';
-import ExploreMap from './pages/ExploreMap';
 import Guides from './pages/Guides';
 import AIChat from './pages/AIChat';
 import Bookings from './pages/Bookings';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import GuideProfile from './pages/GuideProfile';
-import Notifications from './pages/Notifications';
+import NotificationsPage from './pages/NotificationsPage';
+
+// Newly Created Pages
+import AudioGuidePage from './pages/AudioGuidePage';
+import HotelsPage from './pages/HotelsPage';
+import RestaurantsPage from './pages/RestaurantsPage';
+import PremiumPage from './pages/PremiumPage';
+import HelpPage from './pages/HelpPage';
 
 import Chat from './pages/Chat';
-import Hotels from './pages/Hotels';
-import HotelDetail from './pages/HotelDetail';
-import Restaurants from './pages/Restaurants';
-import RestaurantDetail from './pages/RestaurantDetail';
-import Emergency from './pages/Emergency';
-import Support from './pages/Support';
 import Weather from './pages/Weather';
-import Subscription from './pages/Subscription';
 import TripPlanner from './pages/TripPlanner';
 import Agencies from './pages/Agencies';
 import AgencyDetail from './pages/AgencyDetail';
+
 // Admin
 import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -52,23 +50,28 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminGuides from './pages/admin/AdminGuides';
 import AdminPlaces from './pages/admin/AdminPlaces';
 import AdminBookings from './pages/admin/AdminBookings';
+import AdminKycPage from './pages/AdminKycPage';
 
 // Guide Pages
 import Earnings from './pages/guide/Earnings';
 import ChatList from './pages/guide/ChatList';
+import GuideVerifyPage from './pages/GuideVerifyPage';
+import GuideSetupPage from './pages/GuideSetupPage';
+import GuideGuard from './components/GuideGuard';
+
+import { ThemeProvider } from './context/ThemeContext.jsx';
+import { CurrencyProvider } from './context/CurrencyContext.jsx';
 
 function AppContent() {
   const { user } = useAuth();
   const [notification, setNotification] = useState(null);
   const [showSplash, setShowSplash] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const socketRef = useRef();
   const location = useLocation();
 
   useEffect(() => {
-    // ... socket logic remains same ...
     if (user) {
-      const socketUrl = axios.defaults.baseURL;
+      const socketUrl = axios.defaults.baseURL || 'http://localhost:5000';
       socketRef.current = io(socketUrl);
       
       socketRef.current.on('connect', () => {
@@ -85,113 +88,72 @@ function AppContent() {
     }
   }, [user]);
 
-  // Adjust sidebar state on resize
-  useEffect(() => {
-     const handleResize = () => {
-        if (window.innerWidth < 1024) setIsSidebarOpen(false);
-        else setIsSidebarOpen(true);
-     };
-     window.addEventListener('resize', handleResize);
-     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
     <>
       <AnimatePresence mode="wait">
         {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       </AnimatePresence>
 
-      <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-        <Sidebar 
-          isOpen={isSidebarOpen} 
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
-          liveNotification={notification}
-        />
+      <div className="flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
+        {/* Sidebar - Fixed Left */}
+        <Sidebar className="w-[260px] flex-shrink-0" />
         
-        <div className={`flex-grow flex flex-col min-w-0 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-[280px]' : 'lg:ml-0'}`}>
-          {/* Header Toggle (Floating) */}
-          <div className={`fixed top-6 left-6 z-[1000] ${isSidebarOpen ? 'lg:hidden' : ''}`}>
-             <button 
-               onClick={() => setIsSidebarOpen(true)}
-               className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg border border-slate-800 text-white hover:bg-slate-800 transition-colors"
-             >
-                <Menu className="w-6 h-6" />
-             </button>
-          </div>
+        {/* Main Content Area */}
+        <main className="flex-1 ml-[260px] min-h-screen overflow-y-auto">
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              {/* Public Routes */}
+              <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+              <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+              <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+              <Route path="/verify-otp" element={<PageWrapper><VerifyOTP /></PageWrapper>} />
+              <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
+              <Route path="/verify-reset-otp" element={<PageWrapper><VerifyResetOTP /></PageWrapper>} />
+              <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+              
+              {/* Core Feature Routes */}
+              <Route path="/guides" element={<PageWrapper><Guides /></PageWrapper>} />
+              <Route path="/guides/:id" element={<PageWrapper><GuideProfile /></PageWrapper>} />
+              
+              {/* Protected Sidebar Routes */}
+              <Route path="/audio-guide" element={<ProtectedRoute><PageWrapper><AudioGuidePage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/ai-chat" element={<ProtectedRoute><PageWrapper><AIChat /></PageWrapper></ProtectedRoute>} />
+              <Route path="/my-bookings" element={<ProtectedRoute><PageWrapper><Bookings /></PageWrapper></ProtectedRoute>} />
+              <Route path="/hotels" element={<ProtectedRoute><PageWrapper><HotelsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/agencies" element={<ProtectedRoute><PageWrapper><Agencies /></PageWrapper></ProtectedRoute>} />
+              <Route path="/restaurants" element={<ProtectedRoute><PageWrapper><RestaurantsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/weather" element={<ProtectedRoute><PageWrapper><Weather /></PageWrapper></ProtectedRoute>} />
+              <Route path="/trip-planner" element={<ProtectedRoute><PageWrapper><TripPlanner /></PageWrapper></ProtectedRoute>} />
+              
+              <Route path="/premium" element={<ProtectedRoute><PageWrapper><PremiumPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><PageWrapper><NotificationsPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
+              <Route path="/help" element={<ProtectedRoute><PageWrapper><HelpPage /></PageWrapper></ProtectedRoute>} />
 
-          <main className="flex-grow pb-32 lg:pb-12 px-4 md:px-8">
-            <AnimatePresence mode="wait">
-              <Routes location={location} key={location.pathname}>
-                {/* Public Routes */}
-                <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-                <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-                <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-                <Route path="/verify-otp" element={<PageWrapper><VerifyOTP /></PageWrapper>} />
-                <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
-                <Route path="/verify-reset-otp" element={<PageWrapper><VerifyResetOTP /></PageWrapper>} />
-                <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
-                
-                <Route path="/guides" element={<PageWrapper><Guides /></PageWrapper>} />
-                <Route path="/guides/:id" element={<PageWrapper><GuideProfile /></PageWrapper>} />
-                <Route path="/hotels" element={<PageWrapper><Hotels /></PageWrapper>} />
-                <Route path="/hotels/:id" element={<PageWrapper><HotelDetail /></PageWrapper>} />
-                <Route path="/restaurants" element={<PageWrapper><Restaurants /></PageWrapper>} />
-                <Route path="/restaurants/:id" element={<PageWrapper><RestaurantDetail /></PageWrapper>} />
-                <Route path="/weather" element={<PageWrapper><Weather /></PageWrapper>} />
-                <Route path="/subscription" element={<PageWrapper><Subscription /></PageWrapper>} />
-                <Route path="/trip-planner" element={<PageWrapper><TripPlanner /></PageWrapper>} />
-                <Route path="/agencies" element={<PageWrapper><Agencies /></PageWrapper>} />
-                <Route path="/agencies/:id" element={<PageWrapper><AgencyDetail /></PageWrapper>} />
-                <Route path="/emergency" element={<PageWrapper><Emergency /></PageWrapper>} />
-                <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
-                <Route path="/notifications" element={<PageWrapper><Notifications /></PageWrapper>} />
+              {/* Guide Flow */}
+              <Route path="/guide/verify" element={<ProtectedRoute role="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/guide/setup" element={<ProtectedRoute role="guide"><PageWrapper><GuideSetupPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/guide" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><GuideDashboard /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/bookings" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><Bookings /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/chat" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><ChatList /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/earnings" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><Earnings /></PageWrapper></GuideGuard></ProtectedRoute>} />
 
-                {/* User Routes */}
-                <Route path="/user" element={<ProtectedRoute role="user"><PageWrapper><Home /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/explore" element={<ProtectedRoute role="user"><PageWrapper><Explore /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/explore-map" element={<ProtectedRoute role="user"><PageWrapper><ExploreMap /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/bookings" element={<ProtectedRoute role="user"><PageWrapper><Bookings /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/chat/:id" element={<ProtectedRoute role="user"><PageWrapper><Chat /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/profile" element={<PageWrapper><Profile /></PageWrapper>} />
-                <Route path="/user/settings" element={<ProtectedRoute role="user"><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
-                <Route path="/user/ai-chat" element={<ProtectedRoute role="user"><PageWrapper><AIChat /></PageWrapper></ProtectedRoute>} />
+              {/* Admin Routes */}
+              <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
+                <Route index element={<PageWrapper><AdminDashboard /></PageWrapper>} />
+                <Route path="users" element={<PageWrapper><AdminUsers /></PageWrapper>} />
+                <Route path="guides" element={<PageWrapper><AdminGuides /></PageWrapper>} />
+                <Route path="places" element={<PageWrapper><AdminPlaces /></PageWrapper>} />
+                <Route path="bookings" element={<PageWrapper><AdminBookings /></PageWrapper>} />
+                <Route path="reports" element={<PageWrapper><AdminReports /></PageWrapper>} />
+                <Route path="kyc" element={<PageWrapper><AdminKycPage /></PageWrapper>} />
+              </Route>
 
-                {/* Guide Routes */}
-                <Route path="/guide" element={<ProtectedRoute role="guide"><PageWrapper><GuideDashboard /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/requests" element={<ProtectedRoute role="guide"><PageWrapper><Bookings type="requests" /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/bookings" element={<ProtectedRoute role="guide"><PageWrapper><Bookings /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/chat" element={<ProtectedRoute role="guide"><PageWrapper><ChatList /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/chat/:id" element={<ProtectedRoute role="guide"><PageWrapper><Chat /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/profile" element={<ProtectedRoute role="guide"><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/earnings" element={<ProtectedRoute role="guide"><PageWrapper><Earnings /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/settings" element={<ProtectedRoute role="guide"><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
-                <Route path="/guide/ai-chat" element={<ProtectedRoute role="guide"><PageWrapper><AIChat /></PageWrapper></ProtectedRoute>} />
-
-                {/* Admin Routes */}
-                <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
-                  <Route index element={<PageWrapper><AdminDashboard /></PageWrapper>} />
-                  <Route path="users" element={<PageWrapper><AdminUsers /></PageWrapper>} />
-                  <Route path="guides" element={<PageWrapper><AdminGuides /></PageWrapper>} />
-                  <Route path="places" element={<PageWrapper><AdminPlaces /></PageWrapper>} />
-                  <Route path="bookings" element={<PageWrapper><AdminBookings /></PageWrapper>} />
-                  <Route path="reports" element={<PageWrapper><AdminReports /></PageWrapper>} />
-                  <Route path="settings" element={<PageWrapper><Settings /></PageWrapper>} />
-                </Route>
-
-                <Route path="/explore" element={<Navigate to="/user/explore" replace />} />
-                <Route path="/explore-map" element={<Navigate to="/user/explore-map" replace />} />
-                <Route path="/bookings" element={<RoleRedirect path="bookings" />} />
-                <Route path="/profile" element={<RoleRedirect path="profile" />} />
-                <Route path="/settings" element={<RoleRedirect path="settings" />} />
-                <Route path="/ai-chat" element={<RoleRedirect path="ai-chat" />} />
-                <Route path="/chat/:id" element={<RoleRedirect path="chat" />} />
-
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </AnimatePresence>
-          </main>
-          <BottomNavigation />
-        </div>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AnimatePresence>
+        </main>
       </div>
 
       {notification && (
@@ -210,37 +172,11 @@ const PageWrapper = ({ children }) => (
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 1.02 }}
     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-    className="w-full h-full"
+    className="w-full h-full min-h-screen"
   >
     {children}
   </motion.div>
 );
-
-const RoleRedirect = ({ path }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!user) return <Navigate to="/login" replace />;
-  
-  const rolePath = user.role === 'admin' ? '/admin' : user.role === 'guide' ? '/guide' : '/user';
-  
-  // Special handling for chat since it has an ID
-  if (path === 'chat') {
-    return <Navigate to={`${rolePath}/chat`} replace />;
-  }
-  
-  return <Navigate to={`${rolePath}/${path}`} replace />;
-};
-
-import { ThemeProvider } from './context/ThemeContext.jsx';
-import { CurrencyProvider } from './context/CurrencyContext.jsx';
 
 function App() {
   return (

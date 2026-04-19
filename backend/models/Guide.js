@@ -2,40 +2,51 @@ const mongoose = require('mongoose');
 
 const guideSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  languages: [{ type: String }],
-  experience: { type: String, required: true },
-  pricePerHour: { type: Number, required: true },
+  
+  // KYC Section
+  kycStatus: {
+    type: String,
+    enum: ['not_submitted', 'pending', 'approved', 'rejected'],
+    default: 'not_submitted'
+  },
+  kycData: {
+    aadhaarNumber: { type: String, default: '' },
+    aadhaarFront:  { type: String, default: '' }, // Base64
+    aadhaarBack:   { type: String, default: '' },  // Base64
+    selfie:        { type: String, default: '' },         // Base64
+    submittedAt:   { type: Date },
+    reviewedAt:    { type: Date },
+    rejectionReason: { type: String, default: '' }
+  },
+
+  // Service Section
+  bio:          { type: String, default: '' },
+  languages:    { type: [String], default: [] },
+  specialties:  { type: [String], default: [] },
+  primaryCity:  { type: String, default: '' },
+  pricePerHour: { type: Number, default: 0 },
+  pricePerDay:  { type: Number, default: 0 },
+  upiId:        { type: String, default: '' },
+  availableDays:{ type: [String], default: [] },
+  profileComplete: { type: Boolean, default: false },
+
+  // Metadata
   rating: { type: Number, default: 0 },
   numReviews: { type: Number, default: 0 },
-  description: { type: String, required: true },
   location: {
     type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], required: true }, // [longitude, latitude]
+    coordinates: { type: [Number], default: [0, 0] }, // [longitude, latitude]
   },
-  profileImage: { type: String },
+  profileImage: { type: String, default: '' },
   status: { 
     type: String, 
     enum: ['pending', 'approved', 'rejected', 'blocked', 'temporarily_blocked'], 
     default: 'pending' 
   },
-  blockedUntil: {
-    type: Date
-  },
   isLive: {
     type: Boolean,
     default: false
-  },
-  category: {
-    type: String,
-    enum: ['lite', 'pro', 'expert'],
-    default: 'lite'
-  },
-  packages: [{
-    title: { type: String, required: true },
-    description: { type: String },
-    price: { type: Number, required: true },
-    duration: { type: String }, // e.g., "4 hours", "Full Day"
-  }],
+  }
 });
 
 guideSchema.index({ location: '2dsphere' });

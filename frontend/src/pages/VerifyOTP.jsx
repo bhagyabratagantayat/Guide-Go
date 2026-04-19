@@ -47,7 +47,7 @@ const VerifyOTP = () => {
       const data = await verifyOTP(email, otp);
       const role = data.role;
       if (role === 'admin') navigate('/admin');
-      else if (role === 'guide') navigate('/guide-dashboard');
+      else if (role === 'guide') navigate('/guide/verify');
       else navigate('/');
     } catch (error) {
       console.error('OTP Verification Error:', error);

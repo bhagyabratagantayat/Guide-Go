@@ -78,6 +78,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/kyc', require('./routes/kyc')); // New KYC Route
 app.use('/api/guides', require('./routes/guideRoutes'));
 app.use('/api/places', require('./routes/placeRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
@@ -85,6 +86,7 @@ app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/restaurants', require('./routes/restaurantRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/admin-kyc', require('./routes/admin')); // New Admin KYC Route
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/hotels', require('./routes/hotelRoutes'));
 app.use('/api/sos', require('./routes/sosRoutes'));

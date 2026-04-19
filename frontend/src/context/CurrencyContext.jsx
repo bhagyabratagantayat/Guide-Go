@@ -4,32 +4,28 @@ const CurrencyContext = createContext();
 
 export const CurrencyProvider = ({ children }) => {
   const [currency, setCurrency] = useState(() => {
-    const saved = localStorage.getItem('currency');
-    return saved || 'INR';
+    return localStorage.getItem('guidego_currency') || 'INR';
   });
 
-  const exchangeRate = 83; // 1 USD = 83 INR (Mock)
-
   useEffect(() => {
-    localStorage.setItem('currency', currency);
+    localStorage.setItem('guidego_currency', currency);
   }, [currency]);
 
-  const formatPrice = (priceInINR) => {
+  // Using a simplified conversion rate for demo (1 USD = 84 INR)
+  const formatPrice = (inrAmount) => {
     if (currency === 'USD') {
-      return `$${(priceInINR / exchangeRate).toFixed(2)}`;
+      const converted = (inrAmount / 84).toFixed(2);
+      return `$${converted}`;
     }
-    return `₹${priceInINR}`;
+    return `₹${inrAmount}`;
   };
 
-  const convertPrice = (priceInINR) => {
-    if (currency === 'USD') {
-      return (priceInINR / exchangeRate).toFixed(2);
-    }
-    return priceInINR;
+  const convertPrice = (inrAmount) => {
+    return currency === 'USD' ? (inrAmount / 84).toFixed(2) : inrAmount;
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, formatPrice, convertPrice, exchangeRate }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, formatPrice, convertPrice }}>
       {children}
     </CurrencyContext.Provider>
   );

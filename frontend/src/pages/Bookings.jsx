@@ -1,70 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext.jsx';
 import { 
   Calendar, Clock, CheckCircle, Clock3, XCircle, 
-  MapPin, User, MessageSquare, Star, ChevronRight, 
-  Filter, MoreHorizontal, History as HistoryIcon, 
-  Wallet, Bookmark, Navigation, ShieldAlert
+  MapPin, Star, MessageSquare, ShieldAlert, History as HistoryIcon 
 } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReviewModal from '../components/ReviewModal';
 import ReportModal from '../components/ReportModal';
 
-const getMockBookings = (role) => [
-  {
-    _id: 'mock_1',
-    status: 'pending',
-    bookingTime: new Date(Date.now() + 86400000).toISOString(),
-    location: 'Konark Sun Temple',
-    price: 1200,
-    userId: { _id: 'u1', name: 'Tourist', profilePicture: '' },
-    guideId: { _id: 'g1', name: 'Ashok Patnaik', profilePicture: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80' }
-  },
-  {
-    _id: 'mock_2',
-    status: 'confirmed',
-    bookingTime: new Date(Date.now() + 172800000).toISOString(),
-    location: 'Lingaraj Temple',
-    price: 800,
-    userId: { _id: 'u1', name: 'Tourist', profilePicture: '' },
-    guideId: { _id: 'g2', name: 'Priya Dash', profilePicture: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80' }
-  },
-  {
-    _id: 'mock_3',
-    status: 'completed',
-    bookingTime: new Date(Date.now() - 172800000).toISOString(),
-    location: 'Chilika Lake Tour',
-    price: 2500,
-    reviewed: false,
-    userId: { _id: 'u1', name: 'Tourist', profilePicture: '' },
-    guideId: { _id: 'g3', name: 'Sanjay Rout', profilePicture: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80' }
-  }
-];
-
-const Bookings = ({ type }) => {
+const Bookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [activeFilter, setActiveFilter] = useState(type === 'requests' ? 'pending' : 'all');
+  const [activeFilter, setActiveFilter] = useState('all');
   const { user } = useAuth();
-  const { t } = useTranslation();
-  const { darkMode } = useTheme();
   const navigate = useNavigate();
 
   const fetchBookings = async () => {
     try {
       const endpoint = user.role === 'guide' ? '/api/bookings/guide' : '/api/bookings/user';
-      const { data } = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
-      // Fallback to beautiful mock UI if db is empty so interface is visible
-      setBookings(data.length > 0 ? data : getMockBookings(user.role));
+      const { data } = await axios.get(endpoint);
+      setBookings(data);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {
@@ -76,253 +33,89 @@ const Bookings = ({ type }) => {
     if (user) fetchBookings();
   }, [user]);
 
-  const handleStatusUpdate = async (bookingId, status) => {
-    try {
-      await axios.put(`/api/bookings/${bookingId}/status`, { status }, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
-      fetchBookings();
-    } catch (error) {
-      alert('Failed to update status');
-    }
-  };
-
   const filteredBookings = bookings.filter(b => {
     if (activeFilter === 'upcoming') return ['pending', 'confirmed'].includes(b.status);
     if (activeFilter === 'completed') return b.status === 'completed';
     if (activeFilter === 'cancelled') return b.status === 'cancelled';
-    return true; // all
+    return true;
   });
 
-  const getStatusConfig = (status) => {
-    switch (status) {
-      case 'confirmed': return { color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30', icon: CheckCircle };
-      case 'pending': return { color: 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-primary-100 dark:border-primary-900/30', icon: Clock3 };
-      case 'completed': return { color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30', icon: CheckCircle };
-      case 'cancelled': return { color: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30', icon: XCircle };
-      default: return { color: 'bg-surface-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-surface-200 dark:border-slate-700', icon: Clock3 };
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-slate-950 pb-32 transition-colors duration-300">
-       {/* Header Section */}
-       <section className="bg-white dark:bg-slate-900 pt-32 pb-16 px-8 border-b border-surface-100 dark:border-slate-800 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/5 rounded-full blur-[120px] -mr-64 -mt-64" />
-          <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-12">
-             <div className="space-y-6">
-                <div className="w-20 h-20 bg-slate-900 dark:bg-primary-600 rounded-[2.5rem] flex items-center justify-center text-white shadow-premium rotate-3 transition-colors">
-                   <Bookmark className="w-10 h-10" />
+    <div className="p-10 max-w-7xl mx-auto space-y-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-secondary)] mb-2">Transaction History</h1>
+          <h2 className="text-4xl font-black italic font-serif text-[var(--text-primary)]">My Bookings</h2>
+        </div>
+        <div className="flex bg-[var(--bg-card)] p-1 rounded-2xl border border-[var(--border)] overflow-x-auto no-scrollbar">
+          {['all', 'upcoming', 'completed', 'cancelled'].map(f => (
+            <button
+              key={f}
+              onClick={() => setActiveFilter(f)}
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                activeFilter === f ? 'bg-[var(--accent)] text-white shadow-lg shadow-blue-500/20' : 'text-[var(--text-secondary)] hover:text-white'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : filteredBookings.length > 0 ? (
+        <div className="space-y-6">
+          {filteredBookings.map((booking) => (
+            <motion.div 
+              key={booking._id} 
+              className="glass-card p-8 rounded-[2.5rem] flex flex-col lg:flex-row lg:items-center justify-between gap-8 group hover:border-[var(--accent)]/30 transition-all"
+            >
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-[var(--bg-base)] rounded-3xl flex items-center justify-center text-4xl font-black italic font-serif text-[var(--text-secondary)] border border-[var(--border)] group-hover:scale-105 transition-transform">
+                   {user.role === 'guide' ? booking.userId?.name?.charAt(0) : booking.guideId?.name?.charAt(0)}
                 </div>
-                <div>
-                   <h1 className="text-6xl font-black text-slate-900 dark:text-white tracking-tighter italic font-serif leading-[0.9] mb-4">
-                     {t('common.bookings') || 'Travel Logs'}
-                   </h1>
-                   <p className="text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Your chronicle of Odisha's finest guided journeys</p>
-                </div>
-             </div>
-             
-             {/* Filter Controls */}
-              <div className="flex bg-surface-50 dark:bg-slate-800 p-2 rounded-[3rem] border border-surface-100 dark:border-slate-700 shadow-inner overflow-x-auto no-scrollbar">
-                 {[
-                    { id: 'all', label: 'All', icon: HistoryIcon },
-                    { id: 'upcoming', label: 'Upcoming', icon: Clock3 },
-                    { id: 'completed', label: 'Completed', icon: CheckCircle },
-                    { id: 'cancelled', label: 'Cancelled', icon: XCircle }
-                 ].map(filter => (
-                    <button 
-                      key={filter.id}
-                      onClick={() => setActiveFilter(filter.id)}
-                      className={`flex items-center space-x-3 px-6 py-3 rounded-[2.2rem] text-[9px] font-black uppercase tracking-[0.2em] transition-all shrink-0 ${activeFilter === filter.id ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-premium' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                    >
-                       <filter.icon className="w-4 h-4" />
-                       <span>{filter.label}</span>
-                    </button>
-                 ))}
-              </div>
-          </div>
-       </section>
-
-       <div className="max-w-7xl mx-auto px-6 mt-16">
-          {loading ? (
-             <div className="flex flex-col items-center justify-center py-40 space-y-6">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin shadow-xl shadow-primary-500/20" />
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest tracking-[0.5em]">Synchronizing Records...</p>
-             </div>
-          ) : (
-             <motion.div layout className="grid grid-cols-1 gap-8">
-                <AnimatePresence mode="popLayout">
-                   {filteredBookings.map((booking) => {
-                      const { color, icon: StatusIcon } = getStatusConfig(booking.status);
-                      const displayUser = user.role === 'guide' ? booking.userId : booking.guideId;
-
-                      return (
-                         <motion.div 
-                           key={booking._id}
-                           layout
-                           initial={{ opacity: 0, y: 30 }}
-                           animate={{ opacity: 1, y: 0 }}
-                           exit={{ opacity: 0, scale: 0.95 }}
-                           className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-10 border border-surface-50 dark:border-slate-800 shadow-premium dark:shadow-none flex flex-col lg:flex-row lg:items-center justify-between gap-12 group hover:translate-y-[-4px] transition-all relative overflow-hidden"
-                         >
-                            <div className="absolute top-0 right-0 w-80 h-80 bg-primary-500/5 rounded-full blur-[100px] -mr-40 -mt-40 group-hover:bg-primary-500/10 transition-colors" />
-                            
-                            <div className="flex-grow flex items-center space-x-10 relative z-10">
-                               <div className="relative">
-                                  <div className="w-28 h-28 rounded-[2.5rem] bg-surface-50 dark:bg-slate-800 border-4 border-white dark:border-slate-800 overflow-hidden shadow-soft">
-                                     {displayUser?.profilePicture ? (
-                                        <img src={displayUser.profilePicture} className="w-full h-full object-cover" alt={displayUser.name} />
-                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-4xl font-black text-slate-300 dark:text-slate-600 italic font-serif uppercase">
-                                           {displayUser?.name?.charAt(0)}
-                                        </div>
-                                     )}
-                                  </div>
-                                  <div className={`absolute -bottom-1 -right-1 w-11 h-11 rounded-[1.3rem] border-4 border-white dark:border-slate-800 flex items-center justify-center shadow-lg ${color}`}>
-                                     <StatusIcon className="w-5 h-5" />
-                                  </div>
-                               </div>
-
-                               <div className="space-y-5">
-                                  <div className="flex items-center space-x-6">
-                                     <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter italic font-serif leading-none truncate max-w-xs">{displayUser?.name}</h3>
-                                     <div className={`px-5 py-2 rounded-full text-[8px] font-black uppercase tracking-[0.25em] shadow-sm border ${color} flex items-center`}>
-                                        <span className="w-2 h-2 rounded-full bg-current mr-2 animate-pulse" /> {booking.status}
-                                     </div>
-                                  </div>
-                                  <div className="flex flex-wrap items-center gap-x-12 gap-y-4 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                     <div className="flex items-center group/info">
-                                        <Calendar className="w-4 h-4 mr-3 text-primary-500" />
-                                        {new Date(booking.bookingTime).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                                     </div>
-                                     <div className="flex items-center group/info">
-                                        <Clock className="w-4 h-4 mr-3 text-secondary-500" />
-                                        {new Date(booking.bookingTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                     </div>
-                                     <div className="flex items-center group/info">
-                                        <MapPin className="w-4 h-4 mr-3 text-accent-500" />
-                                        {booking.location}
-                                     </div>
-                                  </div>
-                               </div>
-                            </div>
-
-                            <div className="flex items-center justify-between lg:justify-end gap-16 pt-10 lg:pt-0 border-t lg:border-t-0 border-surface-50 dark:border-slate-800 relative z-10">
-                               <div className="text-left lg:text-right">
-                                  <p className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.4em] mb-2 leading-none">Net Reward</p>
-                                  <div className="flex items-baseline lg:justify-end space-x-2">
-                                     <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">₹{booking.price}</span>
-                                  </div>
-                               </div>
-
-                               <div className="flex items-center gap-3">
-                                  {user.role === 'guide' && booking.status === 'pending' && (
-                                     <div className="flex gap-2">
-                                        <button 
-                                          onClick={() => handleStatusUpdate(booking._id, 'confirmed')}
-                                          className="h-16 px-10 bg-slate-900 dark:bg-primary-600 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-emerald-600 shadow-premium active:scale-95 transition-all"
-                                        >
-                                          Grant
-                                        </button>
-                                        <button 
-                                          onClick={() => handleStatusUpdate(booking._id, 'cancelled')}
-                                          className="h-16 w-16 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-[1.8rem] flex items-center justify-center border-2 border-red-50 dark:border-red-900/30 shadow-soft active:scale-95 transition-all"
-                                        >
-                                          <XCircle className="w-7 h-7" />
-                                        </button>
-                                     </div>
-                                  )}
-                                  {user.role === 'guide' && booking.status === 'confirmed' && (
-                                     <button 
-                                       onClick={() => handleStatusUpdate(booking._id, 'completed')}
-                                       className="h-16 px-12 bg-emerald-600 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-emerald-700 shadow-premium active:scale-95 transition-all"
-                                     >
-                                       Finalize Log
-                                     </button>
-                                  )}
-                                  {user.role === 'user' && booking.status === 'completed' && !booking.reviewed && (
-                                     <button 
-                                       onClick={() => {
-                                          setSelectedBooking(booking);
-                                          setShowReviewModal(true);
-                                       }}
-                                       className="h-16 px-10 bg-primary-500 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-slate-900 dark:hover:bg-primary-600 shadow-premium active:scale-95 transition-all flex items-center"
-                                     >
-                                        <Star className="w-5 h-5 mr-3 fill-white/20" /> Write Journal
-                                     </button>
-                                  )}
-                                  {user.role === 'user' && booking.status === 'completed' && (
-                                     <button 
-                                       onClick={() => {
-                                          setSelectedBooking(booking);
-                                          setShowReportModal(true);
-                                       }}
-                                       className="h-16 w-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[1.8rem] flex items-center justify-center border-2 border-red-100 dark:border-red-900/30 shadow-soft hover:bg-red-600 hover:text-white transition-all active:scale-95 ml-2"
-                                       title="Report Issue"
-                                     >
-                                        <ShieldAlert className="w-6 h-6" />
-                                     </button>
-                                  )}
-                                   {user.role === 'user' && booking.status === 'confirmed' && (
-                                      <button 
-                                        onClick={() => navigate('/user/explore-map', { state: { guideId: booking.guideId._id } })}
-                                        className="h-16 px-10 bg-indigo-500 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-indigo-600 shadow-premium active:scale-95 transition-all flex items-center"
-                                      >
-                                         <Navigation className="w-5 h-5 mr-3 animate-pulse" /> Track Guide
-                                      </button>
-                                   )}
-                                   {['confirmed', 'completed'].includes(booking.status) ? (
-                                      <Link to={`${user.role === 'guide' ? '/guide' : '/user'}/chat/${displayUser._id}`} className="h-16 w-16 bg-emerald-50 dark:bg-emerald-900/20 border-2 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-[1.8rem] flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all active:scale-95 shadow-soft">
-                                         <MessageSquare className="w-6 h-6" />
-                                      </Link>
-                                   ) : (
-                                      <div className="h-16 w-16 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-300 dark:text-slate-600 rounded-[1.8rem] flex items-center justify-center cursor-not-allowed opacity-50" title="Chat available after confirmation">
-                                         <MessageSquare className="w-6 h-6" />
-                                      </div>
-                                   )}
-                               </div>
-                            </div>
-                         </motion.div>
-                      );
-                   })}
-                </AnimatePresence>
-
-                {filteredBookings.length === 0 && (
-                   <div className="text-center py-48 bg-white dark:bg-slate-900 rounded-[4rem] border-4 border-dashed border-surface-100 dark:border-slate-800 group transition-colors">
-                      <div className="w-24 h-24 bg-surface-50 dark:bg-slate-800 rounded-[3rem] flex items-center justify-center mx-auto mb-10 shadow-inner group-hover:rotate-12 transition-transform">
-                         <HistoryIcon className="w-12 h-12 text-slate-200 dark:text-slate-700" />
-                      </div>
-                      <h3 className="text-4xl font-black text-slate-900 dark:text-white italic font-serif mb-6 leading-none tracking-tight">Your Voyage Logs are Empty</h3>
-                      <p className="subtitle max-w-sm mx-auto mb-12 dark:text-slate-400">Capture Odisha's soul through human-led storytelling. Your journey is waiting.</p>
-                      <Link to="/" className="btn-primary px-16 py-6 text-[11px] tracking-[0.4em]">
-                         EXPLORE LOCALES
-                      </Link>
+                <div className="space-y-2">
+                   <div className="flex items-center gap-3">
+                      <h4 className="text-2xl font-black text-white italic font-serif">{user.role === 'guide' ? booking.userId?.name : booking.guideId?.name}</h4>
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        booking.status === 'confirmed' ? 'bg-green-500 text-white' : 
+                        booking.status === 'pending' ? 'bg-[var(--accent)] text-white' : 'bg-red-500 text-white'
+                      }`}>{booking.status}</span>
                    </div>
-                )}
-             </motion.div>
-          )}
-       </div>
-
-       {showReviewModal && selectedBooking && (
-          <ReviewModal 
-            booking={selectedBooking} 
-            onClose={() => setShowReviewModal(false)}
-            onSuccess={() => {
-               setShowReviewModal(false);
-               fetchBookings();
-            }}
-          />
-       )}
-
-       {showReportModal && selectedBooking && (
-          <ReportModal 
-            isOpen={showReportModal}
-            onClose={() => setShowReportModal(false)}
-            guideId={selectedBooking.guideId._id}
-            guideName={selectedBooking.guideId.name}
-            bookingId={selectedBooking._id}
-          />
-       )}
+                   <div className="flex items-center gap-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest">
+                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-[var(--accent)]" /> {new Date(booking.bookingTime).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1.5"><MapPin size={12} className="text-[var(--accent)]" /> {booking.location}</span>
+                   </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between lg:justify-end gap-12 pt-6 lg:pt-0 border-t lg:border-t-0 border-[var(--border)]">
+                 <div className="text-left lg:text-right">
+                    <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-1">Fee</p>
+                    <p className="text-3xl font-black text-white tracking-tighter">₹{booking.price}</p>
+                 </div>
+                 <div className="flex items-center gap-3">
+                    <Link to={`/chat/${user.role === 'guide' ? booking.userId?._id : booking.guideId?._id}`} className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-[var(--accent)] hover:text-white transition-all text-white">
+                       <MessageSquare size={20} />
+                    </Link>
+                    {booking.status === 'completed' && user.role === 'user' && (
+                       <button className="px-6 py-4 bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 transition-all text-white">Review</button>
+                    )}
+                 </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-32 glass-card rounded-[3rem] border-2 border-dashed border-[var(--border)]">
+           <HistoryIcon size={48} className="mx-auto mb-6 text-[var(--border)]" />
+           <h3 className="text-xl font-bold italic font-serif mb-2">No bookings yet.</h3>
+           <p className="text-[var(--text-secondary)] text-sm mb-8">Adventure awaits! Explore our guides and start your journey.</p>
+           <button onClick={() => navigate('/guides')} className="btn-primary">Browse Guides</button>
+        </div>
+      )}
     </div>
   );
 };
