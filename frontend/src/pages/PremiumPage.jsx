@@ -36,40 +36,39 @@ const PremiumPage = () => {
           <motion.div 
             key={idx}
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.2 }}
-            className={`glass-card p-10 rounded-[3rem] border-2 ${tier.color} relative overflow-hidden flex flex-col`}
+            whileHover={{ y: -6 }}
+            className={`bg-[var(--bg-card)] p-10 rounded-[var(--radius-lg)] border-2 ${tier.isPremium ? 'border-[var(--accent)]/40 shadow-2xl shadow-[var(--accent)]/10' : 'border-[var(--border-color)]'} relative overflow-hidden flex flex-col transition-all`}
           >
             {tier.isPremium && (
               <div className="absolute top-0 right-0 p-4">
-                 <div className="bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+                 <div className="bg-[var(--accent)] text-white text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
                     <Crown size={12} /> RECOMMENDED
                  </div>
               </div>
             )}
             
             <div className="mb-10">
-               <h3 className="text-2xl font-black italic font-serif mb-2">{tier.name}</h3>
+               <h3 className="text-2xl font-black italic font-serif text-[var(--text-primary)] mb-2">{tier.name}</h3>
                <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-black tracking-tighter">₹{tier.price}</span>
-                  <span className="text-sm font-black uppercase tracking-widest text-[var(--text-secondary)]"> / Month</span>
+                  <span className="text-5xl font-black text-[var(--text-primary)] tracking-tighter">₹{tier.price}</span>
+                  <span className="text-sm font-black uppercase tracking-widest text-[var(--text-muted)]"> / Month</span>
                </div>
-               <p className="text-sm font-medium text-[var(--text-secondary)] mt-4">{tier.desc}</p>
+               <p className="text-sm font-medium text-[var(--text-muted)] mt-4">{tier.desc}</p>
             </div>
 
             <div className="space-y-4 flex-grow mb-12">
                {tier.features.map((f, i) => (
                  <div key={i} className="flex items-center gap-3">
-                    <CheckCircle2 size={18} className={tier.isPremium ? 'text-blue-500' : 'text-slate-700'} />
+                    <CheckCircle2 size={18} className={tier.isPremium ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'} />
                     <span className="text-[13px] font-bold text-[var(--text-primary)] opacity-80">{f}</span>
                  </div>
                ))}
             </div>
 
-            <button className={`w-full py-5 rounded-3xl font-black text-[12px] uppercase tracking-widest transition-all ${
+            <button className={`w-full py-5 rounded-[var(--radius-md)] font-black text-[12px] uppercase tracking-widest transition-all ${
               tier.isPremium 
-              ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-xl shadow-blue-500/20' 
-              : 'bg-white/5 text-[var(--text-secondary)] hover:bg-white/10'
+              ? 'bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white shadow-xl shadow-[var(--accent)]/20' 
+              : 'bg-white/5 text-[var(--text-primary)] hover:bg-white/10'
             }`}>
                {tier.btn}
             </button>

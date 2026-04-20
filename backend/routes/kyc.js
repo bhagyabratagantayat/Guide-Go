@@ -20,9 +20,9 @@ router.post('/submit', authenticateUser, upload.fields([
     return next(new ErrorResponse('Please provide Aadhaar number and all 3 photos', 400));
   }
 
-  const aadhaarFrontBase64 = 'data:' + req.files['aadhaarFront'][0].mimetype + ';base64,' + req.files['aadhaarFront'][0].buffer.toString('base64');
-  const aadhaarBackBase64 = 'data:' + req.files['aadhaarBack'][0].mimetype + ';base64,' + req.files['aadhaarBack'][0].buffer.toString('base64');
-  const selfieBase64 = 'data:' + req.files['selfie'][0].mimetype + ';base64,' + req.files['selfie'][0].buffer.toString('base64');
+  const aadhaarFrontUrl = req.files['aadhaarFront'][0].path;
+  const aadhaarBackUrl = req.files['aadhaarBack'][0].path;
+  const selfieUrl = req.files['selfie'][0].path;
 
   let guide = await Guide.findOne({ userId: req.user.id });
 
@@ -33,9 +33,9 @@ router.post('/submit', authenticateUser, upload.fields([
   guide.kycStatus = 'pending';
   guide.kycData = {
     aadhaarNumber,
-    aadhaarFront: aadhaarFrontBase64,
-    aadhaarBack: aadhaarBackBase64,
-    selfie: selfieBase64,
+    aadhaarFront: aadhaarFrontUrl,
+    aadhaarBack: aadhaarBackUrl,
+    selfie: selfieUrl,
     submittedAt: Date.now(),
     rejectionReason: ''
   };

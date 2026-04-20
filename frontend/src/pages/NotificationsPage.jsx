@@ -25,16 +25,16 @@ const NotificationsPage = () => {
                initial={{ opacity: 0, x: -20 }}
                animate={{ opacity: 1, x: 0 }}
                transition={{ delay: idx * 0.1 }}
-               className="glass-card p-6 rounded-[2rem] flex items-center gap-6 group hover:border-[var(--accent)]/30 cursor-pointer transition-all"
+               className="bg-[var(--bg-card)] border border-[var(--border-color)] p-6 rounded-[var(--radius-lg)] flex items-center gap-6 group hover:border-[var(--border-hover)] cursor-pointer transition-all"
             >
-              <div className={`w-14 h-14 ${note.bg} ${note.color} rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+              <div className={`w-14 h-14 ${note.bg} ${note.color} rounded-[var(--radius-md)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                  <note.icon size={24} />
               </div>
               <div className="flex-grow">
                  <p className="text-[13px] font-bold text-[var(--text-primary)] leading-tight mb-1">{note.message}</p>
-                 <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--text-secondary)]">{note.time}</p>
+                 <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[var(--text-muted)]">{note.time}</p>
               </div>
-              <div className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0 shadow-lg shadow-[var(--accent)]/40" />
             </motion.div>
           ))
         ) : (

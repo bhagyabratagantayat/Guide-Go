@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema({
   specialization: [{ type: String }], // For guides
   resetPasswordOTP: { type: String },
   resetPasswordOTPExpiry: { type: Date },
+  provider: { type: String, default: 'local' },
+  supabaseId: { type: String, default: '' },
+  avatar: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
 });
 

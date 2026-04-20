@@ -12,8 +12,6 @@ const connectDB = require('./config/db');
 const http = require('http');
 const initSocket = require('./utils/socket');
 
-connectDB();
-
 const app = express();
 const server = http.createServer(app);
 const io = initSocket(server);
@@ -98,6 +96,16 @@ app.get('/', (req, res) => {
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
-const PORT = config.port;
+const startServer = async () => {
+  try {
+    await connectDB();
 
-server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
+    const PORT = config.port;
+    server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
+  } catch (error) {
+    logger.error(`Critical Failure: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+startServer();

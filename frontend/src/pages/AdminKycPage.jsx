@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   ShieldCheck, Check, X, Eye, User, 
-  Mail, Phone, Calendar, AlertCircle, ExternalLink 
+  Mail, Phone, Calendar, AlertCircle, ExternalLink, Award 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -62,33 +62,34 @@ const AdminKycPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-slate-950 p-8">
+    <div className="min-h-screen bg-[var(--bg-base)] p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-4">
-            <div className="p-4 bg-indigo-500 text-white rounded-3xl shadow-lg shadow-indigo-500/20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+          <div className="flex items-center gap-6">
+            <div className="p-5 bg-[var(--accent)] text-white rounded-3xl shadow-2xl shadow-[var(--accent)]/20">
               <ShieldCheck size={32} />
             </div>
             <div>
-              <h1 className="text-4xl font-black italic font-serif">KYC Verifications</h1>
-              <p className="text-slate-500 font-medium">{guides.length} pending submissions</p>
+               <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-2">Internal Security</h1>
+               <h2 className="text-4xl font-black italic font-serif text-[var(--text-primary)]">KYC Verifications</h2>
+               <p className="text-[var(--text-secondary)] font-medium mt-1">{guides.length} dossiers pending review</p>
             </div>
           </div>
           <button 
              onClick={fetchPending}
-             className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-indigo-500 transition-all shadow-soft"
+             className="px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl font-black text-[10px] uppercase tracking-[.3em] text-[var(--text-primary)] hover:border-[var(--accent)] transition-all shadow-xl"
           >
-             Refresh List
+             Synchronize Data
           </button>
         </div>
 
         {guides.length === 0 ? (
-          <div className="text-center py-32 glass-card rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-            <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
+          <div className="text-center py-32 bg-[var(--bg-card)] rounded-[3rem] border-2 border-dashed border-[var(--border-color)]">
+            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-[var(--text-muted)]">
               <Check size={40} />
             </div>
-            <h2 className="text-2xl font-black text-slate-300 uppercase tracking-widest">Everything Clear</h2>
-            <p className="text-slate-400 mt-2">No pending verifications at the moment.</p>
+            <h2 className="text-2xl font-black text-[var(--text-muted)] uppercase tracking-widest">Awaiting Applications</h2>
+            <p className="text-[var(--text-muted)] mt-2 font-medium">All guide dossiers have been processed.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -98,10 +99,10 @@ const AdminKycPage = () => {
                 layout
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="glass-card overflow-hidden rounded-[3rem] shadow-premium flex flex-col"
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden rounded-[3rem] shadow-2xl flex flex-col group hover:border-[var(--border-hover)] transition-all"
               >
                 {/* Header */}
-                <div className="p-8 border-b border-slate-50 dark:border-slate-900 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="p-8 border-b border-[var(--border-color)] flex items-center justify-between bg-white/[0.02]">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-indigo-500 shadow-soft border border-slate-100 dark:border-slate-800 overflow-hidden font-black text-xl italic">
                        {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : guide.userId?.name.charAt(0)}
@@ -128,13 +129,13 @@ const AdminKycPage = () => {
                 </div>
 
                 <div className="px-8 pb-8 space-y-4">
-                   <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                      <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-indigo-500 shadow-soft">
+                   <div className="flex items-center gap-4 p-5 bg-[var(--bg-base)] rounded-2xl border border-[var(--border-color)]">
+                      <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-[var(--accent)]">
                         <Award size={20} />
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Aadhaar Number</p>
-                        <p className="text-sm font-black tracking-widest">{guide.kycData.aadhaarNumber}</p>
+                        <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest leading-none mb-1">Aadhaar Identity</p>
+                        <p className="text-sm font-black tracking-[.2em] text-[var(--text-primary)]">{guide.kycData.aadhaarNumber}</p>
                       </div>
                    </div>
 

@@ -61,7 +61,21 @@ const Sidebar = () => {
     ]}
   ];
 
-  const links = user?.role === 'guide' ? guideLinks : touristLinks;
+  const adminLinks = [
+    { section: 'ADMIN CONTROL', items: [
+      { path: '/admin', label: 'Dashboard', icon: Home },
+      { path: '/admin/users', label: 'Manage Users', icon: User },
+      { path: '/admin/guides', label: 'Manage Guides', icon: Compass },
+      { path: '/admin/kyc', label: 'KYC Dossiers', icon: ShieldCheck },
+      { path: '/admin/bookings', label: 'All Bookings', icon: Calendar },
+    ]},
+    { section: 'ACCOUNT', items: [
+      { path: '/profile', label: 'Admin Profile', icon: User },
+      { path: '/settings', label: 'System Settings', icon: Settings },
+    ]}
+  ];
+
+  const links = user?.role === 'admin' ? adminLinks : (user?.role === 'guide' ? guideLinks : touristLinks);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border)] flex flex-col z-[1000] transition-all duration-300">

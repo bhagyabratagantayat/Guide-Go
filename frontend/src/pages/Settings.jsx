@@ -46,38 +46,38 @@ const Settings = () => {
         <section className="space-y-6">
            <div className="flex items-center gap-3">
               <Shield size={20} className="text-emerald-500" />
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-white">Global Settings</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Global Settings</h3>
            </div>
-           <div className="glass-card rounded-[2.5rem] p-4 divide-y divide-white/5 overflow-hidden">
+           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] divide-y divide-[var(--border-color)] overflow-hidden">
               <ToggleItem icon={Moon} label="Dark Mode Energy Saving" active />
               <ToggleItem icon={Bell} label="Push Notifications" active />
               <ToggleItem icon={Volume2} label="Audio Guide Narration" active />
            </div>
         </section>
+      </div>
 
-        {/* About App */}
-        <div className="text-center py-10 border-t border-[var(--border)] space-y-4">
-           <div className="flex items-center justify-center gap-2 text-[var(--text-secondary)]">
-              <Info size={14} />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em]">GuideGo Elite • v1.0.8</p>
-           </div>
-           <p className="text-[8px] font-bold text-slate-700 uppercase tracking-[0.4em]">Designed & Developed with Passion for Odisha</p>
-        </div>
+      {/* About App */}
+      <div className="text-center py-10 border-t border-[var(--border-color)] space-y-4">
+         <div className="flex items-center justify-center gap-2 text-[var(--text-muted)]">
+            <Info size={14} />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">GuideGo Elite • v1.0.8</p>
+         </div>
+         <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-[0.4em]">Designed & Developed in Odisha</p>
       </div>
     </div>
   );
 };
 
 const ToggleItem = ({ icon: Icon, label, active }) => (
-  <div className="p-6 flex items-center justify-between group">
+  <div className="p-6 flex items-center justify-between group hover:bg-white/[0.02] transition-all">
      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[var(--text-secondary)]">
+        <div className="w-10 h-10 rounded-xl bg-[var(--accent-bg)] flex items-center justify-center text-[var(--accent)]">
            <Icon size={18} />
         </div>
-        <span className="text-sm font-bold text-white tracking-tight">{label}</span>
+        <span className="text-sm font-bold text-[var(--text-primary)] tracking-tight">{label}</span>
      </div>
      <div className={`w-12 h-6 rounded-full relative transition-colors ${active ? 'bg-[var(--accent)]' : 'bg-white/10'}`}>
-        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${active ? 'right-1' : 'left-1'}`} />
+        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${active ? 'right-1' : 'left-1 shadow-md'}`} />
      </div>
   </div>
 );

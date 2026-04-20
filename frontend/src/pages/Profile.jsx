@@ -15,14 +15,14 @@ const Profile = () => {
 
   return (
     <div className="p-10 max-w-5xl mx-auto space-y-12">
-      <div className="flex flex-col md:flex-row items-center gap-8 glass-card p-12 rounded-[4rem] relative overflow-hidden">
+      <div className="flex flex-col md:flex-row items-center gap-8 bg-[var(--bg-card)] border border-[var(--border-color)] p-12 rounded-[var(--radius-lg)] relative overflow-hidden group hover:border-[var(--border-hover)] transition-all">
         <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-12 -translate-y-12">
            <User size={240} className="text-[var(--accent)]" />
         </div>
         
         <div className="relative">
-           <div className="w-40 h-40 rounded-[3.5rem] bg-[var(--bg-base)] border-4 border-[var(--accent)] p-1 overflow-hidden shadow-2xl">
-              <div className="w-full h-full rounded-[3rem] overflow-hidden bg-[var(--bg-card)] flex items-center justify-center">
+           <div className="w-40 h-40 rounded-[var(--radius-lg)] bg-[var(--bg-base)] border-4 border-[var(--accent)] p-1 overflow-hidden shadow-2xl">
+              <div className="w-full h-full rounded-[var(--radius-md)] overflow-hidden bg-[var(--bg-card)] flex items-center justify-center">
                  {user.profilePicture ? (
                    <img src={user.profilePicture} className="w-full h-full object-cover" />
                  ) : (
@@ -37,7 +37,7 @@ const Profile = () => {
 
         <div className="text-center md:text-left space-y-4 relative z-10">
            <div className="space-y-1">
-              <h1 className="text-5xl font-black italic font-serif text-white tracking-tighter leading-none">{user.name}</h1>
+              <h1 className="text-5xl font-black italic font-serif text-[var(--text-primary)] tracking-tighter leading-none">{user.name}</h1>
               <p className="text-[10px] font-black uppercase text-[var(--accent)] tracking-[0.4em]">{user.role} Account • Verified Member</p>
            </div>
            <div className="flex flex-wrap justify-center md:justify-start gap-4">
@@ -49,7 +49,7 @@ const Profile = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <section className="space-y-6">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] ml-2">Member Statistics</h3>
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] ml-2">Member Statistics</h3>
            <div className="grid grid-cols-2 gap-4">
               <StatCard label="Trips Taken" value="12" icon={History} />
               <StatCard label="Places Saved" value="48" icon={Star} />
@@ -57,8 +57,8 @@ const Profile = () => {
         </section>
 
         <section className="space-y-6">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] ml-2">Quick Actions</h3>
-           <div className="glass-card rounded-[2.5rem] divide-y divide-white/5 overflow-hidden">
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] ml-2">Quick Actions</h3>
+           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] divide-y divide-[var(--border-color)] overflow-hidden">
               <ActionItem icon={SettingsIcon} label="Account Settings" onClick={() => navigate('/settings')} />
               <ActionItem icon={ShieldCheck} label="Security Privacy" onClick={() => {}} />
               <ActionItem icon={LogOut} label="Emergency Logout" red onClick={logout} />
@@ -76,13 +76,13 @@ const InfoChip = ({ icon: Icon, label }) => (
 );
 
 const StatCard = ({ label, value, icon: Icon }) => (
-  <div className="glass-card p-8 rounded-[2.5rem] flex flex-col items-center text-center space-y-4">
-     <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-[var(--text-secondary)]">
+  <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-[var(--radius-lg)] flex flex-col items-center text-center space-y-4 hover:border-[var(--border-hover)] transition-all">
+     <div className="w-12 h-12 rounded-2xl bg-[var(--accent-bg)] flex items-center justify-center text-[var(--accent)]">
         <Icon size={24} />
      </div>
      <div>
-        <p className="text-3xl font-black text-white italic font-serif leading-none">{value}</p>
-        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] mt-2">{label}</p>
+        <p className="text-3xl font-black text-[var(--text-primary)] italic font-serif leading-none">{value}</p>
+        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] mt-2">{label}</p>
      </div>
   </div>
 );

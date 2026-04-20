@@ -72,9 +72,9 @@ const AdminDashboard = () => {
   );
 
   const stats = [
-    { label: 'Platform Revenue', value: `₹${data.stats.totalRevenue.toLocaleString()}`, icon: <DollarSign className="w-6 h-6" />, color: 'primary', trend: '+14.2%', desc: 'Current Month' },
-    { label: 'Active Explorers', value: data.stats.totalUsers, icon: <Users className="w-6 h-6" />, color: 'secondary', trend: '+5.8%', desc: 'Across India' },
-    { label: 'Verified Guides', value: data.stats.totalGuides, icon: <UserCheck className="w-6 h-6" />, color: 'primary', trend: '+2.4%', desc: 'Overall' },
+    { label: 'Platform Revenue', value: `₹${(data.stats.totalRevenue || 0).toLocaleString()}`, icon: <DollarSign className="w-6 h-6" />, color: 'primary', trend: '+14.2%', desc: 'Current Month' },
+    { label: 'Active Explorers', value: data.stats.totalUsers || 0, icon: <Users className="w-6 h-6" />, color: 'secondary', trend: '+5.8%', desc: 'Across India' },
+    { label: 'Verified Guides', value: data.stats.totalGuides || 0, icon: <UserCheck className="w-6 h-6" />, color: 'primary', trend: '+2.4%', desc: 'Overall' },
     { label: 'Guide Approvals', value: data.stats.pendingGuides || 0, icon: <ShieldCheck className="w-6 h-6" />, color: 'secondary', trend: 'Action Required', desc: 'Pending Review', path: '/admin/guides' },
   ];
 
@@ -205,7 +205,7 @@ const AdminDashboard = () => {
                        </p>
                     </td>
                     <td className="px-6 py-6">
-                       <span className="text-sm font-black text-slate-900 tracking-tighter">₹{booking.price.toLocaleString()}</span>
+                       <span className="text-sm font-black text-slate-900 tracking-tighter">₹{(booking.price || 0).toLocaleString()}</span>
                     </td>
                     <td className="px-6 py-6 text-right sm:text-left">
                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border ${

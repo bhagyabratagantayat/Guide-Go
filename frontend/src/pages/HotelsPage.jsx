@@ -55,35 +55,35 @@ const HotelsPage = () => {
         {filteredHotels.map(hotel => (
           <motion.div 
             key={hotel.id}
-            whileHover={{ scale: 1.02 }}
-            className="glass-card rounded-[3rem] overflow-hidden group border-2 border-transparent hover:border-[var(--accent)]/30 transition-all shadow-premium"
+            whileHover={{ y: -6 }}
+            className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden group hover:border-[var(--border-hover)] transition-all flex flex-col"
           >
             <div className="h-64 relative overflow-hidden">
                <img src={hotel.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={hotel.name} />
-               <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center border border-white/10">
+               <div className="absolute top-6 right-6 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-[var(--radius-sm)] flex items-center border border-white/10">
                   <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 mr-2" />
                   <span className="text-xs font-black text-white">{hotel.rating}</span>
                </div>
                <div className="absolute top-6 left-6 flex gap-2">
-                  <span className="px-3 py-1.5 rounded-full bg-[var(--accent)] text-white text-[9px] font-black uppercase tracking-wider shadow-lg">Verified</span>
+                  <span className="px-3 py-1.5 rounded-full bg-[var(--success)] text-white text-[9px] font-black uppercase tracking-wider">Verified Check</span>
                </div>
             </div>
             
             <div className="p-8 space-y-6">
               <div>
-                <h3 className="text-2xl font-black italic font-serif text-white mb-2 leading-tight">{hotel.name}</h3>
+                <h3 className="text-2xl font-black italic font-serif text-[var(--text-primary)] mb-2 leading-tight">{hotel.name}</h3>
                 <div className="flex items-center text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-widest">
                    <MapPin size={12} className="text-[var(--accent)] mr-2" /> {hotel.city}, Odisha
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
+              <div className="flex items-center justify-between pt-6 border-t border-[var(--border-color)]">
                 <div>
-                   <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-1">Starting from</p>
-                   <p className="text-3xl font-black text-white tracking-tighter">{formatPrice(hotel.price)} <span className="text-[10px] font-medium text-[var(--text-secondary)] ml-1">/ Night</span></p>
+                   <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mb-1">Starting from</p>
+                   <p className="text-3xl font-black text-[var(--text-primary)] tracking-tighter">{formatPrice(hotel.price)} <span className="text-[10px] font-medium text-[var(--text-secondary)] ml-1">/ Night</span></p>
                 </div>
-                <button className="w-14 h-14 bg-white rounded-[1.5rem] flex items-center justify-center text-black hover:bg-[var(--accent)] hover:text-white transition-all shadow-xl active:scale-95 group/btn">
-                   <ArrowRight size={24} className="group-hover/btn:translate-x-1 transition-transform" />
+                <button className="w-12 h-12 bg-[var(--accent-bg)] rounded-xl flex items-center justify-center text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-all shadow-xl active:scale-95 group/btn">
+                   <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>

@@ -383,8 +383,53 @@ const resendOTP = asyncHandler(async (req, res, next) => {
   }
 });
 
+const googleSync = asyncHandler(async (req, res, next) => {
+  const { supabaseId, email, name, avatar, provider } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  let user = await User.findOne({ email: normalizedEmail });
+
+  if (!user) {
+    // Create new user if not found
+    user = await User.create({
+      name,
+      email: normalizedEmail,
+      password: supabaseId, // Will be hashed by pre-save hook
+      role: 'user',
+      mobile: '0000000000', // Default for social login
+      provider,
+      supabaseId,
+      avatar,
+      isVerified: true
+    });
+    logger.info(`New Google user created: ${user.email}`);
+  } else {
+    // Update existing user if needed
+    let updated = false;
+    if (!user.supabaseId) {
+      user.supabaseId = supabaseId;
+      updated = true;
+    }
+    if (!user.avatar && avatar) {
+      user.avatar = avatar;
+      updated = true;
+    }
+    if (updated) await user.save();
+    logger.info(`Existing user synced with Google: ${user.email}`);
+  }
+
+  res.json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    avatar: user.avatar || user.profilePicture,
+    token: generateToken(user._id, user.role),
+  });
+});
+
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, config.jwtSecret, { expiresIn: '30d' });
+  return jwt.sign({ id, role }, config.jwtSecret, { expiresIn: '7d' });
 };
 
 module.exports = { 
@@ -396,5 +441,6 @@ module.exports = {
   verifyResetOTP,
   resetPassword,
   getProfile,
-  testEmail
+  testEmail,
+  googleSync
 };

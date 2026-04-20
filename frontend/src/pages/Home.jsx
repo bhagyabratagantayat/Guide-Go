@@ -88,7 +88,7 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-8 space-y-24 pb-32">
         
         {/* 3. BROWSE GUIDES NEAR YOU */}
-        <section className="glass-card rounded-[3rem] p-12 relative overflow-hidden group">
+        <section className="bg-[var(--bg-card)] border-l-4 border-[var(--accent)] rounded-[var(--radius-lg)] p-12 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-12 -translate-y-12 group-hover:translate-x-8 group-hover:-translate-y-8 transition-transform">
             <Compass size={240} className="text-[var(--accent)]" />
           </div>
@@ -108,7 +108,7 @@ const Home = () => {
         <section>
           <div className="flex justify-between items-end mb-10">
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-2">Curated Journeys</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-2">Curated Journeys</h4>
               <h2 className="text-4xl font-black italic font-serif text-[var(--text-primary)]">Popular Categories</h2>
             </div>
             <button onClick={() => navigate('/guides')} className="text-[10px] font-black text-[var(--accent)] uppercase tracking-widest hover:underline transition-all">View All</button>
@@ -118,12 +118,12 @@ const Home = () => {
               <button 
                 key={idx}
                 onClick={() => navigate(`/guides?category=${cat.name}`)}
-                className="glass-card p-8 rounded-[2.5rem] flex flex-col items-center text-center hover:scale-[1.02] transition-all group"
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-[var(--radius-lg)] flex flex-col items-center text-center hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)] transition-all group"
               >
                 <div className={`w-16 h-16 ${cat.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:rotate-6 transition-transform`}>
                    <cat.icon className="w-8 h-8 text-white" />
                 </div>
-                <h5 className="font-black italic font-serif text-lg">{cat.name}</h5>
+                <h5 className="font-black italic font-serif text-lg text-[var(--text-primary)]">{cat.name}</h5>
               </button>
             ))}
           </div>
@@ -140,13 +140,14 @@ const Home = () => {
               <div 
                 key={place.id}
                 onClick={() => navigate('/guides')}
-                className="relative h-[400px] rounded-[3rem] overflow-hidden cursor-pointer group"
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden cursor-pointer group hover:border-[var(--border-hover)] transition-all flex flex-col"
               >
-                <img src={place.imageUrl} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={place.name} />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/20 to-transparent" />
-                <div className="absolute bottom-8 left-8">
+                <div className="h-48 overflow-hidden">
+                  <img src={place.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={place.name} />
+                </div>
+                <div className="p-8">
                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent)] mb-2 block">{place.category}</span>
-                  <h3 className="text-2xl font-black italic font-serif text-white leading-tight">{place.name}</h3>
+                  <h3 className="text-2xl font-black italic font-serif text-[var(--text-primary)] leading-tight">{place.name}</h3>
                 </div>
               </div>
             ))}

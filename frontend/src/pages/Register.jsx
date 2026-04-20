@@ -38,61 +38,67 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-primary-50 to-white py-12">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--bg-base)] py-12">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-sm bg-white rounded-[3rem] p-10 shadow-premium border border-primary-50"
+        className="w-full max-w-sm bg-[var(--bg-card)] rounded-[3rem] p-10 border border-[var(--border-color)] shadow-2xl relative overflow-hidden"
       >
+        {/* Glow effect */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)] opacity-10 blur-[60px] -translate-y-12 translate-x-12" />
+
         <div className="text-center mb-10">
           <motion.div 
             initial={{ y: -10 }}
             animate={{ y: 0 }}
             className="mb-4 flex justify-center"
           >
-            <img 
-              src={logo} 
-              alt="GuideGo" 
-              className="h-20 w-20 object-cover rounded-full ring-4 ring-primary-500/10 shadow-xl"
-            />
+            <div className="relative group">
+              <div className="absolute inset-0 bg-[var(--accent)] blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
+              <img 
+                src={logo} 
+                alt="GuideGo" 
+                className="relative h-20 w-20 object-cover rounded-full border-2 border-[var(--border-color)] shadow-2xl"
+              />
+            </div>
           </motion.div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">
+          <h1 className="text-2xl font-black italic font-serif text-[var(--text-primary)] mb-1">
             Create Account
           </h1>
-          <p className="text-xs text-slate-400 font-medium">Join our community today</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Join our community today</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative flex items-center">
-            <UserIcon className="absolute left-5 text-slate-300 w-4 h-4" />
+          <div className="relative flex items-center group">
+            <UserIcon className="absolute left-5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] w-4 h-4 transition-colors" />
             <input
               type="text"
               placeholder="Full Name"
-              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
+              className="input-field pl-12"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
 
-          <div className="relative flex items-center">
-            <Mail className="absolute left-5 text-slate-300 w-4 h-4" />
+          <div className="relative flex items-center group">
+            <Mail className="absolute left-5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] w-4 h-4 transition-colors" />
             <input
               type="email"
               placeholder="Email Address"
-              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
+              className="input-field pl-12"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
-          <div className="relative flex items-center">
-            <Lock className="absolute left-5 text-slate-300 w-4 h-4" />
+          <div className="relative flex items-center group">
+            <Lock className="absolute left-5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] w-4 h-4 transition-colors" />
             <input
               type="password"
               placeholder="Password"
-              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
+              className="input-field pl-12"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -100,36 +106,36 @@ const Register = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="relative flex items-center">
-              <Phone className="absolute left-5 text-slate-300 w-4 h-4" />
+            <div className="relative flex items-center group">
+              <Phone className="absolute left-5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] w-4 h-4 transition-colors" />
               <input
                 type="text"
                 placeholder="Mobile"
-                className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
+                className="input-field pl-12"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 required
               />
             </div>
-            <div className="relative flex items-center">
-              <CheckCircle className="absolute left-5 text-slate-300 w-4 h-4 pointer-events-none" />
+            <div className="relative flex items-center group">
+              <CheckCircle className="absolute left-5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] w-4 h-4 transition-colors pointer-events-none" />
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium appearance-none"
+                className="input-field pl-12 appearance-none bg-[var(--bg-input)]"
               >
-                <option value="user">Traveler</option>
-                <option value="guide">Guide</option>
+                <option value="user" className="bg-[var(--bg-card)]">Traveler</option>
+                <option value="guide" className="bg-[var(--bg-card)]">Guide</option>
               </select>
             </div>
           </div>
 
-          <div className="relative flex items-center">
-            <MapPin className="absolute left-5 text-slate-300 w-4 h-4" />
+          <div className="relative flex items-center group">
+            <MapPin className="absolute left-5 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] w-4 h-4 transition-colors" />
             <input
               type="text"
               placeholder="Location (e.g. Puri, Odisha)"
-              className="w-full bg-secondary-50 border-transparent rounded-2xl pl-12 pr-6 py-3.5 text-sm focus:bg-white focus:border-primary-500 focus:ring-0 transition-all font-medium"
+              className="input-field pl-12"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -139,16 +145,16 @@ const Register = () => {
             whileTap={{ scale: 0.98 }}
             type="submit" 
             disabled={loading}
-            className={`w-full bg-primary-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all text-sm uppercase tracking-widest mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`btn-primary w-full py-4 mt-4 uppercase tracking-widest ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            {loading ? 'Processing...' : 'Register'}
+            {loading ? 'Processing...' : 'Register Now'}
           </motion.button>
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-xs font-bold text-slate-400">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
             Already a member? {' '}
-            <Link to="/login" className="text-primary-500 hover:text-primary-600">
+            <Link to="/login" className="text-[var(--accent)] hover:underline">
               Sign In
             </Link>
           </p>

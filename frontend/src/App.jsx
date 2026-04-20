@@ -59,6 +59,7 @@ import GuideVerifyPage from './pages/GuideVerifyPage';
 import GuideSetupPage from './pages/GuideSetupPage';
 import GuideGuard from './components/GuideGuard';
 
+import AuthCallbackPage from './pages/AuthCallbackPage';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
 
@@ -110,6 +111,7 @@ function AppContent() {
               <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
               <Route path="/verify-reset-otp" element={<PageWrapper><VerifyResetOTP /></PageWrapper>} />
               <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               
               {/* Core Feature Routes */}
               <Route path="/guides" element={<PageWrapper><Guides /></PageWrapper>} />

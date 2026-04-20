@@ -55,7 +55,7 @@ const RestaurantsPage = () => {
             key={res.id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="glass-card rounded-[3rem] overflow-hidden group shadow-soft hover:shadow-2xl transition-all"
+            className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden group hover:border-[var(--border-hover)] transition-all flex flex-col shadow-soft"
           >
             <div className="h-56 relative overflow-hidden">
                <img src={res.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={res.name} />
@@ -71,17 +71,17 @@ const RestaurantsPage = () => {
             <div className="p-8">
                <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-2xl font-black italic font-serif text-white leading-tight mb-2">{res.name}</h3>
-                    <p className="flex items-center text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em]">
+                    <h3 className="text-2xl font-black italic font-serif text-[var(--text-primary)] leading-tight mb-2">{res.name}</h3>
+                    <p className="flex items-center text-[10px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em]">
                        <MapPin size={10} className="text-orange-500 mr-1.5" /> {res.dist} from your location
                     </p>
                   </div>
-                  <div className="p-3 bg-[var(--bg-base)] rounded-2xl border border-[var(--border)] text-[var(--text-secondary)] group-hover:text-orange-500 transition-colors">
+                  <div className="p-3 bg-[var(--bg-base)] rounded-2xl border border-[var(--border-color)] text-[var(--text-muted)] group-hover:text-orange-500 transition-colors">
                      <Utensils size={18} />
                   </div>
                </div>
                
-               <button className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-orange-500 transition-all">
+               <button className="w-full py-4 bg-white/5 border border-white/5 rounded-[var(--radius-sm)] flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] hover:bg-orange-500 hover:text-white transition-all">
                   VIEW DIGITAL MENU <ArrowUpRight size={14} />
                </button>
             </div>

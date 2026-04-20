@@ -28,16 +28,16 @@ const TripPlannerPage = () => {
         <p className="text-[var(--text-secondary)] font-medium max-w-lg mx-auto">Tell us your vibes, and our AI will build a minute-by-minute itinerary tailored to your soul.</p>
       </div>
 
-      <div className="glass-card rounded-[3.5rem] p-12 border-2 border-[var(--border)] relative overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-12 relative overflow-hidden group hover:border-[var(--border-hover)] transition-all">
         <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-12 -translate-y-12">
-           <Plane size={240} className="text-indigo-500" />
+           <Plane size={240} className="text-[var(--accent)]" />
         </div>
 
         <div className="relative z-10 space-y-12">
            {/* Step Indicator */}
            <div className="flex justify-center gap-4">
               {[1, 2, 3].map(s => (
-                <div key={s} className={`w-12 h-1.5 rounded-full transition-all ${step >= s ? 'bg-indigo-500' : 'bg-white/10'}`} />
+                <div key={s} className={`w-12 h-1.5 rounded-full transition-all ${step >= s ? 'bg-[var(--accent)]' : 'bg-white/10'}`} />
               ))}
            </div>
 
@@ -53,7 +53,7 @@ const TripPlannerPage = () => {
                    <div className="space-y-4">
                       <label className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)] ml-2">Where to?</label>
                       <div className="relative group">
-                         <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-indigo-500 transition-colors" />
+                         <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors" />
                          <input 
                             type="text" 
                             placeholder="e.g. Puri, Odisha"
@@ -65,28 +65,28 @@ const TripPlannerPage = () => {
                    </div>
                    <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-4">
-                         <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] ml-2">Duration (Days)</label>
+                         <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-2">Duration (Days)</label>
                          <div className="relative">
-                            <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
+                            <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                             <select 
-                              className="input-field pl-16 py-6 appearance-none"
+                              className="input-field pl-16 py-6 appearance-none bg-[var(--bg-input)]"
                               value={prefs.days}
                               onChange={(e) => setPrefs({...prefs, days: e.target.value})}
                             >
-                               {[1,2,3,4,5,6,7].map(d => <option key={d} value={d}>{d} Days</option>)}
+                               {[1,2,3,4,5,6,7].map(d => <option key={d} value={d} className="bg-[var(--bg-card)]">{d} Days</option>)}
                             </select>
                          </div>
                       </div>
                       <div className="space-y-4">
-                         <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] ml-2">Travelers</label>
+                         <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] ml-2">Travelers</label>
                          <div className="relative">
-                            <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
+                            <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                             <select 
-                              className="input-field pl-16 py-6 appearance-none"
+                              className="input-field pl-16 py-6 appearance-none bg-[var(--bg-input)]"
                               value={prefs.people}
                               onChange={(e) => setPrefs({...prefs, people: e.target.value})}
                             >
-                               {[1,2,3,4,5,6].map(p => <option key={p} value={p}>{p} People</option>)}
+                               {[1,2,3,4,5,6].map(p => <option key={p} value={p} className="bg-[var(--bg-card)]">{p} People</option>)}
                             </select>
                          </div>
                       </div>
@@ -106,18 +106,18 @@ const TripPlannerPage = () => {
                      <button 
                         key={i}
                         onClick={() => setPrefs({...prefs, style: s.name})}
-                        className={`p-8 rounded-[2.5rem] border-2 transition-all text-left flex flex-col gap-4 group ${
-                          prefs.style === s.name ? 'border-indigo-500 bg-indigo-500/10' : 'border-[var(--border)] hover:border-white/20'
+                        className={`p-8 rounded-[var(--radius-lg)] border-2 transition-all text-left flex flex-col gap-4 group ${
+                          prefs.style === s.name ? 'border-[var(--accent)] bg-[var(--accent-bg)]' : 'border-[var(--border-color)] hover:border-white/20'
                         }`}
                      >
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
-                           prefs.style === s.name ? 'bg-indigo-500 text-white' : 'bg-white/5 text-[var(--text-secondary)] group-hover:text-white'
+                           prefs.style === s.name ? 'bg-[var(--accent)] text-white' : 'bg-white/5 text-[var(--text-muted)] group-hover:text-white'
                         }`}>
                            <s.icon size={24} />
                         </div>
                         <div>
-                           <h4 className="font-black italic font-serif text-xl">{s.name}</h4>
-                           <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] mt-1">{s.desc}</p>
+                           <h4 className="font-black italic font-serif text-xl text-[var(--text-primary)]">{s.name}</h4>
+                           <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mt-1">{s.desc}</p>
                         </div>
                      </button>
                    ))}
@@ -131,9 +131,9 @@ const TripPlannerPage = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-10 space-y-6"
                 >
-                   <div className="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-8" />
-                   <h3 className="text-2xl font-black italic font-serif text-white uppercase tracking-tight">Consulting the Oracles...</h3>
-                   <p className="text-[var(--text-secondary)] font-medium max-w-sm mx-auto">We are analyzing weather data, guide availability, and cultural events for your {prefs.dest} trip.</p>
+                   <div className="w-24 h-24 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-8 shadow-xl shadow-[var(--accent)]/10" />
+                   <h3 className="text-2xl font-black italic font-serif text-[var(--text-primary)] uppercase tracking-tight">Consulting the Oracles...</h3>
+                   <p className="text-[var(--text-muted)] font-medium max-w-sm mx-auto">We are analyzing weather data, guide availability, and cultural events for your {prefs.dest} trip.</p>
                 </motion.div>
               )}
            </AnimatePresence>
@@ -142,7 +142,7 @@ const TripPlannerPage = () => {
               {step > 1 && step < 3 && (
                 <button 
                   onClick={() => setStep(step - 1)}
-                  className="px-10 py-5 rounded-3xl bg-white/5 text-white font-black text-[12px] uppercase tracking-widest hover:bg-white/10"
+                  className="px-10 py-5 rounded-[var(--radius-md)] bg-white/5 text-[var(--text-primary)] font-black text-[12px] uppercase tracking-widest hover:bg-white/10"
                 >
                   Back
                 </button>
@@ -151,7 +151,7 @@ const TripPlannerPage = () => {
                 <button 
                   onClick={() => setStep(step + 1)}
                   disabled={step === 1 && !prefs.dest}
-                  className="flex-grow py-5 rounded-3xl bg-indigo-500 text-white font-black text-[12px] uppercase tracking-widest hover:bg-indigo-600 disabled:opacity-20 flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/20"
+                  className="btn-primary flex-grow py-5 flex items-center justify-center gap-3"
                 >
                   {step === 2 ? 'GENERATE ITINERARY' : 'CONTINUE'} <ArrowRight size={18} />
                 </button>
