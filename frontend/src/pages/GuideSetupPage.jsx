@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { 
   Briefcase, IndianRupee, MapPin, CheckCircle, 
@@ -32,7 +32,7 @@ const GuideSetupPage = () => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const { data } = await axios.get('/api/kyc/status');
+        const { data } = await api.get('/kyc/status');
         if (data.kycStatus !== 'approved') {
           navigate('/guide/verify');
           return;
@@ -72,7 +72,7 @@ const GuideSetupPage = () => {
 
     setSubmitting(true);
     try {
-      await axios.post('/api/kyc/service', formData);
+      await api.post('/kyc/service', formData);
       toast.success("You're live! travelers can now find you.");
       navigate('/guide/dashboard');
     } catch (error) {

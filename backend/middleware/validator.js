@@ -36,9 +36,7 @@ const validateGuideRegister = [
 ];
 
 const validateBooking = [
-  body('guideId').isMongoId().withMessage('Invalid Guide ID'),
   body('location').notEmpty().withMessage('Location is required'),
-  body('bookingTime').isISO8601().withMessage('Please provide a valid booking time'),
   body('price').isNumeric().withMessage('Price must be a number'),
   validate
 ];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { motion } from 'framer-motion';
 import { 
   Users, UserCheck, MapPin, BookOpen, 
@@ -17,7 +17,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await axios.get('/api/admin/stats');
+        const { data } = await api.get('/admin/stats');
         if (data.success && data.data) {
           setData(data.data);
           setError(null);

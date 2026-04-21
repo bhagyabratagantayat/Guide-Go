@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Upload, FileCheck, AlertCircle, 
@@ -23,7 +23,7 @@ const GuideVerifyPage = () => {
   const fetchStatus = useCallback(async (showLoading = false) => {
     if (showLoading) setStatus('loading');
     try {
-      const { data } = await axios.get('/api/kyc/status');
+      const { data } = await api.get('/kyc/status');
       setStatus(data.kycStatus);
       setReason(data.rejectionReason);
       
@@ -85,9 +85,7 @@ const GuideVerifyPage = () => {
     fd.append('selfie', files.selfie);
 
     try {
-      await axios.post('/api/kyc/submit', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/kyc/submit', fd);
       toast.success('KYC submitted successfully!');
       setStatus('pending');
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   MapPin, 
   Plus, 
@@ -27,7 +27,7 @@ const AdminPlaces = () => {
 
   const fetchPlaces = async () => {
     try {
-      const { data } = await axios.get('/api/places');
+      const { data } = await api.get('/places');
       setPlaces(data);
     } catch (error) {
       console.error('Error fetching places:', error);
@@ -69,7 +69,7 @@ const AdminPlaces = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to remove this place?')) {
       try {
-        await axios.delete(`/api/places/${id}`);
+        await api.delete(`/places/${id}`);
         fetchPlaces();
       } catch (error) {
         alert('Error deleting place');
@@ -85,9 +85,9 @@ const AdminPlaces = () => {
 
     try {
       if (editPlace) {
-        await axios.put(`/api/places/${editPlace._id}`, data);
+        await api.put(`/places/${editPlace._id}`, data);
       } else {
-        await axios.post('/api/places', data);
+        await api.post('/places', data);
       }
       setShowModal(false);
       fetchPlaces();

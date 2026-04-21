@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   Search, 
   Filter, 
@@ -22,7 +22,7 @@ const AdminBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const { data } = await axios.get('/api/admin/bookings');
+        const { data } = await api.get('/admin/bookings');
         setBookings(data.data);
       } catch (error) {
         console.error('Error fetching bookings:', error);

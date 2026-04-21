@@ -7,21 +7,19 @@ import { io } from 'socket.io-client';
 
 // Components
 import Sidebar from './components/Sidebar';
-import SplashScreen from './components/SplashScreen';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotificationToast from './components/NotificationToast';
+import { connectSocket, disconnectSocket } from './utils/socket';
 import { Menu } from 'lucide-react';
 
 // Pages
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import VerifyOTP from './pages/VerifyOTP';
-import ForgotPassword from './pages/ForgotPassword';
-import VerifyResetOTP from './pages/VerifyResetOTP';
-import ResetPassword from './pages/ResetPassword';
-import GuideDashboard from './pages/GuideDashboard';
-import Guides from './pages/Guides';
+import AuthPage             from './pages/AuthPage';
+import AuthCallbackPage     from './pages/AuthCallbackPage';
+import CompleteProfilePage  from './pages/CompleteProfilePage';
+import GuideDashboard       from './pages/GuideDashboard';
+import BookGuidePage from './pages/BookGuidePage';
+import LocationDetailPage from './pages/LocationDetailPage';
 import AIChat from './pages/AIChat';
 import Bookings from './pages/Bookings';
 import Profile from './pages/Profile';
@@ -59,62 +57,77 @@ import GuideVerifyPage from './pages/GuideVerifyPage';
 import GuideSetupPage from './pages/GuideSetupPage';
 import GuideGuard from './components/GuideGuard';
 
-import AuthCallbackPage from './pages/AuthCallbackPage';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
 
 function AppContent() {
   const { user } = useAuth();
   const [notification, setNotification] = useState(null);
-  const [showSplash, setShowSplash] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const socketRef = useRef();
   const location = useLocation();
 
   useEffect(() => {
     if (user) {
-      const socketUrl = axios.defaults.baseURL || 'http://localhost:5000';
-      socketRef.current = io(socketUrl);
+      // Connect to socket when user is logged in
+      const guideId = (user.role === 'guide' && user.guideId) ? user.guideId : null;
+      const socket = connectSocket(user._id, user.role, guideId);
+      socketRef.current = socket;
       
-      socketRef.current.on('connect', () => {
-        socketRef.current.emit('join', { userId: user._id });
-      });
-
-      socketRef.current.on('notification', (data) => {
+      socket.on('notification', (data) => {
         setNotification(data);
       });
 
       return () => {
-        if (socketRef.current) socketRef.current.disconnect();
+        disconnectSocket();
       };
     }
   }, [user]);
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
-      </AnimatePresence>
 
       <div className="flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
+        {/* Mobile Header */}
+        <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[var(--bg-sidebar)] border-b border-[var(--border)] flex items-center justify-between px-6 z-[900]">
+          <div className="flex items-center gap-3">
+             <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-[var(--text-secondary)]">
+                <Menu size={24} />
+             </button>
+             <span className="text-xl font-black italic tracking-tighter">GuideGo</span>
+          </div>
+          {user && (
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-[var(--border)]">
+               <img src={user.profilePicture || 'https://i.pravatar.cc/100'} className="w-full h-full object-cover" />
+            </div>
+          )}
+        </header>
+
         {/* Sidebar - Fixed Left */}
-        <Sidebar className="w-[260px] flex-shrink-0" />
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} className="w-[260px] flex-shrink-0" />
         
+        {/* Backdrop for mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[950]"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Main Content Area */}
-        <main className="flex-1 ml-[260px] min-h-screen overflow-y-auto">
+        <main className={`flex-1 lg:ml-[260px] ml-0 min-h-screen pt-16 lg:pt-0 overflow-y-auto`}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               {/* Public Routes */}
               <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-              <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-              <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-              <Route path="/verify-otp" element={<PageWrapper><VerifyOTP /></PageWrapper>} />
-              <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
-              <Route path="/verify-reset-otp" element={<PageWrapper><VerifyResetOTP /></PageWrapper>} />
-              <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+              <Route path="/login" element={<PageWrapper><AuthPage /></PageWrapper>} />
+              <Route path="/register" element={<PageWrapper><AuthPage /></PageWrapper>} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfilePage /></ProtectedRoute>} />
               
               {/* Core Feature Routes */}
-              <Route path="/guides" element={<PageWrapper><Guides /></PageWrapper>} />
+              <Route path="/book-guide" element={<ProtectedRoute><PageWrapper><BookGuidePage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/location/:name" element={<PageWrapper><LocationDetailPage /></PageWrapper>} />
               <Route path="/guides/:id" element={<PageWrapper><GuideProfile /></PageWrapper>} />
               
               {/* Protected Sidebar Routes */}
@@ -134,15 +147,15 @@ function AppContent() {
               <Route path="/help" element={<ProtectedRoute><PageWrapper><HelpPage /></PageWrapper></ProtectedRoute>} />
 
               {/* Guide Flow */}
-              <Route path="/guide/verify" element={<ProtectedRoute role="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />
-              <Route path="/guide/setup" element={<ProtectedRoute role="guide"><PageWrapper><GuideSetupPage /></PageWrapper></ProtectedRoute>} />
-              <Route path="/guide" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><GuideDashboard /></PageWrapper></GuideGuard></ProtectedRoute>} />
-              <Route path="/guide/bookings" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><Bookings /></PageWrapper></GuideGuard></ProtectedRoute>} />
-              <Route path="/guide/chat" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><ChatList /></PageWrapper></GuideGuard></ProtectedRoute>} />
-              <Route path="/guide/earnings" element={<ProtectedRoute role="guide"><GuideGuard><PageWrapper><Earnings /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/verify" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/guide/setup" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideSetupPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/guide" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><GuideDashboard /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/bookings" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><Bookings /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/chat" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><ChatList /></PageWrapper></GuideGuard></ProtectedRoute>} />
+              <Route path="/guide/earnings" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><Earnings /></PageWrapper></GuideGuard></ProtectedRoute>} />
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>}>
+              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
                 <Route index element={<PageWrapper><AdminDashboard /></PageWrapper>} />
                 <Route path="users" element={<PageWrapper><AdminUsers /></PageWrapper>} />
                 <Route path="guides" element={<PageWrapper><AdminGuides /></PageWrapper>} />

@@ -11,7 +11,9 @@ import { useCurrency } from '../context/CurrencyContext';
 import { motion } from 'framer-motion';
 import logo from '../assets/GuideGo Logo.jpeg';
 
-const Sidebar = () => {
+import { X } from 'lucide-react';
+
+const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const { currency, setCurrency } = useCurrency();
   const { pathname } = useLocation();
@@ -78,11 +80,16 @@ const Sidebar = () => {
   const links = user?.role === 'admin' ? adminLinks : (user?.role === 'guide' ? guideLinks : touristLinks);
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border)] flex flex-col z-[1000] transition-all duration-300">
+    <aside className={`fixed left-0 top-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border)] flex flex-col z-[1000] transition-transform duration-300 transform lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Header */}
-      <div className="p-6 flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')}>
-        <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-xl object-cover" />
-        <span className="text-xl font-bold tracking-tighter text-[var(--text-primary)]">GuideGo</span>
+      <div className="p-6 flex items-center justify-between">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { navigate('/'); onClose?.(); }}>
+          <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-xl object-cover" />
+          <span className="text-xl font-bold tracking-tighter text-[var(--text-primary)]">GuideGo</span>
+        </div>
+        <button onClick={onClose} className="lg:hidden p-2 text-[var(--text-secondary)]">
+          <X size={24} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -99,6 +106,7 @@ const Sidebar = () => {
                   <NavLink 
                     key={item.path}
                     to={item.path}
+                    onClick={() => onClose?.()}
                     className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${
                       active 
                       ? 'bg-blue-500/10 text-[var(--accent)] border-l-4 border-[var(--accent)]' 

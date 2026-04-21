@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   Users, 
   Shield, 
@@ -26,7 +26,7 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await axios.get('/api/admin/users');
+      const { data } = await api.get('/admin/users');
       setUsers(data.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -49,7 +49,7 @@ const AdminUsers = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Delete this user? This action cannot be undone.')) {
       try {
-        await axios.delete(`/api/admin/users/${id}`);
+        await api.delete(`/admin/users/${id}`);
         setUsers(users.filter(u => u._id !== id));
       } catch (error) {
         alert('Error deleting user');
@@ -60,7 +60,7 @@ const AdminUsers = () => {
   const handleToggleRole = async (id, currentRole) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
     try {
-      await axios.put(`/api/admin/users/${id}/role`, { role: newRole });
+      await api.put(`/admin/users/${id}/role`, { role: newRole });
       setUsers(users.map(u => u._id === id ? { ...u, role: newRole } : u));
     } catch (error) {
       alert('Error updating user role');
@@ -71,7 +71,7 @@ const AdminUsers = () => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { data } = await axios.post('/api/admin/users/admin', formData);
+      const { data } = await api.post('/admin/users/admin', formData);
       if (data.success) {
         setUsers([data.data, ...users]);
         setIsModalOpen(false);

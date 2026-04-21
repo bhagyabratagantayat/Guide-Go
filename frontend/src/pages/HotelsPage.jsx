@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Star, MapPin, Filter, Plane, ShieldCheck } from 'lucide-react';
+import { Search, Star, MapPin, Filter, Plane, ShieldCheck, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '../context/CurrencyContext';
 

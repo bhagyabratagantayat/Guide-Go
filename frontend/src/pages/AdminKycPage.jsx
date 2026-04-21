@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import { 
   ShieldCheck, Check, X, Eye, User, 
   Mail, Phone, Calendar, AlertCircle, ExternalLink, Award 
@@ -17,7 +17,7 @@ const AdminKycPage = () => {
   const fetchPending = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get('/api/admin-kyc/kyc/pending');
+      const { data } = await api.get('/admin/kyc/list');
       setGuides(data);
     } catch (error) {
       toast.error('Failed to fetch pending verifications');
@@ -32,7 +32,7 @@ const AdminKycPage = () => {
 
   const handleApprove = async (guideId) => {
     try {
-      await axios.put(`/api/admin-kyc/kyc/${guideId}/approve`);
+      await api.put(`/admin/kyc/${guideId}/approve`);
       toast.success('KYC Approved');
       setGuides(prev => prev.filter(g => g._id !== guideId));
     } catch (error) {
@@ -43,7 +43,7 @@ const AdminKycPage = () => {
   const handleReject = async (guideId) => {
     if (!rejectionReason) return toast.error('Please provide a reason');
     try {
-      await axios.put(`/api/admin-kyc/kyc/${guideId}/reject`, { reason: rejectionReason });
+      await api.put(`/admin/kyc/${guideId}/reject`, { reason: rejectionReason });
       toast.success('KYC Rejected');
       setGuides(prev => prev.filter(g => g._id !== guideId));
       setShowRejectInput(null);

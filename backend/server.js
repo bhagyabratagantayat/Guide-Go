@@ -16,36 +16,25 @@ const app = express();
 const server = http.createServer(app);
 const io = initSocket(server);
 
-// CORS configuration - MUST BE FIRST to ensure all responses have CORS headers
-const allowedOrigins = [
-  'http://localhost:5173', 
-  'http://127.0.0.1:5173',
-  'https://guide-go.vercel.app',
-  /\.vercel\.app$/
-];
-
+// ── CORS ──────────────────────────────────────────────────────
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const isAllowed = allowedOrigins.some(allowed => {
-      if (typeof allowed === 'string') return allowed === origin;
-      if (allowed instanceof RegExp) return allowed.test(origin);
-      return false;
-    });
-
-    if (isAllowed) {
+  origin: function(origin, callback) {
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'https://guide-go.vercel.app',
+    ].filter(Boolean);
+    // Allow requests with no origin (curl, Postman)
+    if (!origin || allowed.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
       callback(null, true);
     } else {
-      // For development, allow localhost/127.0.0.1 even if not explicitly matched above
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return callback(null, true);
-      }
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Set security HTTP headers
@@ -70,13 +59,19 @@ app.use(xss());
 app.use(express.json());
 app.use(requestLogger);
 
+// Attach Socket.IO to req
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // Routes
 app.get('/api/health', (req, res) => {
   res.json({ status: "GuideGo API Running" });
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/kyc', require('./routes/kyc')); // New KYC Route
+app.use('/api/kyc', require('./routes/kyc'));
 app.use('/api/guides', require('./routes/guideRoutes'));
 app.use('/api/places', require('./routes/placeRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
@@ -84,7 +79,6 @@ app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/restaurants', require('./routes/restaurantRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
-app.use('/api/admin-kyc', require('./routes/admin')); // New Admin KYC Route
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/hotels', require('./routes/hotelRoutes'));
 app.use('/api/sos', require('./routes/sosRoutes'));

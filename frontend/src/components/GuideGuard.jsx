@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 
 export default function GuideGuard({ children }) {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function GuideGuard({ children }) {
     
     const checkStatus = async () => {
       try {
-        const { data } = await axios.get('/api/kyc/status');
+        const { data } = await api.get('/kyc/status');
         if (!mounted) return;
         
         const { kycStatus, profileComplete } = data;

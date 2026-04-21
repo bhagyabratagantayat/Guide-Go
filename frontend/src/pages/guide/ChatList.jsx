@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { motion } from 'framer-motion';
 import { 
   MessageSquare, User, Search, 
@@ -20,9 +20,7 @@ const ChatList = () => {
     const fetchConversations = async () => {
       try {
         // Fetch bookings to find unique travelers the guide is interacting with
-        const { data } = await axios.get('/api/bookings/guide', {
-          headers: { Authorization: `Bearer ${user?.token}` }
-        });
+        const { data } = await api.get('/bookings/guide');
         
         // Group by user and find the latest booking for each
         const uniqueTravelers = Array.from(new Set(data.map(b => b.userId?._id)))

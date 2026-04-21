@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, DollarSign, ArrowUpRight, 
@@ -22,9 +22,7 @@ const Earnings = () => {
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        const { data } = await axios.get('/api/bookings/guide', {
-          headers: { Authorization: `Bearer ${user?.token}` }
-        });
+        const { data } = await api.get('/bookings/guide');
         
         const completed = data.filter(b => b.status === 'completed');
         const earnings = completed.reduce((sum, b) => sum + b.price, 0);

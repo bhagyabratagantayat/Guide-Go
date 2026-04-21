@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -11,23 +11,16 @@ export const AuthProvider = ({ children }) => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo) {
       setUser(userInfo);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${userInfo.token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (user?.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${user.token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
+    // Interceptors in api.js handle the token automatically
   }, [user]);
 
   const login = async (email, password) => {
-    const { data } = await axios.post('/api/auth/login', { email, password });
+    const { data } = await api.post('/auth/login', { email, password });
     localStorage.setItem('userInfo', JSON.stringify(data));
     setUser(data);
     return { data };
@@ -39,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const verifyOTP = async (email, otp) => {
-    const { data } = await axios.post('/api/auth/verify-otp', { email, otp });
+    const { data } = await api.post('/auth/verify-otp', { email, otp });
     localStorage.setItem('userInfo', JSON.stringify(data));
     setUser(data);
     return data;
@@ -47,27 +40,27 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, role, mobile, location) => {
     const normalizedEmail = email.trim().toLowerCase();
-    const { data } = await axios.post('/api/auth/register', { name, email: normalizedEmail, password, role, mobile, location });
+    const { data } = await api.post('/auth/register', { name, email: normalizedEmail, password, role, mobile, location });
     return data;
   };
 
   const resendOTP = async (email) => {
-    const { data } = await axios.post('/api/auth/resend-otp', { email });
+    const { data } = await api.post('/auth/resend-otp', { email });
     return data;
   };
 
   const forgotPassword = async (email) => {
-    const { data } = await axios.post('/api/auth/forgot-password', { email });
+    const { data } = await api.post('/auth/forgot-password', { email });
     return data;
   };
 
   const verifyResetOTP = async (email, otp) => {
-    const { data } = await axios.post('/api/auth/verify-reset-otp', { email, otp });
+    const { data } = await api.post('/auth/verify-reset-otp', { email, otp });
     return data;
   };
 
   const resetPassword = async (email, otp, newPassword) => {
-    const { data } = await axios.post('/api/auth/reset-password', { email, otp, newPassword });
+    const { data } = await api.post('/auth/reset-password', { email, otp, newPassword });
     return data;
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, 
@@ -26,7 +26,7 @@ const AdminReports = () => {
 
   const fetchReports = async () => {
     try {
-      const { data } = await axios.get('/api/reports');
+      const { data } = await api.get('/reports');
       setReports(data.data);
     } catch (error) {
       console.error('Error fetching reports:', error);

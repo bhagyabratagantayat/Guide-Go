@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import { 
   UserCheck, 
   UserX, 
@@ -17,7 +17,7 @@ const AdminGuides = () => {
 
   const fetchGuides = async () => {
     try {
-      const { data } = await axios.get('/api/admin/guides');
+      const { data } = await api.get('/admin/guides');
       setGuides(data.data);
     } catch (error) {
       console.error('Error fetching guides:', error);
@@ -32,7 +32,7 @@ const AdminGuides = () => {
 
   const handleStatus = async (id, status) => {
     try {
-      await axios.put(`/api/admin/guides/${id}/status`, { status });
+      await api.put(`/admin/guides/${id}/status`, { status });
       fetchGuides(); // Refresh list
     } catch (error) {
       alert('Error updating guide status');
