@@ -7,8 +7,6 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReviewModal from '../components/ReviewModal';
-import ReportModal from '../components/ReportModal';
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -40,89 +38,128 @@ const Bookings = () => {
     return true;
   });
 
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'completed': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+      case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-100';
+      case 'searching': return 'bg-amber-50 text-amber-700 border-amber-100';
+      case 'ongoing': return 'bg-blue-50 text-blue-700 border-blue-100';
+      default: return 'bg-gray-50 text-gray-700 border-gray-100';
+    }
+  };
+
   return (
-    <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8 lg:space-y-12 transition-all">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-6">
-        <div>
-           <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-secondary)] mb-2 italic">Transaction History</h1>
-           <h2 className="text-3xl lg:text-4xl font-black italic font-serif text-[var(--text-primary)] leading-none">My Bookings</h2>
+    <div className="min-h-screen bg-white pb-24 lg:pb-12 px-6 lg:px-0">
+      <div className="max-w-4xl mx-auto pt-10 lg:pt-16 space-y-10">
+        
+        {/* HEADER */}
+        <div className="space-y-2">
+           <h1 className="text-4xl lg:text-5xl font-black text-[#222222] tracking-tighter">Bookings</h1>
+           <p className="text-[#717171] font-medium text-sm">Manage your stays and experiences</p>
         </div>
-        <div className="flex bg-[var(--bg-card)] p-1 rounded-2xl border border-[var(--border)] overflow-x-auto no-scrollbar">
+
+        {/* PILL FILTERS */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
           {['all', 'upcoming', 'completed', 'cancelled'].map(f => (
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                activeFilter === f ? 'bg-[var(--accent)] text-white shadow-lg shadow-blue-500/20' : 'text-[var(--text-secondary)] hover:text-white'
+              className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
+                activeFilter === f 
+                  ? 'bg-[#222222] text-white border-[#222222]' 
+                  : 'bg-white text-[#222222] border-[#dddddd] hover:border-[#222222]'
               }`}
             >
-              {f}
+              {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
-      </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : filteredBookings.length > 0 ? (
-        <div className="space-y-6">
-          {filteredBookings.map((booking) => (
-            <motion.div 
-              key={booking._id} 
-              className="glass-card p-6 lg:p-8 rounded-[2.5rem] flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:gap-8 group hover:border-[var(--accent)]/30 transition-all border border-white/5 shadow-premium"
-            >
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-[var(--bg-base)] rounded-2xl lg:rounded-3xl flex items-center justify-center text-3xl lg:text-4xl font-black italic font-serif text-[var(--text-secondary)] border border-[var(--border)] group-hover:scale-105 transition-transform">
-                   {user.role === 'guide' ? booking.userId?.name?.charAt(0) : booking.guideId?.name?.charAt(0)}
-                </div>
-                <div className="space-y-2">
-                   <div className="flex flex-wrap items-center gap-3">
-                      <h4 className="text-xl lg:text-2xl font-black text-white italic font-serif leading-none">{user.role === 'guide' ? booking.userId?.name : booking.guideId?.name}</h4>
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                        booking.status === 'confirmed' || booking.status === 'ongoing' ? 'bg-green-500 text-white' : 
-                        booking.status === 'accepted' ? 'bg-violet-600 text-white' :
-                        booking.status === 'searching' ? 'bg-amber-500 text-white' :
-                        booking.status === 'pending' ? 'bg-[var(--accent)] text-white' : 'bg-red-500 text-white'
-                      }`}>{booking.status}</span>
-                   </div>
-                   <div className="flex items-center gap-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest">
-                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-[var(--accent)]" /> {new Date(booking.bookingTime).toLocaleDateString()}</span>
-                      <span className="flex items-center gap-1.5"><MapPin size={12} className="text-[var(--accent)]" /> {booking.location}</span>
-                   </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between lg:justify-end gap-10 pt-6 lg:pt-0 border-t lg:border-t-0 border-white/5">
-                 <div className="text-left lg:text-right">
-                    <p className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-1">Fee</p>
-                    <p className="text-2xl lg:text-3xl font-black text-white tracking-tighter italic">₹{booking.price}</p>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <Link to={`/chat/${user.role === 'guide' ? booking.userId?._id : booking.guideId?._id}`} className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-[var(--accent)] hover:text-white transition-all text-white">
-                       <MessageSquare size={20} />
-                    </Link>
-                    {(['searching', 'accepted', 'ongoing'].includes(booking.status)) && (
-                      <Link to="/book-guide" className="px-6 py-4 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
-                        <ArrowUpRight size={14} /> Resume Trip
-                      </Link>
-                    )}
-                    {booking.status === 'completed' && user.role === 'user' && (
-                      <button className="px-6 py-4 bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 transition-all text-white">Review</button>
-                    )}
-                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-32 glass-card rounded-[3rem] border-2 border-dashed border-[var(--border)]">
-           <HistoryIcon size={48} className="mx-auto mb-6 text-[var(--border)]" />
-           <h3 className="text-xl font-bold italic font-serif mb-2">No bookings yet.</h3>
-           <p className="text-[var(--text-secondary)] text-sm mb-8">Adventure awaits! Explore our guides and start your journey.</p>
-           <button onClick={() => navigate('/guides')} className="btn-primary">Browse Guides</button>
-        </div>
-      )}
+        {/* BOOKING LIST */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-24 space-y-4">
+            <div className="w-10 h-10 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#717171]">Loading history</p>
+          </div>
+        ) : filteredBookings.length > 0 ? (
+          <div className="grid gap-6 pb-20">
+            <AnimatePresence mode="popLayout">
+              {filteredBookings.map((booking) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  key={booking._id} 
+                  className="bg-white p-6 rounded-[2rem] border border-[#dddddd] hover:shadow-xl transition-all group"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                    {/* PHOTO SECTION */}
+                    <div className="relative w-full lg:w-28 h-48 lg:h-28 rounded-2xl overflow-hidden bg-[#f7f7f7] border border-[#dddddd]">
+                       <img 
+                        src={user.role === 'guide' ? booking.userId?.profilePicture : (booking.guideId?.profilePicture || 'https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=400&q=80')} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" 
+                        alt=""
+                       />
+                    </div>
+
+                    {/* CONTENT SECTION */}
+                    <div className="flex-1 space-y-4">
+                       <div className="flex justify-between items-start">
+                          <div>
+                             <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border ${getStatusStyle(booking.status)}`}>
+                                {booking.status}
+                             </span>
+                             <h4 className="text-xl font-bold text-[#222222] mt-2">
+                                {user.role === 'guide' ? (booking.userId?.name || 'Traveler') : (booking.guideId?.name || 'Local Guide')}
+                             </h4>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Total</p>
+                             <p className="text-xl font-bold text-[#222222]">₹{booking.price}</p>
+                          </div>
+                       </div>
+                       
+                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-[#717171]">
+                          <span className="flex items-center gap-1.5"><Calendar size={14} className="text-[#222222]"/> {new Date(booking.bookingTime).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#222222]"/> {booking.location}</span>
+                          <span className="flex items-center gap-1.5"><Clock size={14} className="text-[#222222]"/> {booking.plan}</span>
+                       </div>
+                    </div>
+
+                    {/* ACTIONS */}
+                    <div className="flex lg:flex-col gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#f7f7f7]">
+                       <Link 
+                        to={`/chat/${user.role === 'guide' ? booking.userId?._id : booking.guideId?._id}`} 
+                        className="flex-1 lg:w-full px-6 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-xs font-bold hover:bg-[#f7f7f7] transition-all text-center flex items-center justify-center gap-2"
+                       >
+                          <MessageSquare size={14} /> Message
+                       </Link>
+                       {['searching', 'accepted', 'ongoing'].includes(booking.status) && (
+                         <Link 
+                          to="/book-guide" 
+                          className="flex-1 lg:w-full px-6 py-3 bg-[#ff385c] text-white rounded-xl text-xs font-bold hover:bg-[#e00b41] transition-all text-center shadow-lg shadow-rose-500/10"
+                         >
+                            Resume
+                         </Link>
+                       )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className="text-center py-32 rounded-[3rem] border border-[#dddddd] bg-[#f7f7f7]/50">
+             <div className="w-20 h-20 bg-white shadow-sm rounded-full flex items-center justify-center mx-auto mb-6">
+                <HistoryIcon size={32} className="text-[#dddddd]" />
+             </div>
+             <h3 className="text-xl font-bold text-[#222222] mb-2">No bookings yet</h3>
+             <p className="text-[#717171] text-sm mb-8 px-10">When you book a guide or experience, it will appear here.</p>
+             <button onClick={() => navigate('/')} className="px-8 py-3 bg-[#222222] text-white rounded-xl font-bold text-sm shadow-xl">Explore Guides</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
