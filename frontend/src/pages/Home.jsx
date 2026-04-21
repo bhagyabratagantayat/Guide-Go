@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { Helmet } from 'react-helmet-async';
 
 const Home = () => {
   const { user } = useAuth();
@@ -47,6 +48,10 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white text-[#222222] pb-24 desktop:pb-12">
+      <Helmet>
+        <title>GuideGo | AI-Powered Smart Tourism</title>
+        <meta name="description" content="Discover and book local guides instantly. Experience Odisha with smart AI-powered tourism." />
+      </Helmet>
       
       {/* --- HERO SECTION --- */}
       <section className="relative h-[70vh] lg:h-[75vh] w-full flex items-center justify-center overflow-hidden">

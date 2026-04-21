@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io } from 'socket.io-client';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -198,9 +199,11 @@ function App() {
     <ThemeProvider>
       <CurrencyProvider>
         <AuthProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <HelmetProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </HelmetProvider>
         </AuthProvider>
       </CurrencyProvider>
     </ThemeProvider>

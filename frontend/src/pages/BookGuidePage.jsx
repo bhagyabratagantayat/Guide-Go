@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import { 
   MapPin, Clock, CheckCircle, Search, Phone, 
   MessageSquare, ShieldCheck, Star, Timer, 
@@ -203,6 +204,10 @@ const BookGuidePage = () => {
 
   return (
     <div className="min-h-screen bg-[#020617] p-0 desktop:p-12 font-sans selection:bg-blue-500/30">
+      <Helmet>
+        <title>Book Guide | GuideGo</title>
+        <meta name="description" content="Find and book trusted local guides in Odisha instantly. Personalized smart tours tailored for you." />
+      </Helmet>
       {!isSessionRestored ? (
         <div className="min-h-screen lg:min-h-0 lg:h-[800px] flex flex-col items-center justify-center bg-white text-center p-10">
           <div className="w-12 h-12 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin mb-6" />

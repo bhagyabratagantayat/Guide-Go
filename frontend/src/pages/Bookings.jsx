@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -50,6 +51,10 @@ const Bookings = () => {
 
   return (
     <div className="min-h-screen bg-white pb-24 lg:pb-12 px-6 lg:px-0">
+      <Helmet>
+        <title>My Bookings | GuideGo</title>
+        <meta name="description" content="View and manage your current and past tourism bookings. Keep track of your travel history with GuideGo." />
+      </Helmet>
       <div className="max-w-4xl mx-auto pt-10 lg:pt-16 space-y-10">
         
         {/* HEADER */}

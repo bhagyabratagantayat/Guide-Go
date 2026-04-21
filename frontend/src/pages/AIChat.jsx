@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const AIChat = () => {
   const navigate = useNavigate();
@@ -51,6 +52,10 @@ const AIChat = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)]">
+      <Helmet>
+        <title>AI Assistant | GuideGo</title>
+        <meta name="description" content="Get instant travel advice, itineraries, and local facts from our smart AI Assistant. Your personal travel companion for Odisha." />
+      </Helmet>
       {/* Messages Area */}
       <div className="flex-grow overflow-y-auto p-10 space-y-8 custom-scrollbar">
           <div className="max-w-4xl mx-auto w-full">
