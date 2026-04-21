@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { 
   Search, MapPin, Zap, ShieldCheck, 
   Headphones, Users, Star, ArrowRight,
@@ -16,6 +16,17 @@ const Home = () => {
   const navigate = useNavigate();
   const [currency, setCurrency] = useState('INR');
   const [activeBooking, setActiveBooking] = useState(null);
+  const [showSticky, setShowSticky] = useState(false);
+
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 200) {
+      setShowSticky(true);
+    } else {
+      setShowSticky(false);
+    }
+  });
 
   React.useEffect(() => {
     if (user?.role === 'user') {
@@ -52,6 +63,35 @@ const Home = () => {
         <title>GuideGo | AI-Powered Smart Tourism</title>
         <meta name="description" content="Discover and book local guides instantly. Experience Odisha with smart AI-powered tourism." />
       </Helmet>
+
+      {/* --- STICKY SEARCH PILL (AIRBNB STYLE) --- */}
+      <AnimatePresence>
+        {showSticky && (
+          <motion.div
+            initial={{ y: -70, opacity: 0, x: '-50%', scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, x: '-50%', scale: 1 }}
+            exit={{ y: -70, opacity: 0, x: '-50%', scale: 0.8 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-6 left-1/2 lg:left-[calc(50%+130px)] z-[1000] w-[calc(100%-48px)] max-w-md"
+          >
+            <div 
+              onClick={() => navigate('/book-guide')}
+              className="bg-white/90 backdrop-blur-xl h-14 pl-6 pr-2 rounded-full border border-[#dddddd] shadow-2xl flex items-center justify-between group cursor-pointer hover:border-[#222222] transition-all"
+            >
+              <div className="flex items-center gap-3 overflow-hidden">
+                <Search size={16} className="text-[#222222] shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[11px] font-bold text-[#222222]">Start your search</span>
+                  <span className="text-[10px] text-[#717171] font-medium truncate">Anywhere • Any time • Any guide</span>
+                </div>
+              </div>
+              <div className="w-10 h-10 bg-[#ff385c] text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:bg-[#e00b41] transition-all">
+                <Search size={16} strokeWidth={3} />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* --- HERO SECTION --- */}
       <section className="relative h-[70vh] lg:h-[75vh] w-full flex items-center justify-center overflow-hidden">
