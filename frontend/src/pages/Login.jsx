@@ -49,6 +49,18 @@ const Login = () => {
     if (error) console.error('Google login error:', error.message);
   };
 
+  const handleDemoLogin = async (demoEmail, demoPassword) => {
+    try {
+      const { data } = await login(demoEmail, demoPassword);
+      const role = data.role;
+      if (role === 'admin') navigate('/admin');
+      else if (role === 'guide') navigate('/guide');
+      else navigate('/');
+    } catch (error) {
+      alert('Demo login failed. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--bg-base)]">
       <motion.div 
@@ -123,14 +135,16 @@ const Login = () => {
         <div className="mt-10 pt-8 border-t border-[var(--border-color)]">
            <div className="grid grid-cols-1 gap-2">
               <button 
-                onClick={() => { setEmail('user@demo.com'); setPassword('demo123'); }}
+                type="button"
+                onClick={() => handleDemoLogin('user@demo.com', 'demo123')}
                 className="flex items-center justify-between px-6 py-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-[var(--accent-bg)] hover:text-[var(--accent)] transition-all group"
               >
                  <span className="text-[10px] font-black uppercase tracking-widest">Explorer Demo</span>
                  <ArrowRight className="w-4 h-4 opacity-30 group-hover:opacity-100" />
               </button>
               <button 
-                onClick={() => { setEmail('guide@demo.com'); setPassword('demo123'); }}
+                type="button"
+                onClick={() => handleDemoLogin('guide@demo.com', 'demo123')}
                 className="flex items-center justify-between px-6 py-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-[var(--accent-bg)] hover:text-[var(--accent)] transition-all group"
               >
                  <span className="text-[10px] font-black uppercase tracking-widest">Guide Demo</span>
