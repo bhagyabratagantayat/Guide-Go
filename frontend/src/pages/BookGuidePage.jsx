@@ -10,6 +10,24 @@ import {
 import api from '../utils/api';
 import { getSocket } from '../utils/socket';
 
+const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setScreen }) => (
+  <motion.div 
+    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    className="max-w-md lg:mx-auto w-full min-h-[calc(100vh-64px)] lg:min-h-screen flex flex-col bg-white overflow-hidden relative shadow-2xl lg:border-x border-[#dddddd]"
+  >
+    {!hideHeader && (
+      <div className="flex items-center justify-between p-6 bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-[#f7f7f7]">
+        <div className="flex items-center gap-4">
+          {showBack && <button onClick={() => setScreen(prevScreen)} className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#222222]"><ChevronLeft size={20}/></button>}
+          <h2 className="text-base font-bold text-[#222222] tracking-tight">{title || 'Book Guide'}</h2>
+        </div>
+        <button className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#717171]"><MoreVertical size={20}/></button>
+      </div>
+    )}
+    <div className="flex-1 p-6 flex flex-col">{children}</div>
+  </motion.div>
+);
+
 const BookGuidePage = () => {
   // Screens: select-location | booking-form | searching | experts-unavailable | guide-found | call-connect | trip-started | trip-ongoing | end-trip | payment | review
   const [screen, setScreen] = useState('select-location'); 
@@ -104,7 +122,7 @@ const BookGuidePage = () => {
         } else if (latest.status === 'accepted') {
           setMatchedGuide(latest.guideId);
           setOtp(latest.otp);
-          setScreen('call-connect');
+          setScreen('guide-found');
         } else if (latest.status === 'ongoing') {
           setMatchedGuide(latest.guideId);
           setScreen('trip-ongoing');
@@ -192,56 +210,44 @@ const BookGuidePage = () => {
     }
   };
 
-  const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader }) => (
-    <motion.div 
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="max-w-md lg:mx-auto w-full min-h-[calc(100vh-64px)] lg:min-h-screen flex flex-col bg-[#0f172a] overflow-hidden relative shadow-2xl lg:border-x border-white/5"
-    >
-      {!hideHeader && (
-        <div className="flex items-center justify-between p-5 lg:p-6 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-50">
-          <div className="flex items-center gap-4">
-            {showBack && <button onClick={() => setScreen(prevScreen)} className="p-2 hover:bg-white/5 rounded-xl text-white"><ChevronLeft size={20}/></button>}
-            <h2 className="text-base lg:text-lg font-black text-white tracking-tight">{title || 'Book Guide'}</h2>
-          </div>
-          <button className="p-2 hover:bg-white/5 rounded-xl text-slate-400"><MoreVertical size={20}/></button>
-        </div>
-      )}
-      <div className="flex-1 p-5 lg:p-6 flex flex-col">{children}</div>
-    </motion.div>
-  );
-
   return (
     <div className="min-h-screen bg-[#020617] p-0 desktop:p-12 font-sans selection:bg-blue-500/30">
       {/* SESSION LOADING SPLASH */}
       {!isSessionRestored ? (
-        <div className="min-h-screen lg:min-h-0 lg:h-[800px] flex flex-col items-center justify-center bg-[#0f172a] text-center p-10">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6" />
-          <h3 className="text-xl font-black text-white italic">Restoring Session...</h3>
-          <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest">Checking for active trips</p>
+        <div className="min-h-screen lg:min-h-0 lg:h-[800px] flex flex-col items-center justify-center bg-white text-center p-10">
+          <div className="w-12 h-12 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin mb-6" />
+          <h3 className="text-xl font-bold text-[#222222]">Restoring Session...</h3>
+          <p className="text-[#717171] text-[10px] mt-2 uppercase tracking-[0.2em] font-medium">Checking for active trips</p>
         </div>
       ) : (
         <AnimatePresence mode="wait">
         
         {/* 1. SELECT LOCATION */}
         {screen === 'select-location' && (
-          <ScreenWrapper title="Explore Amazing Places" key="s1">
+          <ScreenWrapper setScreen={setScreen} title="Where to?" key="s1">
             <div className="relative mb-8">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input type="text" placeholder="Search location" className="w-full bg-[#1e293b] text-white border-none rounded-2xl pl-14 py-4 focus:ring-2 focus:ring-blue-500" />
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#222222]" size={18} />
+              <input type="text" placeholder="Search destinations" className="w-full bg-white text-[#222222] border border-[#dddddd] rounded-full pl-16 py-4 focus:outline-none focus:ring-2 focus:ring-[#ff385c]/20" />
             </div>
-            <div className="flex gap-4 mb-8">
-               <button className="bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest">All</button>
-               <button className="bg-[#1e293b] text-slate-400 px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Popular</button>
-               <button className="bg-[#1e293b] text-slate-400 px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Near You</button>
+            <div className="flex gap-4 mb-8 overflow-x-auto no-scrollbar pb-2">
+               <button className="bg-[#222222] text-white px-6 py-2 rounded-full text-xs font-bold">All</button>
+               <button className="bg-white border border-[#dddddd] text-[#222222] px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap">Guest Favorites</button>
+               <button className="bg-white border border-[#dddddd] text-[#222222] px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap">Near You</button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-6">
                {['Puri', 'Konark', 'Bhubaneswar'].map(loc => (
-                 <div key={loc} onClick={() => { setFormData({...formData, location: loc}); setScreen('booking-form'); }} className="bg-[#1e293b] flex items-center gap-5 p-4 rounded-[1.5rem] cursor-pointer hover:bg-[#334155] transition-all group border border-white/5">
-                    <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0"><img src={`https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=400&q=80`} className="w-full h-full object-cover" alt=""/></div>
-                    <div className="flex-1">
-                       <h4 className="font-black text-white text-lg">{loc}</h4>
-                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Odisha</p>
-                       <p className="text-[10px] text-emerald-400 font-black mt-2 flex items-center bg-emerald-400/10 w-fit px-2 py-1 rounded-md"><Zap size={10} className="mr-1 fill-current"/> Available Now</p>
+                 <div key={loc} onClick={() => { setFormData({...formData, location: loc}); setScreen('booking-form'); }} className="group cursor-pointer">
+                    <div className="relative aspect-[4/3] rounded-[1.2rem] overflow-hidden mb-3">
+                       <img src={`https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80`} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" alt=""/>
+                       <div className="absolute top-4 left-4">
+                          <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-bold text-[#222222] flex items-center shadow-sm">
+                            <Zap size={10} className="mr-1 text-[#ff385c] fill-current"/> Available Now
+                          </span>
+                       </div>
+                    </div>
+                    <div className="px-1">
+                       <h4 className="font-bold text-[#222222] text-lg">{loc}, Odisha</h4>
+                       <p className="text-sm font-normal text-[#717171]">Heritage & Culture Tour</p>
                     </div>
                  </div>
                ))}
@@ -251,36 +257,36 @@ const BookGuidePage = () => {
 
         {/* 2. BOOKING FORM */}
         {screen === 'booking-form' && (
-           <ScreenWrapper title="Book Guide" showBack prevScreen="select-location" key="s2">
+           <ScreenWrapper setScreen={setScreen} title="Plan your trip" showBack prevScreen="select-location" key="s2">
               <div className="space-y-10 flex-1 flex flex-col">
-                 <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1 tracking-[0.2em]">Location</label>
+                 <div className="space-y-4">
+                    <label className="text-[11px] font-bold uppercase text-[#222222] ml-1 tracking-[0.1em]">Destination</label>
                     <div className="relative">
-                       <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
-                       <input readOnly value={formData.location} className="w-full bg-[#1e293b] text-white border-none rounded-[1.5rem] pl-16 py-5 font-bold" />
+                       <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-[#ff385c]" size={18} />
+                       <input readOnly value={formData.location} className="w-full bg-white text-[#222222] border border-[#dddddd] rounded-[1.2rem] pl-16 py-5 font-bold focus:outline-none" />
                     </div>
                  </div>
                  <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1 tracking-[0.2em]">Select Plan</label>
+                    <label className="text-[11px] font-bold uppercase text-[#222222] ml-1 tracking-[0.1em]">Select trip duration</label>
                     <div className="space-y-3">
                        {[{l: '2 Hours', p: 499}, {l: '4 Hours', p:899}, {l: 'Full Day', p: 1499}].map(p => (
-                         <div key={p.l} onClick={() => setFormData({...formData, plan: p.l, price: p.p})} className={`p-6 rounded-[1.8rem] border-2 transition-all flex justify-between items-center cursor-pointer ${formData.plan === p.l ? 'border-blue-500 bg-blue-500/10' : 'border-white/5 bg-[#1e293b]'}`}>
-                            <p className="font-black text-white">{p.l}</p><p className="text-xl font-black text-white">₹{p.p}</p>
+                         <div key={p.l} onClick={() => setFormData({...formData, plan: p.l, price: p.p})} className={`p-6 rounded-[1.2rem] border-2 transition-all flex justify-between items-center cursor-pointer ${formData.plan === p.l ? 'border-[#222222] bg-[#f7f7f7]' : 'border-[#dddddd] bg-white'}`}>
+                            <p className="font-bold text-[#222222]">{p.l}</p><p className="text-xl font-bold text-[#222222]">₹{p.p}</p>
                          </div>
                        ))}
                     </div>
                  </div>
                  <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase text-slate-500 ml-1 tracking-[0.2em]">Language</label>
+                    <label className="text-[11px] font-bold uppercase text-[#222222] ml-1 tracking-[0.1em]">Preferred Language</label>
                     <div className="flex gap-3">
                        {['English', 'Hindi', 'Odia'].map(l => (
-                         <button key={l} onClick={() => setFormData({...formData, language: l})} className={`flex-1 py-4 rounded-[1.2rem] font-black transition-all uppercase text-[10px] tracking-widest ${formData.language === l ? 'bg-blue-600 text-white' : 'bg-[#1e293b] text-slate-400'}`}>{l}</button>
+                         <button key={l} onClick={() => setFormData({...formData, language: l})} className={`flex-1 py-4 border-2 rounded-[0.8rem] font-bold transition-all text-xs ${formData.language === l ? 'bg-[#222222] border-[#222222] text-white' : 'bg-white border-[#dddddd] text-[#222222]'}`}>{l}</button>
                        ))}
                     </div>
                  </div>
-                 <div className="mt-auto pt-8 border-t border-white/5 space-y-6">
-                    <div className="flex items-center justify-between px-2"><p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Total</p><p className="text-4xl font-black text-white italic">₹{formData.price}</p></div>
-                    <button onClick={handleFindGuide} className="w-full py-6 bg-blue-600 text-white rounded-[1.8rem] font-black uppercase tracking-[0.2em]">Find Guide</button>
+                 <div className="mt-auto pt-8 border-t border-[#f7f7f7] space-y-6">
+                    <div className="flex items-center justify-between px-2"><p className="text-[11px] font-bold text-[#717171] uppercase tracking-[0.1em]">Total</p><p className="text-4xl font-bold text-[#222222]">₹{formData.price}</p></div>
+                    <button onClick={handleFindGuide} className="w-full py-5 bg-[#ff385c] text-white rounded-xl font-bold text-base hover:bg-[#e00b41] transition-all">Confirm & Find Guide</button>
                  </div>
               </div>
            </ScreenWrapper>
@@ -288,45 +294,49 @@ const BookGuidePage = () => {
 
         {/* 3. SEARCHING */}
         {screen === 'searching' && (
-           <ScreenWrapper hideHeader key="s3">
+           <ScreenWrapper setScreen={setScreen} hideHeader key="s3">
               <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                 <div className="relative mb-12 lg:mb-20">
-                    <div className="w-40 h-40 lg:w-56 lg:h-56 border-[8px] lg:border-[12px] border-blue-500/10 rounded-full animate-ping" />
-                    <div className="absolute inset-0 flex items-center justify-center"><Search size={32} className="lg:hidden text-blue-500" /><Search size={48} className="hidden lg:block text-blue-500" /></div>
+                 <div className="relative mb-12">
+                    <div className="w-32 h-32 border-4 border-[#ff385c]/10 rounded-full animate-ping" />
+                    <div className="absolute inset-0 flex items-center justify-center"><Search size={32} className="text-[#ff385c]" /></div>
                  </div>
-                 <div className="space-y-4 lg:space-y-6"><h3 className="text-2xl lg:text-4xl font-black text-white italic">Finding Guide</h3><p className="text-slate-400 text-xs lg:text-sm italic">Searching for experts in {formData.location}...</p></div>
-                 <div className="w-full mt-20 space-y-8">
+                 <div className="space-y-4 mb-20">
+                    <h3 className="text-2xl font-bold text-[#222222]">Finding your expert</h3>
+                    <p className="text-[#717171] text-sm">Searching for guides in {formData.location}...</p>
+                 </div>
+                 
+                 <div className="w-full space-y-6">
                     {[1, 2, 3].map(i => (
                        <div key={i} className="flex items-center gap-5">
-                          <div className={`w-3 h-3 rounded-full ${searchingProgress >= i ? 'bg-emerald-500' : 'bg-slate-800'}`} />
-                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${searchingProgress >= i ? 'text-emerald-500' : 'text-slate-600'}`}>{i === 1 ? 'Broadcasting request' : i === 2 ? 'Waiting for response...' : 'Finalizing guide'}</p>
+                          <div className={`w-2.5 h-2.5 rounded-full ${searchingProgress >= i ? 'bg-[#ff385c]' : 'bg-[#dddddd]'}`} />
+                          <p className={`text-[11px] font-bold uppercase tracking-[0.1em] ${searchingProgress >= i ? 'text-[#222222]' : 'text-[#717171]'}`}>{i === 1 ? 'Broadcasting request' : i === 2 ? 'Waiting for response...' : 'Finalizing guide'}</p>
                        </div>
                     ))}
                  </div>
 
-                 <div className="w-full mt-12 grid grid-cols-3 gap-3">
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
-                       <p className="text-[8px] font-black uppercase text-slate-500 mb-1 tracking-widest text-[8px]">Plan</p>
-                       <p className="text-[10px] font-black text-white italic">{currentBooking?.plan || formData.plan}</p>
+                 <div className="w-full mt-12 grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-[#f7f7f7] rounded-xl border border-[#dddddd] text-center">
+                       <p className="text-[8px] font-bold uppercase text-[#717171] mb-1">Plan</p>
+                       <p className="text-[11px] font-bold text-[#222222]">{formData.plan}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
-                       <p className="text-[8px] font-black uppercase text-slate-500 mb-1 tracking-widest text-[8px]">Fee</p>
-                       <p className="text-[10px] font-black text-white italic">₹{currentBooking?.price || formData.price}</p>
+                    <div className="p-4 bg-[#f7f7f7] rounded-xl border border-[#dddddd] text-center">
+                       <p className="text-[8px] font-bold uppercase text-[#717171] mb-1">Fee</p>
+                       <p className="text-[11px] font-bold text-[#222222]">₹{formData.price}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
-                       <p className="text-[8px] font-black uppercase text-slate-500 mb-1 tracking-widest text-[8px]">Loc</p>
-                       <p className="text-[10px] font-black text-white italic truncate">{currentBooking?.location?.split(',')[0] || formData.location?.split(',')[0]}</p>
+                    <div className="p-4 bg-[#f7f7f7] rounded-xl border border-[#dddddd] text-center">
+                       <p className="text-[8px] font-bold uppercase text-[#717171] mb-1">Loc</p>
+                       <p className="text-[11px] font-bold text-[#222222] truncate">{formData.location?.split(',')[0]}</p>
                     </div>
                  </div>
 
-                 <button onClick={handleCancelBooking} className="mt-20 w-fit px-12 py-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest">Cancel</button>
+                 <button onClick={handleCancelBooking} className="mt-auto w-full py-4 text-[#222222] font-bold underline text-sm">Cancel Request</button>
               </div>
            </ScreenWrapper>
         )}
 
         {/* 3.1 EXPERTS UNAVAILABLE (TIMEOUT FALLBACK) */}
         {screen === 'experts-unavailable' && (
-           <ScreenWrapper hideHeader key="s3.1">
+           <ScreenWrapper setScreen={setScreen} hideHeader key="s3.1">
                <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-10">
                    <div className="w-32 h-32 bg-amber-500/10 text-amber-500 rounded-[2.5rem] flex items-center justify-center"><AlertCircle size={64}/></div>
                    <div className="space-y-4">
@@ -343,7 +353,7 @@ const BookGuidePage = () => {
 
         {/* 4. GUIDE FOUND */}
         {screen === 'guide-found' && (
-           <ScreenWrapper hideHeader key="s4">
+           <ScreenWrapper setScreen={setScreen} hideHeader key="s4">
               <div className="space-y-10 flex-1 flex flex-col py-10">
                  <div className="text-center py-12 bg-emerald-500/5 rounded-[4rem] border border-emerald-500/10">
                     <CheckCircle className="mx-auto text-emerald-500 mb-6" size={80} /><h3 className="text-3xl font-black text-white italic tracking-tighter">Guide Found!</h3>
@@ -457,16 +467,16 @@ const BookGuidePage = () => {
         {screen === 'end-trip' && (
            <ScreenWrapper hideHeader key="s8">
               <div className="space-y-12 flex-1 flex flex-col py-10">
-                 <div className="bg-[#1e293b] p-12 rounded-[4rem] text-center space-y-10 border border-white/5">
-                    <div className="w-24 h-24 bg-blue-500/20 text-blue-500 rounded-[2.5rem] flex items-center justify-center mx-auto"><Timer size={48} /></div>
-                    <h3 className="text-5xl font-black text-white italic tracking-tighter">Trip Ended</h3>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest italic">Guide marked trip as completed</p>
+                 <div className="bg-[#f7f7f7] p-12 rounded-[3rem] text-center space-y-6 border border-[#dddddd]">
+                    <div className="w-20 h-20 bg-[#ff385c]/10 text-[#ff385c] rounded-full flex items-center justify-center mx-auto"><Timer size={40} /></div>
+                    <h3 className="text-4xl font-bold text-[#222222] tracking-tighter">Trip Ended</h3>
+                    <p className="text-[#717171] text-xs font-bold uppercase tracking-widest">Guide marked trip as completed</p>
                  </div>
-                 <div className="p-10 bg-[#1e293b] rounded-[3.5rem] space-y-8 border border-white/5">
-                    <div className="flex justify-between items-center text-sm"><span className="font-black text-slate-500 uppercase tracking-widest">Duration</span><span className="font-black text-white text-lg">{formatTime(tripTimer)}</span></div>
-                    <div className="pt-8 border-t border-dashed border-slate-800 flex justify-between items-center"><span className="text-2xl font-black italic text-white uppercase italic">Payable</span><span className="text-4xl font-black text-emerald-500">₹{formData.price}</span></div>
+                 <div className="p-10 bg-white rounded-[2rem] space-y-6 border border-[#dddddd]">
+                    <div className="flex justify-between items-center text-sm"><span className="font-bold text-[#717171] uppercase tracking-widest">Duration</span><span className="font-bold text-[#222222] text-xl">{formatTime(tripTimer)}</span></div>
+                    <div className="pt-6 border-t border-dashed border-[#dddddd] flex justify-between items-center"><span className="text-xl font-bold text-[#222222] uppercase tracking-tighter">Total Payable</span><span className="text-4xl font-bold text-[#ff385c]">₹{formData.price}</span></div>
                  </div>
-                 <button onClick={() => setScreen('payment')} className="w-full py-7 bg-blue-600 text-white rounded-[2rem] font-black text-base uppercase tracking-[0.2em] shadow-2xl mt-auto shadow-blue-500/20">Proceed to Payment</button>
+                 <button onClick={() => setScreen('payment')} className="w-full py-5 bg-[#ff385c] text-white rounded-xl font-bold text-base hover:bg-[#e00b41] transition-all mt-auto shadow-xl">Proceed to Payment</button>
               </div>
            </ScreenWrapper>
         )}
@@ -475,17 +485,17 @@ const BookGuidePage = () => {
         {screen === 'payment' && (
            <ScreenWrapper hideHeader key="s9">
               <div className="space-y-12 flex-1 flex flex-col py-10">
-                 <div className="text-center space-y-4"><h2 className="text-7xl font-black italic tracking-tighter text-white">₹{formData.price}</h2><p className="text-slate-500 font-black uppercase text-[10px] tracking-[0.5em] italic">Total Due</p></div>
-                 <div className="space-y-5">
-                    <div className="p-8 bg-blue-600 rounded-[3rem] shadow-2xl flex items-center justify-between">
-                       <div className="flex items-center gap-6"><div className="w-16 h-16 bg-white text-blue-600 rounded-[1.8rem] flex items-center justify-center"><DollarSign size={32}/></div><p className="font-black text-xl text-white">Direct Cash</p></div>
-                       <div className="w-8 h-8 border-[6px] border-white/20 rounded-full flex items-center justify-center"><div className="w-2.5 h-2.5 bg-white rounded-full" /></div>
+                 <div className="text-center space-y-4"><h2 className="text-6xl font-bold tracking-tighter text-[#222222]">₹{formData.price}</h2><p className="text-[#717171] font-bold uppercase text-[10px] tracking-[0.4em]">Total Amount Due</p></div>
+                 <div className="space-y-4">
+                    <div className="p-8 bg-[#222222] rounded-[2rem] shadow-xl flex items-center justify-between text-white">
+                       <div className="flex items-center gap-5"><div className="w-12 h-12 bg-white text-black rounded-lg flex items-center justify-center"><DollarSign size={24}/></div><p className="font-bold text-lg">Direct Cash</p></div>
+                       <div className="w-6 h-6 border-4 border-white/20 rounded-full flex items-center justify-center"><div className="w-2 h-2 bg-white rounded-full" /></div>
                     </div>
-                    <div className="p-8 bg-[#1e293b] rounded-[3rem] flex items-center justify-between opacity-50 grayscale">
-                       <div className="flex items-center gap-6"><div className="w-16 h-16 bg-white/10 text-slate-500 rounded-[1.8rem] flex items-center justify-center"><Wallet size={32}/></div><p className="font-black text-xl text-slate-500">UPI (Soon)</p></div>
+                    <div className="p-8 bg-white border border-[#dddddd] rounded-[2rem] flex items-center justify-between opacity-60">
+                       <div className="flex items-center gap-5"><div className="w-12 h-12 bg-[#f7f7f7] text-[#717171] rounded-lg flex items-center justify-center"><Wallet size={24}/></div><p className="font-bold text-lg text-[#222222]">UPI (Soon)</p></div>
                     </div>
                  </div>
-                 <button onClick={() => setScreen('review')} className="w-full py-7 bg-blue-600 text-white rounded-[2rem] font-black text-base uppercase tracking-[0.2em] mt-auto">Complete Demo Payment</button>
+                 <button onClick={() => setScreen('review')} className="w-full py-5 bg-[#ff385c] text-white rounded-xl font-bold text-base hover:bg-[#e00b41] transition-all mt-auto shadow-xl">Complete Payment</button>
               </div>
            </ScreenWrapper>
         )}
@@ -493,32 +503,32 @@ const BookGuidePage = () => {
         {/* 10. REVIEW */}
         {screen === 'review' && (
            <ScreenWrapper hideHeader key="s10">
-              <div className="space-y-12 flex-1 flex flex-col py-10">
-                 <div className="text-center space-y-6">
-                   <div className="w-32 h-32 bg-emerald-500/20 text-emerald-500 rounded-[3rem] flex items-center justify-center mx-auto"><ThumbsUp size={56}/></div>
-                   <h3 className="text-5xl font-black text-white italic tracking-tighter">Awesome!</h3>
+              <div className="space-y-10 flex-1 flex flex-col py-10">
+                 <div className="text-center space-y-4">
+                   <div className="w-24 h-24 bg-[#ff385c]/10 text-[#ff385c] rounded-full flex items-center justify-center mx-auto"><ThumbsUp size={40}/></div>
+                   <h3 className="text-4xl font-bold text-[#222222] tracking-tighter">Rate your trip</h3>
                  </div>
-                 <div className="flex justify-center gap-4 py-6">
+                 <div className="flex justify-center gap-3 py-6">
                     {[1, 2, 3, 4, 5].map(star => ( 
                       <Star 
                        key={star} 
-                       size={48} 
+                       size={40} 
                        onClick={() => setUserRating(star)}
-                       className={`${userRating >= star ? 'text-blue-500 fill-current' : 'text-slate-700'} cursor-pointer transition-all hover:scale-110`} 
+                       className={`${userRating >= star ? 'text-[#ff385c] fill-current' : 'text-[#dddddd]'} cursor-pointer transition-all hover:scale-110`} 
                       /> 
                     ))}
                  </div>
-                 <div className="bg-[#1e293b] p-8 rounded-[2.5rem] border border-white/5">
-                   <textarea 
-                     value={userComment}
-                     onChange={(e) => setUserComment(e.target.value)}
-                     placeholder={`Any feedback for ${matchedGuide?.name || 'Local Guide'}?`} 
-                     className="w-full bg-transparent border-none text-white font-bold p-0 focus:ring-0 placeholder:text-slate-600 italic h-24" 
-                   />
+                 <div className="bg-[#f7f7f7] p-8 rounded-2xl border border-[#dddddd]">
+                    <textarea 
+                      value={userComment}
+                      onChange={(e) => setUserComment(e.target.value)}
+                      placeholder={`How was your experience with ${matchedGuide?.name?.split(' ')[0]}?`} 
+                      className="w-full bg-transparent border-none text-[#222222] font-medium p-0 focus:ring-0 placeholder:text-[#717171] h-32" 
+                    />
                  </div>
                  <button 
                    onClick={handleSubmitReview} 
-                   className="w-full py-7 bg-blue-600 text-white rounded-[2rem] font-black text-base uppercase tracking-[0.2em] mt-auto shadow-xl shadow-blue-500/20"
+                   className="w-full py-5 bg-[#222222] text-white rounded-xl font-bold text-base hover:bg-black transition-all mt-auto shadow-xl"
                  >
                    Submit & Finish
                  </button>

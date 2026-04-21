@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
   const { user } = useAuth();
@@ -45,128 +46,75 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary pb-24 desktop:pb-12">
+    <div className="min-h-screen bg-white text-[#222222] pb-24 desktop:pb-12">
       
       {/* --- HERO SECTION --- */}
-      <section className="relative h-auto min-h-[60vh] lg:h-[65vh] w-full flex items-center overflow-hidden rounded-[2rem] lg:rounded-[3rem] mt-4 lg:mt-6 mx-auto max-w-[98%]">
+      <section className="relative h-[70vh] lg:h-[75vh] w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&q=80" 
             alt="Odisha Adventure" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg-base via-bg-base/60 lg:via-bg-base/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg-base via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-black/20" />
         </div>
 
-        <div className="relative z-10 px-6 lg:px-20 py-20 lg:py-0 max-w-4xl space-y-8">
+        <div className="relative z-10 w-full max-w-7xl px-8 text-center space-y-12">
            <motion.div 
-             initial={{ opacity: 0, x: -30 }} 
-             animate={{ opacity: 1, x: 0 }}
-             className="space-y-4"
+             initial={{ opacity: 0, y: 20 }} 
+             animate={{ opacity: 1, y: 0 }}
+             className="space-y-6"
            >
-              <h4 className="text-[10px] font-black tracking-[0.5em] text-accent uppercase">Explore Like a Local</h4>
-              <h1 className="text-4xl lg:text-8xl font-black italic font-serif leading-[0.9] lg:leading-[0.8] tracking-tighter">
-                 Discover Your<br className="hidden lg:block"/> Next Adventure
+              <h1 className="text-5xl lg:text-8xl font-bold text-white tracking-tighter leading-[0.9]">
+                 Find local experts.<br />Explore Odisha.
               </h1>
-              <p className="text-base lg:text-lg text-text-secondary font-bold max-w-xl italic">Book trusted local guides instantly and explore the hidden gems of our world.</p>
            </motion.div>
+
+           {/* --- FLOATING SEARCH BAR (AIRBNB STYLE) --- */}
+           <div className="max-w-4xl mx-auto">
+              <div className="search-pill bg-white w-full h-20 pl-10 pr-4 flex items-center justify-between group cursor-pointer border border-[#dddddd] shadow-xl hover:shadow-2xl transition-all">
+                 <div className="flex-1 flex items-center gap-8 divide-x divide-[#dddddd]">
+                    <div className="flex flex-col text-left">
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#222222] mb-1">Where</span>
+                       <span className="text-sm font-medium text-[#717171]">Search destinations</span>
+                    </div>
+                    <div className="flex flex-col text-left pl-8">
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#222222] mb-1">Plan</span>
+                       <span className="text-sm font-medium text-[#717171]">Select duration</span>
+                    </div>
+                    <div className="flex flex-col text-left pl-8">
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#222222] mb-1">Language</span>
+                       <span className="text-sm font-medium text-[#717171]">Select preference</span>
+                    </div>
+                 </div>
+                 <button 
+                  onClick={() => navigate('/book-guide')}
+                  className="w-14 h-14 bg-[#ff385c] text-white rounded-full flex items-center justify-center hover:bg-[#e00b41] transition-all"
+                 >
+                    <Search size={22} strokeWidth={3} />
+                 </button>
+              </div>
+           </div>
 
            <AnimatePresence>
              {activeBooking && (
                <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="bg-accent/10 border border-accent/20 backdrop-blur-xl p-6 rounded-[2rem] flex items-center justify-between gap-6 max-w-xl"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={() => navigate('/book-guide')}
+                className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-full mx-auto w-fit flex items-center gap-4 cursor-pointer hover:bg-white/20 transition-all"
                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-accent text-white rounded-2xl flex items-center justify-center animate-pulse">
-                      <Navigation size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black text-white italic">Active Trip Session</h4>
-                      <p className="text-[10px] font-bold text-accent uppercase tracking-widest">
-                        {activeBooking.status === 'searching' ? 'Finding experts...' : `With ${activeBooking.guideId?.name || 'Local Expert'}`}
-                      </p>
-                    </div>
+                  <div className="w-8 h-8 bg-[#ff385c] rounded-full flex items-center justify-center animate-pulse">
+                    <Navigation size={16} className="text-white" />
                   </div>
-                  <button 
-                    onClick={() => navigate('/book-guide')}
-                    className="px-6 py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-all shadow-lg shadow-white/10"
-                  >
-                    Resume <ArrowRight size={14} className="inline ml-1" />
-                  </button>
+                  <span className="text-xs font-bold text-white mr-2">Ongoing Trip: Resume Session</span>
                </motion.div>
              )}
            </AnimatePresence>
-
-           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <button 
-                onClick={() => navigate('/book-guide')}
-                className="btn-primary flex items-center gap-3 px-10 py-5 text-base"
-              >
-                 Book Guide Now <ArrowRight size={20} />
-              </button>
-              <div className="flex -space-x-4">
-                 {[1,2,3,4].map(i => (
-                   <img key={i} src={`https://i.pravatar.cc/100?img=${i+10}`} className="w-12 h-12 rounded-full border-4 border-bg-base" alt="" />
-                 ))}
-                 <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center font-black text-xs border-4 border-bg-base">1K+</div>
-              </div>
-           </div>
         </div>
       </section>
 
-      {/* --- QUICK BOOK CARD --- */}
-      <section className="max-w-[90%] mx-auto -mt-12 relative z-30">
-        <div className="glass-card p-10 rounded-[2.5rem] shadow-2xl">
-           <div className="flex items-center gap-3 mb-8">
-              <div className="p-3 bg-accent/20 text-accent rounded-xl">
-                 <Navigation size={20} />
-              </div>
-              <div>
-                 <h3 className="text-xl font-black">Quick Book Guide</h3>
-                 <p className="text-[10px] font-black uppercase text-text-muted tracking-widest">Find your expert in 3 easy steps</p>
-              </div>
-           </div>
-
-           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                 <label className="text-[9px] font-black uppercase text-text-muted ml-1">Select Location</label>
-                 <select className="input-field appearance-none cursor-pointer">
-                    <option>Puri, Odisha</option>
-                    <option>Konark</option>
-                    <option>Bhubaneswar</option>
-                 </select>
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[9px] font-black uppercase text-text-muted ml-1">Select Plan</label>
-                 <select className="input-field appearance-none cursor-pointer">
-                    <option>2 Hours (Basic)</option>
-                    <option>4 Hours (Half Day)</option>
-                    <option>Full Day (Expert)</option>
-                 </select>
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[9px] font-black uppercase text-text-muted ml-1">Language</label>
-                 <div className="flex gap-2">
-                    <button className="chip active flex-1 py-4 text-[10px]">Hindi</button>
-                    <button className="chip flex-1 py-4 text-[10px]">English</button>
-                    <button className="chip flex-1 py-4 text-[10px]">Odia</button>
-                 </div>
-              </div>
-              <div className="md:pt-5 pt-2">
-                 <button 
-                  onClick={() => navigate('/book-guide')}
-                  className="btn-primary w-full py-5"
-                 >
-                    Find Guide <Navigation2 size={16} className="inline ml-2 rotate-90" />
-                 </button>
-              </div>
-           </div>
-        </div>
-      </section>
+      {/* --- QUICK BOOK SECTION (REMOVED IN FAVOR OF SEARCH PILL) --- */}
 
       <div className="max-w-7xl mx-auto px-8 mt-24 space-y-32">
         
@@ -182,32 +130,31 @@ const Home = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {popularLocations.map((loc) => (
               <motion.div 
                 key={loc.name}
-                whileHover={{ y: -10 }}
-                className="bg-bg-card rounded-[2.5rem] overflow-hidden border border-border-color group cursor-pointer"
+                whileHover={{ opacity: 0.9 }}
+                className="group cursor-pointer"
                 onClick={() => navigate('/book-guide')}
               >
-                <div className="relative h-64 overflow-hidden">
-                   <img src={loc.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                   <div className="absolute top-4 left-4 flex gap-2">
-                      <span className="px-3 py-1 bg-success/20 text-success backdrop-blur-md rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center">
-                        <Zap size={10} className="mr-1 fill-current" /> {loc.guides} Online
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.2rem] mb-4">
+                   <img src={loc.img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
+                   <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-white/90 backdrop-blur shadow-sm rounded-lg text-[10px] font-bold text-[#222222] flex items-center">
+                        <Zap size={10} className="mr-1 text-[#ff385c] fill-current" /> {loc.guides} guides
                       </span>
                    </div>
-                   <div className="absolute inset-0 bg-gradient-to-t from-bg-card via-transparent to-transparent" />
                 </div>
-                <div className="p-8">
-                   <p className="text-[10px] font-black text-accent uppercase tracking-widest mb-1">{loc.category}</p>
-                   <h3 className="text-2xl font-black tracking-tight">{loc.name}</h3>
-                   <div className="flex items-center gap-3 mt-4">
-                      <div className="flex items-center text-amber-500 font-black text-xs">
-                        <Star size={14} className="mr-1 fill-current" /> {loc.rating}
+                <div className="space-y-1">
+                   <div className="flex items-center justify-between">
+                      <h3 className="text-base font-bold text-[#222222]">{loc.name}, Odisha</h3>
+                      <div className="flex items-center text-[#222222] font-medium text-xs">
+                        <Star size={12} className="mr-1 fill-current" /> {loc.rating}
                       </div>
-                      <span className="text-text-muted font-bold text-xs">({loc.reviews} reviews)</span>
                    </div>
+                   <p className="text-[#717171] text-sm font-normal">{loc.category} • Heritage Tour</p>
+                   <p className="text-[#222222] text-sm font-bold mt-1">₹499 <span className="font-normal text-[#717171]">session</span></p>
                 </div>
               </motion.div>
             ))}
@@ -222,28 +169,28 @@ const Home = () => {
                    {f.icon}
                 </div>
                 <h4 className="font-black text-xl mb-2">{f.title}</h4>
-                <p className="text-text-muted font-medium text-xs leading-relaxed">{f.desc}</p>
+                <p className="text-muted font-medium text-xs leading-relaxed">{f.desc}</p>
              </div>
            ))}
         </section>
 
         {/* --- STATS BAR --- */}
-        <section className="bg-bg-input rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-12 border border-border-color grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 text-center">
+        <section className="bg-[#f7f7f7] rounded-[3rem] p-12 lg:p-20 border border-[#dddddd] grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
            <div>
-              <p className="text-3xl lg:text-4xl font-black text-white italic font-serif">500+</p>
-              <p className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-widest mt-2">Verified Guides</p>
+              <p className="text-4xl font-bold text-[#222222]">500+</p>
+              <p className="text-[11px] font-medium text-[#717171] uppercase tracking-[0.2em] mt-3">Verified Guides</p>
            </div>
            <div>
-              <p className="text-3xl lg:text-4xl font-black text-white italic font-serif">1K+</p>
-              <p className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-widest mt-2">Happy Travelers</p>
+              <p className="text-4xl font-bold text-[#222222]">1K+</p>
+              <p className="text-[11px] font-medium text-[#717171] uppercase tracking-[0.2em] mt-3">Happy Travelers</p>
            </div>
            <div>
-              <p className="text-3xl lg:text-4xl font-black text-white italic font-serif">12k</p>
-              <p className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-widest mt-2">Tours Completed</p>
+              <p className="text-4xl font-bold text-[#222222]">12k</p>
+              <p className="text-[11px] font-medium text-[#717171] uppercase tracking-[0.2em] mt-3">Tours Completed</p>
            </div>
            <div>
-              <p className="text-3xl lg:text-4xl font-black text-white italic font-serif">4.8</p>
-              <p className="text-[9px] lg:text-[10px] font-black text-text-muted uppercase tracking-widest mt-2">Average Rating</p>
+              <p className="text-4xl font-bold text-[#222222]">4.8</p>
+              <p className="text-[11px] font-medium text-[#717171] uppercase tracking-[0.2em] mt-3">Average Rating</p>
            </div>
         </section>
 

@@ -80,23 +80,23 @@ const Sidebar = ({ isOpen, onClose }) => {
   const links = user?.role === 'admin' ? adminLinks : (user?.role === 'guide' ? guideLinks : touristLinks);
 
   return (
-    <aside className={`fixed left-0 top-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border)] flex flex-col z-[1000] transition-transform duration-300 transform lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-[#dddddd] flex flex-col z-[1000] transition-transform duration-300 transform lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Header */}
-      <div className="p-6 flex items-center justify-between">
+      <div className="p-8 flex items-center justify-between">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { navigate('/'); onClose?.(); }}>
-          <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-xl object-cover" />
-          <span className="text-xl font-bold tracking-tighter text-[var(--text-primary)]">GuideGo</span>
+          <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-full object-cover" />
+          <span className="text-xl font-bold tracking-tighter text-[#222222]">GuideGo</span>
         </div>
-        <button onClick={onClose} className="lg:hidden p-2 text-[var(--text-secondary)]">
+        <button onClick={onClose} className="lg:hidden p-2 text-[#6a6a6a]">
           <X size={24} />
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-8 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-6 py-4 space-y-10 no-scrollbar">
         {links.map((group) => (
-          <div key={group.section} className="space-y-1">
-            <h4 className="px-4 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-2">{group.section}</h4>
+          <div key={group.section} className="space-y-4">
+            <h4 className="px-2 text-[10px] font-bold text-[#6a6a6a] uppercase tracking-[0.3em]">{group.section}</h4>
             <div className="space-y-1">
               {group.items.map((item) => {
                 const active = isActive(item.path);
@@ -107,15 +107,15 @@ const Sidebar = ({ isOpen, onClose }) => {
                     key={item.path}
                     to={item.path}
                     onClick={() => onClose?.()}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${
+                    className={`flex items-center space-x-4 px-2 py-3 rounded-lg transition-all duration-200 group relative ${
                       active 
-                      ? 'bg-blue-500/10 text-[var(--accent)] border-l-4 border-[var(--accent)]' 
-                      : 'text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)] border-l-4 border-transparent'
+                      ? 'text-[#ff385c]' 
+                      : 'text-[#222222] hover:bg-[#f7f7f7]'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${active ? 'text-[var(--accent)]' : 'text-current opacity-70 group-hover:opacity-100 transition-opacity'}`} />
-                    <span className={`text-[13px] tracking-tight ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
-                    {active && <motion.div layoutId="active-pill" className="absolute right-2 w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />}
+                    <Icon className={`w-5 h-5 ${active ? 'text-[#ff385c]' : 'text-[#222222] opacity-80'}`} />
+                    <span className={`text-[15px] ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
+                    {active && <motion.div layoutId="active-dot" className="absolute -left-1 w-1 h-6 rounded-full bg-[#ff385c]" />}
                   </NavLink>
                 );
               })}
@@ -125,17 +125,17 @@ const Sidebar = ({ isOpen, onClose }) => {
       </nav>
 
       {/* Footer */}
-      <div className="p-6 border-t border-[var(--border)] bg-black/20 space-y-6">
+      <div className="p-8 border-t border-[#f7f7f7] space-y-8">
         {/* Currency Toggle */}
-        <div className="flex bg-black/40 rounded-xl p-1 border border-[var(--border)] shadow-inner">
+        <div className="flex bg-[#f7f7f7] rounded-xl p-1 border border-[#ebebeb]">
           {['INR', 'USD'].map((curr) => (
             <button
               key={curr}
               onClick={() => setCurrency(curr)}
-              className={`flex-1 py-2 text-[10px] font-black rounded-lg transition-all ${
+              className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
                 currency === curr 
-                ? 'bg-[var(--bg-card)] text-[var(--accent)] shadow-lg' 
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-white text-[#222222] shadow-sm shadow-black/5' 
+                : 'text-[#6a6a6a] hover:text-[#222222]'
               }`}
             >
               {curr}
@@ -146,20 +146,20 @@ const Sidebar = ({ isOpen, onClose }) => {
         {/* User Card */}
         <div className="flex items-center justify-between group">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-[var(--bg-card)] border border-[var(--border)] flex items-center justify-center text-[var(--accent)] font-bold text-lg overflow-hidden shadow-soft">
+            <div className="w-12 h-12 rounded-full bg-[#f7f7f7] border border-[#dddddd] flex items-center justify-center text-[#ff385c] font-bold text-lg overflow-hidden shrink-0 shadow-sm">
               {user?.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
             </div>
-            <div className="flex flex-col">
-              <span className="text-[12px] font-bold text-[var(--text-primary)] leading-none mb-1">{user?.name || 'Guest'}</span>
-              <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest">{user?.role || 'Explorer'}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[14px] font-bold text-[#222222] leading-none mb-1 truncate">{user?.name || 'Guest'}</span>
+              <span className="text-[10px] text-[#6a6a6a] font-medium truncate">{user?.role || 'Explorer'}</span>
             </div>
           </div>
           <button 
             onClick={logout}
-            className="p-2 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+            className="p-3 text-[#6a6a6a] hover:text-[#ff385c] hover:bg-[#f7f7f7] rounded-full transition-all"
             title="Logout"
           >
-            <LogOut size={18} />
+            <LogOut size={20} />
           </button>
         </div>
       </div>
