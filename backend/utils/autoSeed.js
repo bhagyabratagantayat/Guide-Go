@@ -4,12 +4,12 @@ const logger = require('./logger');
 
 const ensureDemoAccounts = async () => {
   try {
-    // 1. Create Demo User
+    // 1. Create Demo User (Explorer)
     await User.findOneAndUpdate(
       { email: 'user@demo.com' },
       {
         name: 'Demo Traveler',
-        password: 'demo123', // Will be hashed by pre-save
+        password: 'demo123', // Hashed by pre-save middleware
         role: 'user',
         mobile: '9876543210',
         isVerified: true,
@@ -45,7 +45,7 @@ const ensureDemoAccounts = async () => {
       },
       { upsert: true, new: true }
     );
-    
+
     if (guideUser) {
       await Guide.findOneAndUpdate(
         { userId: guideUser._id },
@@ -56,7 +56,7 @@ const ensureDemoAccounts = async () => {
           status: 'approved',
           isLive: true,
           languages: ['English', 'Hindi', 'Odia'],
-          location: { type: 'Point', coordinates: [86.0945, 19.8876] }, // Konark
+          location: { type: 'Point', coordinates: [86.0945, 19.8876] },
           packages: [
             { title: 'Heritage Walk', description: 'Explore the Sun Temple and local crafts.', price: 1500, duration: '4 Hours' },
             { title: 'Full Day Odyssey', description: 'Comprehensive tour including lunch.', price: 3000, duration: '8 Hours' }
@@ -66,9 +66,9 @@ const ensureDemoAccounts = async () => {
       );
     }
 
-    logger.info('✅ Demo Accounts Verified and Synchronized');
+    logger.info('Demo Accounts Synchronization: SUCCESS');
   } catch (error) {
-    logger.error(`Failed to auto-seed demo accounts: ${error.message}`);
+    logger.error(`Demo Seeding Error: ${error.message}`);
   }
 };
 

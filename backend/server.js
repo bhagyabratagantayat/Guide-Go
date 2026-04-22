@@ -8,10 +8,10 @@ const { xss } = require('express-xss-sanitizer');
 const requestLogger = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 const connectDB = require('./config/db');
+const { ensureDemoAccounts } = require('./utils/autoSeed');
 
 const http = require('http');
 const initSocket = require('./utils/socket');
-const { ensureDemoAccounts } = require('./utils/autoSeed');
 
 const app = express();
 const server = http.createServer(app);
