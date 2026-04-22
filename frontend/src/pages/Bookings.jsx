@@ -179,12 +179,13 @@ const Bookings = () => {
                             Resume
                          </Link>
                        )}
-                       {user.role === 'guide' && booking.status === 'accepted' && (
+                       {((user.role === 'user' && ['searching', 'accepted'].includes(booking.status)) || 
+                         (user.role === 'guide' && booking.status === 'accepted')) && (
                          <button 
                           onClick={() => handleCancel(booking._id)}
                           className="flex-1 lg:w-full px-6 py-3 bg-white border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-50 transition-all text-center"
                          >
-                            Cancel Trip
+                            {user.role === 'user' && booking.status === 'searching' ? 'Cancel Request' : 'Cancel Trip'}
                          </button>
                        )}
                     </div>

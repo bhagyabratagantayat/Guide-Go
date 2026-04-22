@@ -176,6 +176,7 @@ const Home = () => {
                          onChange={(e) => setDuration(e.target.value)}
                          className="bg-transparent border-none text-base font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer w-full"
                        >
+                          <option>1 Hour</option>
                           <option>2 Hours</option>
                           <option>4 Hours</option>
                           <option>Full Day</option>
@@ -297,6 +298,9 @@ const Home = () => {
                  </div>
               </div>
             ))}
+         </div>
+      </section>
+
       {/* --- STATS SECTION --- */}
       <section className="py-24 px-8 max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
          <div>

@@ -83,19 +83,18 @@ const getNearbyGuides = asyncHandler(async (req, res, next) => {
 });
 
 const toggleLiveStatus = asyncHandler(async (req, res, next) => {
-  console.log("TOGGLE LIVE BODY:", req.body);
-  console.log("TOGGLE LIVE USER:", req.user?._id);
-
   if (!req.user || !req.user._id) {
-    return next(new ErrorResponse('User context missing', 401, 'UNAUTHORIZED'));
+    return next(new ErrorResponse('User context missing', 401));
   }
 
   const { isLive, location } = req.body;
   const updateData = { isLive: Boolean(isLive) };
   
-  // Safe location fallback
-  updateData.location = location || req.user.location || 'Odisha';
-  
+  // Safe location fallback - update location if going live
+  if (isLive) {
+    updateData.location = location || req.user.location || 'Odisha';
+  }
+
   try {
     const guide = await Guide.findOneAndUpdate(
       { userId: req.user._id },
@@ -104,18 +103,19 @@ const toggleLiveStatus = asyncHandler(async (req, res, next) => {
     );
 
     if (!guide) {
-      console.error(`Toggle Live Status Error: Guide profile not found for user ${req.user._id}`);
+      console.error("TOGGLE LIVE FAIL: Guide profile not found for user", req.user._id);
       return next(new ErrorResponse('Guide profile not found. Please register as a guide first.', 404));
     }
 
+    console.log("TOGGLE LIVE SUCCESS:", guide.isLive, "at", guide.location);
     res.json({
       success: true,
       isLive: guide.isLive,
       location: guide.location
     });
   } catch (error) {
-    console.error('Toggle Live Status Error:', error.message);
-    return next(new ErrorResponse(`Internal server error during status toggle: ${error.message}`, 500));
+    console.error("TOGGLE LIVE ERROR STACK:", error);
+    return next(new ErrorResponse(`Database update failed: ${error.message}`, 500));
   }
 });
 

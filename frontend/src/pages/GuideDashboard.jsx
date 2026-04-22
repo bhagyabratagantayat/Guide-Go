@@ -198,8 +198,9 @@ const GuideDashboard = () => {
       });
       setIsLive(data.isLive);
     } catch (error) {
-      const msg = error.response?.data?.message || 'Update failed';
-      alert(`Status Update Failed: ${msg}`);
+      const msg = error.response?.data?.message || error.message || 'Update failed';
+      const code = error.response?.status || '500';
+      alert(`Status Update Failed (${code}): ${msg}`);
       console.error('Toggle Live Error:', error.response?.data);
     }
   };
