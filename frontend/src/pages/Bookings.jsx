@@ -32,6 +32,17 @@ const Bookings = () => {
     if (user) fetchBookings();
   }, [user]);
 
+  const handleCancel = async (id) => {
+    if (!window.confirm('Are you sure you want to cancel this trip?')) return;
+    try {
+      await api.put(`/bookings/${id}/status`, { status: 'cancelled' });
+      fetchBookings();
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      alert('Failed to cancel booking');
+    }
+  };
+
   const filteredBookings = bookings.filter(b => {
     if (activeFilter === 'upcoming') return ['searching', 'pending', 'confirmed', 'accepted', 'ongoing'].includes(b.status);
     if (activeFilter === 'completed') return b.status === 'completed';
@@ -147,6 +158,14 @@ const Bookings = () => {
                          >
                             Resume
                          </Link>
+                       )}
+                       {user.role === 'guide' && booking.status === 'accepted' && (
+                         <button 
+                          onClick={() => handleCancel(booking._id)}
+                          className="flex-1 lg:w-full px-6 py-3 bg-white border border-rose-200 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-50 transition-all text-center"
+                         >
+                            Cancel Trip
+                         </button>
                        )}
                     </div>
                   </div>

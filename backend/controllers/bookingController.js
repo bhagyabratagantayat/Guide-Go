@@ -131,7 +131,31 @@ const getGuideBookings = asyncHandler(async (req, res, next) => {
 
 const updateBookingStatus = asyncHandler(async (req, res, next) => {
     const { status } = req.body;
-    const booking = await Booking.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return next(new ErrorResponse('Booking not found', 404));
+    }
+
+    // Auth check: Only traveler or guide of this booking
+    const isOwner = booking.userId.toString() === req.user._id.toString();
+    const isAssignedGuide = booking.guideId?.toString() === req.user._id.toString();
+
+    if (!isOwner && !isAssignedGuide && req.user.role !== 'admin') {
+      return next(new ErrorResponse('Not authorized to update this booking', 401));
+    }
+
+    booking.status = status;
+    await booking.save();
+
+    // If cancelled by guide, notify user
+    if (status === 'cancelled' && isAssignedGuide && req.io) {
+      req.io.to(booking.userId.toString()).emit('booking_cancelled', {
+        bookingId: booking._id,
+        reason: 'Cancelled by guide'
+      });
+    }
+
     res.json(booking);
 });
 
