@@ -66,17 +66,22 @@ export const BookingProvider = ({ children }) => {
   // Sync with Backend on Mount (Session Recovery)
   useEffect(() => {
     const restoreSession = async () => {
+      const token = localStorage.getItem('gg_token');
+      if (!token) {
+        setIsRestoring(false);
+        return;
+      }
+
       try {
-        const { data: bookings } = await api.get('/bookings/user');
-        if (bookings.length > 0) {
-          const latest = bookings[0];
-          // Only restore if trip is recent (within 12 hours)
-          const isRecent = (new Date() - new Date(latest.createdAt)) < 12 * 60 * 60 * 1000;
-          
-          if (isRecent) {
+        const { data } = await api.get('/bookings/user');
+        if (data && data.length > 0) {
+          // Find the most recent active booking
+          const latest = data[0];
+          if (['searching', 'accepted', 'ongoing'].includes(latest.status)) {
             setBookingData(latest);
-            if (latest.status === 'searching') setTripStatus(TRIP_STATUS.SEARCHING);
-            else if (latest.status === 'accepted') {
+            if (latest.status === 'searching') {
+              setTripStatus(TRIP_STATUS.SEARCHING);
+            } else if (latest.status === 'accepted') {
               setTripStatus(TRIP_STATUS.MATCHED);
               setMatchedGuide(latest.guideId);
               setOtp(latest.otp);

@@ -10,9 +10,9 @@ const api = axios.create({
 // Add a request interceptor to attach JWT
 api.interceptors.request.use(
   (config) => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo && userInfo.token) {
-      config.headers.Authorization = `Bearer ${userInfo.token}`;
+    const token = localStorage.getItem('gg_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -24,6 +24,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      localStorage.removeItem('gg_token');
+      localStorage.removeItem('gg_user');
       localStorage.removeItem('userInfo');
       window.location.href = '/login';
     }

@@ -362,61 +362,56 @@ const BookGuidePage = () => {
         )}
 
         {screen === 'end-trip' && (
-          <motion.div key="s9" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col">
+          <motion.div key="s8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ScreenWrapper setScreen={setScreen} hideHeader>
-               <div className="flex-1 flex flex-col bg-[#0f172a] -m-6 p-10 space-y-10 min-h-full">
-                  <div className="text-center space-y-4">
-                     <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-6 border border-emerald-500/20">
-                        <CheckCircle size={48} />
-                     </div>
-                     <h3 className="text-4xl font-black text-white italic tracking-tighter">Trip Completed!</h3>
-                     <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Thank you for your journey</p>
+               <div className="space-y-12 flex-1 flex flex-col py-10">
+                  <div className="bg-[#f7f7f7] p-12 rounded-[3rem] text-center space-y-6 border border-[#dddddd]">
+                     <h3 className="text-4xl font-bold text-[#222222] tracking-tighter">Trip Ended</h3>
                   </div>
+                  <button onClick={() => setScreen('payment')} className="w-full py-5 bg-[#ff385c] text-white rounded-xl font-bold text-base shadow-xl">Proceed to Payment</button>
+               </div>
+            </ScreenWrapper>
+          </motion.div>
+        )}
 
-                  <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 space-y-6">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-8">Summary</p>
-                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Location</span><span className="text-sm font-bold text-white italic">{formData.location}</span></div>
-                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Total Duration</span><span className="text-sm font-bold text-white font-mono">{formatTime(tripTimer)}</span></div>
-                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Plan</span><span className="text-sm font-bold text-white italic">{formData.plan}</span></div>
-                     <div className="flex justify-between items-center pt-8 border-t border-white/5"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Price Paid</span><span className="text-3xl font-black text-white">₹{formData.price}</span></div>
-                  </div>
-
-                  <button onClick={() => setScreen('review')} className="w-full py-5 bg-[#ff385c] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-[#ff385c]/40 mt-auto">Rate Experience</button>
+        {screen === 'payment' && (
+          <motion.div key="s9" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ScreenWrapper setScreen={setScreen} hideHeader>
+               <div className="space-y-12 flex-1 flex flex-col py-10 text-center">
+                  <h2 className="text-6xl font-bold tracking-tighter text-[#222222]">₹{formData.price}</h2>
+                  <button onClick={() => setScreen('review')} className="w-full py-5 bg-[#ff385c] text-white rounded-xl font-bold text-base shadow-xl">Complete Payment</button>
                </div>
             </ScreenWrapper>
           </motion.div>
         )}
 
         {screen === 'review' && (
-          <motion.div key="s10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col">
+          <motion.div key="s10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ScreenWrapper setScreen={setScreen} hideHeader>
-               <div className="flex-1 flex flex-col bg-[#0f172a] -m-6 p-10 space-y-10 min-h-full">
+               <div className="space-y-10 flex-1 flex flex-col py-10">
                   <div className="text-center space-y-4">
-                     <h3 className="text-4xl font-black text-white italic tracking-tighter">Rate Your Guide</h3>
-                     <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">How was your experience with {matchedGuide?.name || 'Arjun'}?</p>
+                    <h3 className="text-4xl font-bold text-[#222222] tracking-tighter">Rate your trip</h3>
                   </div>
-
                   <div className="flex justify-center gap-3 py-6">
-                     {[1, 2, 3, 4, 5].map(star => ( 
-                       <Star 
-                        key={star} 
-                        size={44} 
-                        onClick={() => setUserRating(star)}
-                        className={`${userRating >= star ? 'text-amber-500 fill-current' : 'text-white/10'} cursor-pointer transition-all hover:scale-110`} 
-                       /> 
-                     ))}
+                    {[1, 2, 3, 4, 5].map(star => ( 
+                      <Star 
+                       key={star} 
+                       size={40} 
+                       onClick={() => setUserRating(star)}
+                       className={`${userRating >= star ? 'text-[#ff385c] fill-current' : 'text-[#dddddd]'} cursor-pointer`} 
+                      /> 
+                    ))}
                   </div>
-
-                  <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/5">
-                     <textarea 
-                       value={userComment}
-                       onChange={(e) => setUserComment(e.target.value)}
-                       placeholder="Amazing experience!..." 
-                       className="w-full bg-transparent border-none text-white font-medium p-0 focus:ring-0 h-32 placeholder:text-white/10" 
-                     />
+                  <div key="feedback-container" className="bg-[#f7f7f7] p-8 rounded-2xl border border-[#dddddd]">
+                    <textarea 
+                      key="feedback-textarea"
+                      value={userComment}
+                      onChange={(e) => setUserComment(e.target.value)}
+                      placeholder="How was your experience?" 
+                      className="w-full bg-transparent border-none text-[#222222] font-medium p-0 focus:ring-0 h-32" 
+                    />
                   </div>
-
-                  <button onClick={handleSubmitReview} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-white/10 mt-auto">Submit Review & Finish</button>
+                  <button onClick={handleSubmitReview} className="w-full py-5 bg-[#222222] text-white rounded-xl font-bold text-base shadow-xl">Submit & Finish</button>
                </div>
             </ScreenWrapper>
           </motion.div>

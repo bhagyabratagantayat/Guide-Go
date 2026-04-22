@@ -33,10 +33,7 @@ const guideSchema = new mongoose.Schema({
   // Metadata
   rating: { type: Number, default: 0 },
   numReviews: { type: Number, default: 0 },
-  location: {
-    type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], default: [0, 0] }, // [longitude, latitude]
-  },
+  location: { type: String, default: '' },
   profileImage: { type: String, default: '' },
   status: { 
     type: String, 
@@ -48,7 +45,5 @@ const guideSchema = new mongoose.Schema({
     default: false
   }
 });
-
-guideSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Guide', guideSchema);

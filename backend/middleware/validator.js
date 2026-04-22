@@ -30,8 +30,7 @@ const validateGuideRegister = [
   body('experience').notEmpty().withMessage('Experience is required'),
   body('pricePerHour').isNumeric().withMessage('Price per hour must be a number'),
   body('description').notEmpty().withMessage('Description is required'),
-  body('location.coordinates').isArray().withMessage('Location coordinates must be an array'),
-  body('location.coordinates').custom(coord => coord.length === 2).withMessage('Location must have latitude and longitude'),
+  body('location').notEmpty().withMessage('Location is required'),
   validate
 ];
 

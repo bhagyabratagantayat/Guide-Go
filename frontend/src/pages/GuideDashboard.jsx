@@ -33,8 +33,6 @@ const GuideDashboard = () => {
   const [selectedAreas, setSelectedAreas] = useState(['Puri', 'Bhubaneswar']);
   const [selectedLangs, setSelectedLangs] = useState(['Hindi', 'English']);
   const [showGoLiveConfig, setShowGoLiveConfig] = useState(false);
-  const [tripEndStage, setTripEndStage] = useState(null); // 'summary', 'payment'
-  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   useEffect(() => {
     fetchDashboardData();
@@ -175,16 +173,13 @@ const GuideDashboard = () => {
     }
   };
 
-  const handleEndTrip = () => {
-    setTripEndStage('summary');
-  };
-
-  const finalizeEndTrip = async () => {
+  const handleEndTrip = async () => {
     if (!activeBooking) return;
     try {
-      await api.post(`/bookings/end/${activeBooking._id}`, { paymentMethod });
+      await api.post(`/bookings/end/${activeBooking._id}`);
+      
+      // Immediate update
       setActiveBooking(null);
-      setTripEndStage(null);
       fetchDashboardData();
     } catch (error) {
       alert('Failed to end trip');
@@ -199,11 +194,13 @@ const GuideDashboard = () => {
     try {
       const { data } = await api.put('/guides/live', { 
         isLive: !isLive,
-        location: !isLive ? selectedAreas[0] : null
+        location: !isLive ? (selectedAreas?.[0] || 'Odisha') : ''
       });
       setIsLive(data.isLive);
     } catch (error) {
-      alert('Update failed');
+      const msg = error.response?.data?.message || 'Update failed';
+      alert(`Status Update Failed: ${msg}`);
+      console.error('Toggle Live Error:', error.response?.data);
     }
   };
 
@@ -246,117 +243,50 @@ const GuideDashboard = () => {
         )}
       </AnimatePresence>
 
-      {/* 2. ACTIVE SESSION / END TRIP FLOW */}
-      <AnimatePresence mode="wait">
+      {/* 2. ACTIVE SESSION HEADER */}
+      <AnimatePresence>
         {activeBooking && (
-          <motion.div 
-            key={tripEndStage || 'active'}
-            initial={{ y: -50, opacity: 0 }} 
-            animate={{ y: 0, opacity: 1 }} 
-            exit={{ y: 50, opacity: 0 }}
-            className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 shadow-2xl border border-white/5 mb-12 overflow-hidden"
-          >
-             {!tripEndStage ? (
-               <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
-                  <div className="flex flex-col sm:flex-row items-center gap-8 text-white text-center sm:text-left">
-                     <div className="relative">
-                       <img src={activeBooking.userId?.profilePicture || 'https://i.pravatar.cc/150'} className="w-24 h-24 rounded-[2rem] object-cover border-4 border-white/10" alt=""/>
-                       <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-4 border-[#0f172a] rounded-full" />
+          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 shadow-2xl border border-white/5 flex flex-col lg:flex-row items-center justify-between gap-10 mb-12">
+             <div className="flex flex-col sm:flex-row items-center gap-8 text-white text-center sm:text-left">
+                <div className="relative">
+                  <img src={activeBooking.userId?.profilePicture || 'https://i.pravatar.cc/150'} className="w-24 h-24 rounded-[2rem] object-cover border-4 border-white/10" alt=""/>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-4 border-[#0f172a] rounded-full" />
+                </div>
+                <div className="space-y-1">
+                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{activeBooking.status === 'accepted' ? 'Action Required' : 'Trip in Progress'}</p>
+                   <h2 className="text-4xl font-black tracking-tighter italic">{activeBooking.userId?.name}</h2>
+                   <div className="flex items-center gap-2 justify-center sm:justify-start">
+                      <MapPin size={12} className="text-[#ff385c]"/>
+                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">{activeBooking.location} • {activeBooking.plan}</p>
+                   </div>
+                </div>
+             </div>
+
+             <div className="flex flex-col sm:flex-row shadow-2xl items-center gap-4 bg-white/5 p-4 rounded-[2.5rem] border border-white/10 backdrop-blur-md">
+                {activeBooking.status === 'accepted' ? (
+                  <>
+                     <a href={`tel:${activeBooking.userId?.phone || '+919876543210'}`} className="bg-emerald-500 p-4 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+                        <Phone size={20} fill="currentColor"/>
+                     </a>
+                     <div className="flex items-center gap-3">
+                        <input 
+                          type="text" maxLength={4} placeholder="Enter OTP" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
+                          className="w-32 bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-center font-black text-white placeholder:text-white/20"
+                        />
+                        <button onClick={handleVerifyOtp} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Verify & Start</button>
                      </div>
-                     <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{activeBooking.status === 'accepted' ? 'Action Required' : 'Trip in Progress'}</p>
-                        <h2 className="text-4xl font-black tracking-tighter italic text-white">{activeBooking.userId?.name}</h2>
-                        <div className="flex items-center justify-center sm:justify-start gap-4 text-white/60">
-                           <div className="flex items-center gap-1.5"><MapPin size={12}/><span className="text-[10px] font-bold uppercase tracking-widest">{activeBooking.location || 'Odisha'}</span></div>
-                           <div className="w-1 h-1 bg-white/20 rounded-full" />
-                           <div className="flex items-center gap-1.5"><Clock size={12}/><span className="text-[10px] font-bold uppercase tracking-widest">{activeBooking.plan || '2 Hours'}</span></div>
-                        </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-8 px-6 py-2">
+                     <div className="text-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Duration</p>
+                        <p className="text-3xl font-black text-white font-mono tracking-tighter">{Math.floor(tripTimer / 60)}:{(tripTimer % 60).toString().padStart(2, '0')}</p>
                      </div>
+                     <div className="h-10 w-px bg-white/10" />
+                     <button onClick={handleEndTrip} className="bg-rose-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20">End Trip</button>
                   </div>
-
-                  <div className="flex flex-wrap justify-center gap-6 p-6 bg-white/5 rounded-[2.5rem] border border-white/5">
-                     {activeBooking.status === 'accepted' ? (
-                       <>
-                          <a href={`tel:${activeBooking.userId?.phone}`} className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 hover:scale-110 transition-transform"><Phone size={24}/></a>
-                          <div className="flex items-center gap-3">
-                             <input type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)} placeholder="Enter OTP" className="w-32 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-center font-black tracking-[0.3em] focus:ring-2 ring-[#ff385c]/50 transition-all" maxLength={4}/>
-                             <button onClick={handleVerifyOtp} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-colors">Verify & Start</button>
-                          </div>
-                       </>
-                     ) : (
-                       <div className="flex items-center gap-8 px-6 py-2">
-                          <div className="text-center">
-                             <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Duration</p>
-                             <p className="text-3xl font-black text-white font-mono tracking-tighter">{Math.floor(tripTimer / 60)}:{(tripTimer % 60).toString().padStart(2, '0')}</p>
-                          </div>
-                          <div className="h-10 w-px bg-white/10" />
-                          <button onClick={handleEndTrip} className="bg-rose-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-colors">End Trip</button>
-                       </div>
-                     )}
-                  </div>
-               </div>
-             ) : tripEndStage === 'summary' ? (
-               <div className="max-w-xl mx-auto text-center space-y-10 py-6">
-                  <div className="space-y-4">
-                     <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-6 border border-amber-500/20">
-                        <Activity size={40} />
-                     </div>
-                     <h2 className="text-4xl font-black text-white italic tracking-tighter">Trip Completed?</h2>
-                     <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Please confirm to end the trip</p>
-                  </div>
-
-                  <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 space-y-6 text-left">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-8">Trip Summary</p>
-                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Location</span><span className="text-sm font-bold text-white italic">{activeBooking.location}</span></div>
-                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Total Duration</span><span className="text-sm font-bold text-white font-mono">{Math.floor(tripTimer / 60)}:{(tripTimer % 60).toString().padStart(2, '0')}</span></div>
-                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Plan</span><span className="text-sm font-bold text-white italic">{activeBooking.plan}</span></div>
-                     <div className="flex justify-between items-center pt-8 border-t border-white/5"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Total Price</span><span className="text-3xl font-black text-[#ff385c]">₹{activeBooking.price}</span></div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-4">
-                     <button onClick={() => setTripEndStage(null)} className="flex-1 py-5 bg-white/5 text-white/40 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-white/10">Cancel</button>
-                     <button onClick={() => setTripEndStage('payment')} className="flex-[2] py-5 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Confirm & End Trip</button>
-                  </div>
-               </div>
-             ) : (
-               <div className="max-w-xl mx-auto text-center space-y-10 py-6">
-                  <div className="space-y-4">
-                     <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-6 border border-emerald-500/20">
-                        <CheckCircle size={40} />
-                     </div>
-                     <h2 className="text-4xl font-black text-white italic tracking-tighter">Select Payment</h2>
-                     <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">How did the user pay?</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                     <button 
-                       onClick={() => setPaymentMethod('cash')}
-                       className={`p-8 rounded-[2.5rem] border transition-all text-left space-y-3 ${paymentMethod === 'cash' ? 'bg-white border-white text-slate-900' : 'bg-white/5 border-white/10 text-white'}`}
-                     >
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-slate-900/10' : 'bg-white/10'}`}><DollarSign size={24}/></div>
-                        <p className="font-black italic text-lg">Cash</p>
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === 'cash' ? 'text-slate-900/40' : 'text-white/40'}`}>Received by guide</p>
-                     </button>
-                     <button 
-                       onClick={() => setPaymentMethod('upi')}
-                       className={`p-8 rounded-[2.5rem] border transition-all text-left space-y-3 ${paymentMethod === 'upi' ? 'bg-white border-white text-slate-900' : 'bg-white/5 border-white/10 text-white'}`}
-                     >
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${paymentMethod === 'upi' ? 'bg-slate-900/10' : 'bg-white/10'}`}><Zap size={24}/></div>
-                        <p className="font-black italic text-lg">UPI / QR</p>
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === 'upi' ? 'text-slate-900/40' : 'text-white/40'}`}>Paid via G-Pay/PhonePe</p>
-                     </button>
-                  </div>
-
-                  {paymentMethod === 'upi' && (
-                    <div className="bg-emerald-500/5 border border-emerald-500/20 p-8 rounded-3xl animate-pulse">
-                       <p className="text-emerald-500 text-xs font-black italic tracking-tight">Show your QR code to the user now.</p>
-                       <p className="text-white/40 text-[9px] font-bold uppercase mt-2 tracking-widest">ID: guidego-payments@ybl</p>
-                    </div>
-                  )}
-
-                  <button onClick={finalizeEndTrip} className="w-full py-6 bg-[#ff385c] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-[#ff385c]/40">Submit Payment & Finish</button>
-               </div>
-             )}
+                )}
+             </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -365,7 +295,6 @@ const GuideDashboard = () => {
       <div className="bg-[#0f172a] p-10 rounded-[3rem] border border-white/5 space-y-10">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
           <div className="space-y-1">
-             <p className="text-white/40 font-black uppercase tracking-[0.2em] text-[10px]">Active Status</p>
              <h1 className="text-4xl font-black text-white tracking-tighter italic">Welcome, {user?.name.split(' ')[0]}</h1>
           </div>
           <button 

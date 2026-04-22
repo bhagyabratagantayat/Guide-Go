@@ -60,48 +60,63 @@ const registerGuide = asyncHandler(async (req, res, next) => {
     experience,
     pricePerHour,
     description,
-    location: typeof location === 'string' ? JSON.parse(location) : location,
+    location,
     profileImage,
   });
   res.status(201).json(guide);
 });
 
 const getNearbyGuides = asyncHandler(async (req, res, next) => {
-  const { lng, lat, distance } = req.query; // distance in meters
-  const guides = await Guide.find({
+  const { city } = req.query; // Search by city name instead of coordinates
+  const query = {
     profileComplete: true,
     kycStatus: 'approved',
-    isLive: true,
-    location: {
-      $near: {
-        $geometry: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
-        $maxDistance: parseInt(distance) || 10000,
-      },
-    },
-  }).populate('userId', 'name profilePicture');
+    isLive: true
+  };
+
+  if (city) {
+    query.location = { $regex: city, $options: 'i' };
+  }
+
+  const guides = await Guide.find(query).populate('userId', 'name profilePicture');
   res.json(guides);
 });
 
 const toggleLiveStatus = asyncHandler(async (req, res, next) => {
-  const { isLive, location } = req.body;
-  const updateData = { isLive };
-  if (location) updateData.location = location;
-  
-  const guide = await Guide.findOneAndUpdate(
-    { userId: req.user._id },
-    updateData,
-    { new: true, runValidators: true }
-  );
+  console.log("TOGGLE LIVE BODY:", req.body);
+  console.log("TOGGLE LIVE USER:", req.user?._id);
 
-  if (!guide) {
-    return next(new ErrorResponse('Guide profile not found', 404));
+  if (!req.user || !req.user._id) {
+    return next(new ErrorResponse('User context missing', 401, 'UNAUTHORIZED'));
   }
 
-  res.json({
-    success: true,
-    isLive: guide.isLive,
-    location: guide.location
-  });
+  const { isLive, location } = req.body;
+  const updateData = { isLive: Boolean(isLive) };
+  
+  // Safe location fallback
+  updateData.location = location || req.user.location || 'Odisha';
+  
+  try {
+    const guide = await Guide.findOneAndUpdate(
+      { userId: req.user._id },
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!guide) {
+      console.error(`Toggle Live Status Error: Guide profile not found for user ${req.user._id}`);
+      return next(new ErrorResponse('Guide profile not found. Please register as a guide first.', 404));
+    }
+
+    res.json({
+      success: true,
+      isLive: guide.isLive,
+      location: guide.location
+    });
+  } catch (error) {
+    console.error('Toggle Live Status Error:', error.message);
+    return next(new ErrorResponse(`Internal server error during status toggle: ${error.message}`, 500));
+  }
 });
 
 const getOnboardingStatus = asyncHandler(async (req, res, next) => {
