@@ -24,14 +24,14 @@ const Sidebar = ({ isOpen, onClose }) => {
   const touristLinks = [
     { section: 'MAIN', items: [
       { path: '/', label: 'Home', icon: Home },
-      { path: '/guides', label: 'Browse Guides', icon: Compass },
+      { path: '/book-guide', label: 'Book Guide', icon: Compass },
+      { path: '/ai-chat', label: 'AI Assistant', icon: Sparkles },
     ]},
     { section: 'FEATURED', items: [
       { path: '/audio-guide', label: 'Audio Guide', icon: Headphones, isPrimary: true },
-    ]},
-    { section: 'SERVICES', items: [
-      { path: '/ai-chat', label: 'AI Assistant', icon: Sparkles },
       { path: '/my-bookings', label: 'My Bookings', icon: Calendar },
+    ]},
+    { section: 'TRAVEL TOOLS', items: [
       { path: '/hotels', label: 'Hotels', icon: Hotel },
       { path: '/agencies', label: 'Agencies', icon: Building2 },
       { path: '/restaurants', label: 'Restaurants', icon: Utensils },

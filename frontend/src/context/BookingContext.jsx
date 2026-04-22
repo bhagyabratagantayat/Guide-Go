@@ -46,6 +46,8 @@ export const BookingProvider = ({ children }) => {
       socket.on('trip_ended', () => {
         setTripStatus(TRIP_STATUS.COMPLETED);
         stopTimer();
+        // Force a sync to get the ended booking details
+        restoreSession();
       });
 
       socket.on('booking_cancelled', () => {
@@ -77,7 +79,7 @@ export const BookingProvider = ({ children }) => {
         if (data && data.length > 0) {
           // Find the most recent active booking
           const latest = data[0];
-          if (['searching', 'accepted', 'ongoing'].includes(latest.status)) {
+          if (['searching', 'accepted', 'ongoing', 'completed'].includes(latest.status)) {
             setBookingData(latest);
             if (latest.status === 'searching') {
               setTripStatus(TRIP_STATUS.SEARCHING);
@@ -89,6 +91,9 @@ export const BookingProvider = ({ children }) => {
               setTripStatus(TRIP_STATUS.ONGOING);
               setMatchedGuide(latest.guideId);
               startTimer(latest.startedAt);
+            } else if (latest.status === 'completed') {
+              setTripStatus(TRIP_STATUS.COMPLETED);
+              stopTimer();
             }
           }
         }

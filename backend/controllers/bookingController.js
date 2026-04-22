@@ -169,26 +169,35 @@ const updateBookingStatus = asyncHandler(async (req, res, next) => {
 // @route   POST /api/bookings/:id/review
 const addBookingReview = asyncHandler(async (req, res, next) => {
   const { rating, comment } = req.body;
+  console.log("REVIEW SUBMIT ATTEMPT:", { bookingId: req.params.id, rating, comment, userId: req.user?._id });
+
   const booking = await Booking.findById(req.params.id);
 
   if (!booking) {
+    console.error("REVIEW ERROR: Booking not found");
     return next(new ErrorResponse('Booking not found', 404));
   }
 
   // Ensure only the traveler who made the booking can review it
   if (booking.userId.toString() !== req.user._id.toString()) {
+    console.error("REVIEW ERROR: Auth mismatch", { bookingUser: booking.userId, reqUser: req.user._id });
     return next(new ErrorResponse('Not authorized to review this booking', 401));
   }
 
   booking.review = { rating, comment };
   await booking.save();
 
-  // Update guide average rating
+  // Update guide average rating and review count
   const guideBookings = await Booking.find({ guideId: booking.guideId, 'review.rating': { $exists: true } });
   if (guideBookings.length > 0) {
     const totalRating = guideBookings.reduce((sum, b) => sum + b.review.rating, 0);
     const avgRating = totalRating / guideBookings.length;
-    await User.findByIdAndUpdate(booking.guideId, { rating: avgRating });
+    
+    // Update Guide profile
+    await Guide.findOneAndUpdate(
+      { userId: booking.guideId }, 
+      { rating: avgRating, numReviews: guideBookings.length }
+    );
   }
 
   res.json(booking);

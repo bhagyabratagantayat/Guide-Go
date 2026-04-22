@@ -137,20 +137,40 @@ const Bookings = () => {
                        </div>
                        
                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-[#717171]">
-                          <span className="flex items-center gap-1.5"><Calendar size={14} className="text-[#222222]"/> {new Date(booking.bookingTime).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                          <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#222222]"/> {booking.location}</span>
-                          <span className="flex items-center gap-1.5"><Clock size={14} className="text-[#222222]"/> {booking.plan}</span>
+                          <span className="flex items-center gap-1.5" title="Date"><Calendar size={14} className="text-[#222222]"/> {new Date(booking.bookingTime).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          <span className="flex items-center gap-1.5" title="Time"><Clock size={14} className="text-[#222222]"/> {new Date(booking.bookingTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span className="flex items-center gap-1.5" title="Location"><MapPin size={14} className="text-[#222222]"/> {booking.location}</span>
+                          <span className="flex items-center gap-1.5" title="Duration"><Clock3 size={14} className="text-[#222222]"/> {booking.plan}</span>
+                          <span className="flex items-center gap-1.5" title="Payment"><ShieldAlert size={14} className="text-[#222222]"/> {booking.paymentMethod?.toUpperCase() || 'CASH'}</span>
                        </div>
                     </div>
 
-                    {/* ACTIONS */}
-                    <div className="flex lg:flex-col gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#f7f7f7]">
-                       <Link 
-                        to={`/chat/${user.role === 'guide' ? booking.userId?._id : booking.guideId?._id}`} 
-                        className="flex-1 lg:w-full px-6 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-xs font-bold hover:bg-[#f7f7f7] transition-all text-center flex items-center justify-center gap-2"
-                       >
-                          <MessageSquare size={14} /> Message
-                       </Link>
+                    {/* ACTIONS / REVIEW */}
+                    <div className="flex lg:flex-col gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#f7f7f7] min-w-[140px]">
+                       {booking.status === 'completed' ? (
+                         booking.review?.rating ? (
+                           <div className="bg-[#f7f7f7] p-4 rounded-2xl border border-[#eeeeee] space-y-2 w-full">
+                              <div className="flex gap-0.5">
+                                 {[...Array(5)].map((_, i) => (
+                                   <Star key={i} size={10} className={`${i < booking.review.rating ? 'text-amber-500 fill-current' : 'text-[#dddddd]'}`} />
+                                 ))}
+                              </div>
+                              <p className="text-[10px] font-medium text-[#222222] italic leading-tight line-clamp-3">"{booking.review.comment}"</p>
+                           </div>
+                         ) : (
+                           <div className="px-4 py-2 bg-gray-50 text-[#717171] text-[10px] font-bold rounded-lg uppercase tracking-widest text-center w-full">
+                              No Review Yet
+                           </div>
+                         )
+                       ) : (
+                         <Link 
+                          to={`/chat/${user.role === 'guide' ? booking.userId?._id : booking.guideId?._id}`} 
+                          className="flex-1 lg:w-full px-6 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-xs font-bold hover:bg-[#f7f7f7] transition-all text-center flex items-center justify-center gap-2"
+                         >
+                            <MessageSquare size={14} /> Message
+                         </Link>
+                       )}
+
                        {['searching', 'accepted', 'ongoing'].includes(booking.status) && (
                          <Link 
                           to="/book-guide" 
