@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { 
-  ShieldCheck, Check, X, Eye, User, 
-  Mail, Phone, Calendar, AlertCircle, ExternalLink, Award 
+  ShieldCheck, CheckCircle, XCircle, Eye, 
+  MapPin, User, FileText, Camera, RefreshCw,
+  Search, Filter, Clock, AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -10,9 +11,9 @@ import toast from 'react-hot-toast';
 const AdminKycPage = () => {
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedGuide, setSelectedGuide] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [showRejectInput, setShowRejectInput] = useState(null); // guideId
+  const [showRejectModal, setShowRejectModal] = useState(null);
 
   const fetchPending = async () => {
     setLoading(true);
@@ -20,7 +21,7 @@ const AdminKycPage = () => {
       const { data } = await api.get('/admin/kyc/pending');
       setGuides(data);
     } catch (error) {
-      toast.error('Failed to fetch pending verifications');
+      toast.error('Failed to fetch pending dossiers');
     } finally {
       setLoading(false);
     }
@@ -30,188 +31,230 @@ const AdminKycPage = () => {
     fetchPending();
   }, []);
 
-  const handleApprove = async (guideId) => {
+  const handleApprove = async (id) => {
+    if (!window.confirm('Approve this guide for platform operation?')) return;
     try {
-      await api.put(`/admin/kyc/${guideId}/approve`);
-      toast.success('KYC Approved');
-      setGuides(prev => prev.filter(g => g._id !== guideId));
+      await api.put(`/admin/kyc/${id}/approve`);
+      toast.success('Guide approved successfully');
+      fetchPending();
     } catch (error) {
       toast.error('Approval failed');
     }
   };
 
-  const handleReject = async (guideId) => {
+  const handleReject = async (id) => {
     if (!rejectionReason) return toast.error('Please provide a reason');
     try {
-      await api.put(`/admin/kyc/${guideId}/reject`, { reason: rejectionReason });
-      toast.success('KYC Rejected');
-      setGuides(prev => prev.filter(g => g._id !== guideId));
-      setShowRejectInput(null);
+      await api.put(`/admin/kyc/${id}/reject`, { reason: rejectionReason });
+      toast.success('Dossier rejected');
+      setShowRejectModal(null);
       setRejectionReason('');
+      fetchPending();
     } catch (error) {
       toast.error('Rejection failed');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+  if (loading) return (
+    <div className="flex items-center justify-center h-[60vh]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Verifying Dossiers...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[var(--bg-base)] p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
-          <div className="flex items-center gap-6">
-            <div className="p-5 bg-[var(--accent)] text-white rounded-3xl shadow-2xl shadow-[var(--accent)]/20">
-              <ShieldCheck size={32} />
-            </div>
-            <div>
-               <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-2">Internal Security</h1>
-               <h2 className="text-4xl font-black italic font-serif text-[var(--text-primary)]">KYC Verifications</h2>
-               <p className="text-[var(--text-secondary)] font-medium mt-1">{guides.length} dossiers pending review</p>
-            </div>
-          </div>
-          <button 
-             onClick={fetchPending}
-             className="px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl font-black text-[10px] uppercase tracking-[.3em] text-[var(--text-primary)] hover:border-[var(--accent)] transition-all shadow-xl"
-          >
-             Synchronize Data
-          </button>
-        </div>
+    <div className="space-y-12 pb-20 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+         <div className="space-y-3">
+            <h1 className="text-6xl font-black text-slate-950 dark:text-white tracking-tighter italic font-serif leading-[0.85] uppercase">KYC Verifications</h1>
+            <p className="text-slate-400 font-bold text-[11px] tracking-[0.4em] uppercase flex items-center">
+               <ShieldCheck className="w-4 h-4 mr-3 text-primary-500" /> Internal Security Dossier Review
+            </p>
+         </div>
+         <button 
+           onClick={fetchPending}
+           className="flex items-center gap-2 bg-white dark:bg-slate-900 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-soft text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+         >
+           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Synchronize Data
+         </button>
+      </div>
 
-        {guides.length === 0 ? (
-          <div className="text-center py-32 bg-[var(--bg-card)] rounded-[3rem] border-2 border-dashed border-[var(--border-color)]">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-[var(--text-muted)]">
-              <Check size={40} />
-            </div>
-            <h2 className="text-2xl font-black text-[var(--text-muted)] uppercase tracking-widest">Awaiting Applications</h2>
-            <p className="text-[var(--text-muted)] mt-2 font-medium">All guide dossiers have been processed.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {guides.map((guide) => (
-              <motion.div 
-                key={guide._id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden rounded-[3rem] shadow-2xl flex flex-col group hover:border-[var(--border-hover)] transition-all"
-              >
-                {/* Header */}
-                <div className="p-8 border-b border-[var(--border-color)] flex items-center justify-between bg-white/[0.02]">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-indigo-500 shadow-soft border border-slate-100 dark:border-slate-800 overflow-hidden font-black text-xl italic">
-                       {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : guide.userId?.name.charAt(0)}
+      <div className="grid grid-cols-1 gap-12">
+        <AnimatePresence mode="popLayout">
+          {guides.map((guide) => (
+            <motion.div 
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              key={guide._id} 
+              className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-premium group relative overflow-hidden"
+            >
+              {/* Background Accent */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-primary-500/10" />
+
+              <div className="flex flex-col lg:flex-row gap-12 relative z-10">
+                {/* 1. Guide Identity Block */}
+                <div className="lg:w-1/3 space-y-8">
+                  <div className="flex items-center gap-6">
+                    <div className="w-24 h-24 rounded-[2rem] bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-4xl font-black text-slate-200 dark:text-slate-700 overflow-hidden shadow-inner border-4 border-white dark:border-slate-800">
+                      {guide.userId?.profilePicture ? <img src={guide.userId.profilePicture} className="w-full h-full object-cover" /> : guide.userId?.name?.charAt(0)}
                     </div>
                     <div>
-                        <h3 className="text-lg font-black italic font-serif leading-none mb-1">{guide.userId?.name}</h3>
-                        <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                           <span className="flex items-center gap-1"><Mail size={12} /> {guide.userId?.email}</span>
-                           <span className="flex items-center gap-1"><Phone size={12} /> {guide.userId?.mobile}</span>
-                        </div>
+                      <h4 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic font-serif leading-none">{guide.userId?.name}</h4>
+                      <p className="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
+                        <CheckCircle size={12} /> Pending Verification
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Submitted</p>
-                    <p className="text-[10px] font-bold text-slate-500">{new Date(guide.kycData.submittedAt).toLocaleDateString()}</p>
+
+                  <div className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</span>
+                       <span className="text-[10px] font-bold text-slate-900 dark:text-white">{guide.userId?.email}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mobile</span>
+                       <span className="text-[10px] font-bold text-slate-900 dark:text-white">{guide.userId?.mobile}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Aadhaar No.</span>
+                       <span className="text-[10px] font-black font-mono tracking-widest text-primary-600">{guide.kycData?.aadhaarNumber}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button 
+                       onClick={() => handleApprove(guide._id)}
+                       className="flex-1 py-4 bg-primary-500 text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary-500/20 hover:bg-primary-600 transition-all active:scale-95"
+                    >
+                      Verify & Approve
+                    </button>
+                    <button 
+                       onClick={() => setShowRejectModal(guide._id)}
+                       className="px-6 py-4 bg-white dark:bg-slate-800 text-red-500 border border-red-100 dark:border-red-900/20 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-red-50 transition-all active:scale-95"
+                    >
+                      Reject
+                    </button>
                   </div>
                 </div>
 
-                {/* Document Previews */}
-                <div className="p-8 grid grid-cols-3 gap-6">
-                   <DocPreview label="Aadhaar Front" src={guide.kycData.aadhaarFront} onClick={() => setSelectedGuide({ img: guide.kycData.aadhaarFront, label: 'Aadhaar Front' })} />
-                   <DocPreview label="Aadhaar Back" src={guide.kycData.aadhaarBack} onClick={() => setSelectedGuide({ img: guide.kycData.aadhaarBack, label: 'Aadhaar Back' })} />
-                   <DocPreview label="Selfie ID" src={guide.kycData.selfie} onClick={() => setSelectedGuide({ img: guide.kycData.selfie, label: 'Selfie with Aadhaar' })} />
-                </div>
-
-                <div className="px-8 pb-8 space-y-4">
-                   <div className="flex items-center gap-4 p-5 bg-[var(--bg-base)] rounded-2xl border border-[var(--border-color)]">
-                      <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-[var(--accent)]">
-                        <Award size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest leading-none mb-1">Aadhaar Identity</p>
-                        <p className="text-sm font-black tracking-[.2em] text-[var(--text-primary)]">{guide.kycData.aadhaarNumber}</p>
-                      </div>
+                {/* 2. Document Evidence Block */}
+                <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-6">
+                      <FileText size={16} className="text-primary-500" />
+                      <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Verification Evidence</h3>
                    </div>
 
-                   {showRejectInput === guide._id ? (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="space-y-4 pt-2">
-                         <textarea 
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            className="input-field min-h-[80px] bg-red-50/10 border-red-100 text-sm py-4"
-                            placeholder="State reason for rejection (e.g. Blurry photo)"
-                         />
-                         <div className="flex gap-2">
-                           <button onClick={() => handleReject(guide._id)} className="flex-1 btn-primary bg-red-500 hover:bg-red-600 shadow-red-500/20 py-3 text-[10px] tracking-widest">CONFIRM REJECTION</button>
-                           <button onClick={() => setShowRejectInput(null)} className="px-6 py-3 bg-slate-100 dark:bg-slate-800 rounded-2xl font-black text-[10px] uppercase tracking-widest">CANCEL</button>
-                         </div>
-                      </motion.div>
-                   ) : (
-                      <div className="flex gap-4">
-                        <button 
-                            onClick={() => handleApprove(guide._id)}
-                            className="flex-1 bg-green-500 text-white rounded-2xl py-4 font-black text-[11px] uppercase tracking-widest shadow-lg shadow-green-500/20 hover:scale-[1.02] active:scale-100 transition-all flex items-center justify-center gap-2"
-                        >
-                           <Check size={18} /> Approve Verification
-                        </button>
-                        <button 
-                            onClick={() => setShowRejectInput(guide._id)}
-                            className="px-6 bg-red-50 text-red-500 rounded-2xl py-4 font-black text-[11px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
-                        >
-                           <X size={18} />
-                        </button>
-                      </div>
-                   )}
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {[
+                        { label: 'Aadhaar Front', key: 'aadhaarFront', icon: <FileText size={14} /> },
+                        { label: 'Aadhaar Back', key: 'aadhaarBack', icon: <FileText size={14} /> },
+                        { label: 'Live Selfie', key: 'selfie', icon: <Camera size={14} />, isSelfie: true }
+                      ].map((doc) => (
+                        <div key={doc.key} className="space-y-3">
+                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
+                             {doc.icon} {doc.label}
+                           </p>
+                           <div 
+                              onClick={() => setSelectedImage(guide.kycData?.[doc.key])}
+                              className={`aspect-[4/3] rounded-[2rem] bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer group/img relative border-4 border-white dark:border-slate-800 shadow-premium transition-all hover:scale-[1.02] ${doc.isSelfie ? 'ring-4 ring-primary-500/20' : ''}`}
+                           >
+                              {guide.kycData?.[doc.key] ? (
+                                <>
+                                  <img src={guide.kycData[doc.key]} className="w-full h-full object-cover transition-all group-hover/img:scale-110" alt={doc.label} />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                     <Eye className="text-white w-8 h-8" />
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                                   <AlertTriangle size={24} className="mb-2" />
+                                   <span className="text-[8px] font-black uppercase tracking-widest">No Image Found</span>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+                      ))}
+                   </div>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {guides.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-32 bg-white dark:bg-slate-900 rounded-[4rem] border-2 border-dashed border-slate-100 dark:border-slate-800">
+             <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle size={32} className="text-slate-200" />
+             </div>
+             <h3 className="text-2xl font-black text-slate-900 dark:text-white italic font-serif">All Clear!</h3>
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">All guide dossiers have been processed.</p>
           </div>
         )}
       </div>
 
-      {/* Image Modal Preview */}
+      {/* Image Modal */}
       <AnimatePresence>
-        {selectedGuide && (
+        {selectedImage && (
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8"
-            onClick={() => setSelectedGuide(null)}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] bg-slate-950/95 backdrop-blur-xl p-6 flex items-center justify-center"
+            onClick={() => setSelectedImage(null)}
           >
-             <div className="flex items-center justify-between w-full max-w-5xl mb-6">
-                <h4 className="text-xl font-black text-white italic font-serif">{selectedGuide.label}</h4>
-                <button className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white"><X /></button>
-             </div>
-             <img 
-                src={selectedGuide.img} 
-                className="max-w-full max-h-[80vh] object-contain rounded-3xl shadow-2xl border-4 border-white/10" 
-                alt="Verification detail"
-                onClick={(e) => e.stopPropagation()} 
-             />
+            <motion.div 
+               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+               className="max-w-5xl w-full max-h-full overflow-hidden rounded-[3rem] shadow-2xl relative"
+            >
+               <img src={selectedImage} className="w-full h-auto max-h-[85vh] object-contain" alt="Evidence Preview" />
+               <button className="absolute top-8 right-8 w-12 h-12 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-all">
+                  <XCircle size={24} />
+               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Rejection Modal */}
+      <AnimatePresence>
+        {showRejectModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] bg-slate-950/60 backdrop-blur-md p-6 flex items-center justify-center"
+          >
+            <motion.div 
+               initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+               className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[3rem] p-10 shadow-2xl border border-white dark:border-slate-800"
+            >
+               <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center text-red-500">
+                    <XCircle size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic font-serif leading-none">Reject Dossier</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Provide a critical reason for rejection</p>
+                  </div>
+               </div>
+
+               <textarea 
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-3xl p-6 text-sm font-medium focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none transition-all min-h-[120px] mb-8"
+                  placeholder="e.g. Identity document blurred, or Selfie does not match Aadhaar..."
+               />
+
+               <div className="flex gap-4">
+                  <button onClick={() => setShowRejectModal(null)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest">Cancel</button>
+                  <button onClick={() => handleReject(showRejectModal)} className="flex-[2] py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-red-500/20">Confirm Rejection</button>
+               </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 };
-
-const DocPreview = ({ label, src, onClick }) => (
-  <div className="space-y-2 group cursor-pointer" onClick={onClick}>
-     <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-        <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={label} />
-        <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/20 transition-all flex items-center justify-center">
-           <Eye className="text-white opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all" size={24} />
-        </div>
-     </div>
-     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">{label}</p>
-  </div>
-);
 
 export default AdminKycPage;

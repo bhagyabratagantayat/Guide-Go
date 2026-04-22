@@ -8,6 +8,7 @@ const {
   getAllUsers, 
   getAllGuides, 
   updateGuideStatus, 
+  deleteGuide,
   getAllBookings 
 } = require('../controllers/adminController');
 const { authenticateUser, authorizeRole } = require('../middleware/auth');
@@ -22,6 +23,7 @@ router.post('/users/admin', require('../controllers/adminController').createAdmi
 router.put('/users/:id/role', require('../controllers/adminController').updateUserRole);
 router.delete('/users/:id', require('../controllers/adminController').deleteUser);
 router.get('/guides', getAllGuides);
+router.delete('/guides/:id', deleteGuide);
 router.put('/guides/:id/moderate', require('../controllers/adminController').updateGuideModeration);
 router.get('/bookings', getAllBookings);
 

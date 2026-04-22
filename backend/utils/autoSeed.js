@@ -56,7 +56,7 @@ const ensureDemoAccounts = async () => {
           status: 'approved',
           isLive: true,
           languages: ['English', 'Hindi', 'Odia'],
-          location: { type: 'Point', coordinates: [86.0945, 19.8876] },
+          location: 'Konark, Odisha',
           packages: [
             { title: 'Heritage Walk', description: 'Explore the Sun Temple and local crafts.', price: 1500, duration: '4 Hours' },
             { title: 'Full Day Odyssey', description: 'Comprehensive tour including lunch.', price: 3000, duration: '8 Hours' }

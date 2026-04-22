@@ -54,14 +54,22 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
   res.json({ success: true, data: users });
 });
 
-// @desc    Get all guides (for approval)
-// @route   GET /api/admin/guides
-// @access  Private/Admin
 const getAllGuides = asyncHandler(async (req, res, next) => {
   const guides = await Guide.find()
-    .populate('userId', 'name email phone profilePicture')
+    .populate('userId', 'name email mobile profilePicture')
     .sort({ createdAt: -1 });
   res.json({ success: true, data: guides });
+});
+
+// @desc    Delete guide
+// @route   DELETE /api/admin/guides/:id
+// @access  Private/Admin
+const deleteGuide = asyncHandler(async (req, res, next) => {
+  const guide = await Guide.findById(req.params.id);
+  if (!guide) return next(new ErrorResponse('Guide not found', 404));
+  
+  await guide.deleteOne();
+  res.json({ success: true, message: 'Guide profile removed successfully' });
 });
 
 // @desc    Approve or reject a guide
@@ -205,6 +213,7 @@ module.exports = {
   getAllGuides,
   updateGuideStatus,
   updateGuideModeration,
+  deleteGuide,
   getAllBookings,
   createAdmin
 };
