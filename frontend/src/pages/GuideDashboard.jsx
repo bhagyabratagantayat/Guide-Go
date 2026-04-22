@@ -1,35 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import useGuideTracking from '../hooks/useGuideTracking';
-import { useTheme } from '../context/ThemeContext.jsx';
-import { getSocket } from '../utils/socket';
 import { 
   Wifi, WifiOff, MapPin, Calendar, CheckCircle, 
   XCircle, DollarSign, User, Clock, Star, 
   ArrowUpRight, ChevronRight, Activity, Shield,
-  Navigation, Phone, MessageSquare, Timer, Zap
+  Navigation, Phone, MessageSquare, Timer, Zap,
+  Settings, Languages, Bell, ChevronLeft, Send,
+  AlertCircle
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useBooking } from '../context/BookingContext';
+import api from '../utils/api';
+import useGuideTracking from '../hooks/useGuideTracking';
+import { getSocket } from '../utils/socket';
 
 const GuideDashboard = () => {
   const { user } = useAuth();
   const { startTracking } = useGuideTracking(user);
-  const { darkMode } = useTheme();
+  const { 
+    tripStatus, setTripStatus, activeBooking, setActiveBooking, 
+    matchedGuide, setMatchedGuide, tripTimer, resetBooking 
+  } = useBooking();
+
+  // Local UI State
   const [isLive, setIsLive] = useState(false);
-  const [bookings, setBookings] = useState([]);
   const [guideStatus, setGuideStatus] = useState('pending');
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ totalEarnings: 0, pendingBookings: 0, rating: 5.0 });
-  const [packages, setPackages] = useState([]);
-  const [activeTab, setActiveTab] = useState('bookings');
-
-  // Real-time Booking States
+  const [stats, setStats] = useState({ totalEarnings: 0, rating: 5.0 });
+  const [allBookings, setAllBookings] = useState([]);
+  
+  // New Booking Request State
   const [incomingBooking, setIncomingBooking] = useState(null);
-  const [activeBooking, setActiveBooking] = useState(null);
+  const [countdown, setCountdown] = useState(30);
+  
+  // OTP and Session
   const [otpInput, setOtpInput] = useState('');
-  const [tripTimer, setTripTimer] = useState(0);
-  const [countdown, setCountdown] = useState(5);
+  const [showLiveSetup, setShowLiveSetup] = useState(false);
+  const [setupData, setSetupData] = useState({
+    areas: [],
+    languages: []
+  });
 
   useEffect(() => {
     fetchDashboardData();
@@ -39,58 +49,26 @@ const GuideDashboard = () => {
     }
   }, []);
 
-  // Sync socket listeners with isLive state
+  // Socket Listeners
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleNewBooking = (data) => {
-      if (isLive) {
+    socket.on('new_booking_broadcast', (data) => {
+      if (isLive && !activeBooking) {
         setIncomingBooking(data.booking);
-        setCountdown(5);
+        setCountdown(30);
       }
-    };
+    });
 
-    const handleTripStarted = () => {
-      setIncomingBooking(null);
-      fetchDashboardData();
-    };
+    return () => socket.off('new_booking_broadcast');
+  }, [isLive, activeBooking]);
 
-    socket.on('new_booking_broadcast', handleNewBooking);
-    socket.on('trip_started', handleTripStarted);
-
-    return () => {
-      socket.off('new_booking_broadcast', handleNewBooking);
-      socket.off('trip_started', handleTripStarted);
-    };
-  }, [isLive]);
-
-  useEffect(() => {
-    if (isLive && guideStatus === 'approved') {
-      const stopTracking = startTracking();
-      return () => stopTracking && stopTracking();
-    } else {
-      setIsLive(false);
-    }
-  }, [isLive, guideStatus]);
-
-  useEffect(() => {
-    let interval;
-    if (activeBooking?.status === 'ongoing') {
-      interval = setInterval(() => {
-        setTripTimer(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [activeBooking]);
-
-  // Countdown for incoming booking
+  // Request Timer
   useEffect(() => {
     let timer;
     if (incomingBooking && countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
+      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
     } else if (countdown === 0) {
       setIncomingBooking(null);
     }
@@ -99,44 +77,38 @@ const GuideDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [{ data: bookingData }, { data: guideData }] = await Promise.all([
+      const [{ data: bData }, { data: gData }] = await Promise.all([
         api.get('/bookings/guide'),
         api.get('/guides/profile')
       ]);
-      setBookings(bookingData);
-      setIsLive(guideData.isLive);
-      setGuideStatus(guideData.status);
-      
-      // Check for active (accepted or ongoing) booking
-      const current = bookingData.find(b => ['accepted', 'ongoing'].includes(b.status));
-      setActiveBooking(current || null);
-
-      const earnings = bookingData
-        .filter(b => b.status === 'completed')
-        .reduce((sum, b) => sum + (b.price || 500), 0);
-      const pending = bookingData.filter(b => b.status === 'searching').length;
-      
-      setStats({ 
-        totalEarnings: earnings || 0, 
-        pendingBookings: pending,
-        rating: guideData.rating || 5.0 
+      setAllBookings(bData);
+      setIsLive(gData.isLive);
+      setGuideStatus(gData.status);
+      setStats({
+        totalEarnings: bData.filter(b => b.status === 'completed').reduce((sum, b) => sum + b.price, 0),
+        rating: gData.rating || 5.0
       });
-      setPackages(guideData.packages || []);
-    } catch (error) {
-      console.error('Error fetching guide data:', error);
+      setSetupData({
+        areas: gData.serviceAreas || [],
+        languages: gData.languages || []
+      });
+    } catch (err) {
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAcceptBooking = async () => {
+  const handleAccept = async () => {
     if (!incomingBooking) return;
     try {
-      const res = await api.put(`/bookings/accept/${incomingBooking._id}`);
+      const { data } = await api.put(`/bookings/accept/${incomingBooking._id}`);
       setIncomingBooking(null);
-      fetchDashboardData();
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to accept booking');
+      setActiveBooking(data.booking);
+      setTripStatus('MATCHED');
+      setMatchedGuide(data.booking.userId);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to accept');
       setIncomingBooking(null);
     }
   };
@@ -146,163 +118,214 @@ const GuideDashboard = () => {
     try {
       await api.post(`/bookings/verify-otp/${activeBooking._id}`, { otpEntered: otpInput });
       setOtpInput('');
+      setTripStatus('ONGOING');
       fetchDashboardData();
-    } catch (error) {
-      alert('Incorrect OTP code');
+    } catch (err) {
+      alert('Invalid OTP code');
     }
   };
 
   const handleEndTrip = async () => {
-    if (!activeBooking) return;
+    if (!activeBooking || !window.confirm('End trip now?')) return;
     try {
       await api.post(`/bookings/end/${activeBooking._id}`);
+      setTripStatus('COMPLETED');
+      resetBooking();
       fetchDashboardData();
-    } catch (error) {
+    } catch (err) {
       alert('Failed to end trip');
     }
   };
 
-  const toggleLive = async () => {
-    if (guideStatus !== 'approved') {
-      alert('Verification pending by admin.');
-      return;
-    }
+  const toggleOnline = async () => {
+    if (guideStatus !== 'approved') return alert('Verification pending');
+    if (!isLive) return setShowLiveSetup(true);
+    
     try {
-      const { data } = await api.put('/guides/live', { isLive: !isLive });
-      setIsLive(data.isLive);
-    } catch (error) {
-      alert('Update failed');
-    }
+      const { data } = await api.put('/guides/live', { isLive: false });
+      setIsLive(false);
+    } catch (err) { alert('Failed to go offline'); }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  const saveLiveSetup = async () => {
+    try {
+      await api.put('/guides/profile', { 
+        serviceAreas: setupData.areas, 
+        languages: setupData.languages,
+        isLive: true 
+      });
+      setIsLive(true);
+      setShowLiveSetup(false);
+    } catch (err) { alert('Failed to go live'); }
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#f7f7f7]"><Zap className="text-[#ff385c] animate-bounce" size={40}/></div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-20 dark:bg-slate-950 min-h-screen">
+    <div className="min-h-screen bg-[#f7f7f7] pb-24">
       
-      {/* 1. BROADCAST MODAL */}
+      {/* 1. GO LIVE SETUP MODAL */}
       <AnimatePresence>
-        {incomingBooking && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm"
-          >
-            <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[3rem] p-10 text-center space-y-8 shadow-2xl border border-primary-500/20">
-               <div className="w-24 h-24 bg-primary-500/10 text-primary-500 rounded-[2rem] flex items-center justify-center mx-auto animate-bounce"><Zap size={48} className="fill-current"/></div>
-                <div>
-                   <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter italic">New Quest!</h3>
-                   <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">{incomingBooking.location} • {incomingBooking.plan}</p>
-                   <div className="mt-4 bg-primary-100 dark:bg-primary-500/10 text-primary-600 px-4 py-2 rounded-full inline-block">
-                      <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                         <Timer size={14}/> Expiring in {countdown}s
-                      </p>
-                   </div>
-                </div>
-               <div className="flex flex-col gap-3">
-                  <button onClick={handleAcceptBooking} className="w-full py-5 bg-primary-500 text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20">Accept Request</button>
-                  <button onClick={() => setIncomingBooking(null)} className="w-full py-4 text-slate-400 font-black uppercase text-[10px] tracking-widest">Decline</button>
+        {showLiveSetup && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-md flex items-end lg:items-center justify-center">
+            <div className="bg-white w-full max-w-md rounded-t-[3rem] lg:rounded-[3rem] p-10 space-y-8 shadow-2xl">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-black text-[#222222] tracking-tighter italic">Go Live Settings</h3>
+                  <button onClick={() => setShowLiveSetup(false)} className="p-2 bg-[#f7f7f7] rounded-full"><XCircle size={20}/></button>
                </div>
+               <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#717171]">Current Language</label>
+                    <div className="flex gap-2">
+                       {['Hindi', 'English', 'Odia'].map(l => (
+                         <button key={l} onClick={() => setSetupData({...setupData, languages: [l]})} className={`px-4 py-2 rounded-xl font-bold text-xs ${setupData.languages.includes(l) ? 'bg-[#222222] text-white' : 'bg-[#f7f7f7] text-[#717171]'}`}>{l}</button>
+                       ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#717171]">Primary Service Area</label>
+                    <input type="text" placeholder="e.g. Puri, Konark" value={setupData.areas[0] || ''} onChange={(e) => setSetupData({...setupData, areas: [e.target.value]})} className="w-full p-4 bg-[#f7f7f7] border-none rounded-2xl font-bold text-sm" />
+                  </div>
+               </div>
+               <button onClick={saveLiveSetup} className="w-full py-5 bg-[#ff385c] text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-rose-500/20">Confirm & Go Online</button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 2. ACTIVE SESSION HEADER (If accepted or ongoing) */}
+      {/* 2. INCOMING REQUEST POPUP */}
       <AnimatePresence>
-        {activeBooking && (
-          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-primary-500 rounded-[3rem] p-8 lg:p-12 shadow-2xl shadow-primary-500/20 flex flex-col lg:flex-row items-center justify-between gap-10 mb-12">
-             <div className="flex flex-col sm:flex-row items-center gap-8 text-slate-900 text-center sm:text-left">
-                <div className="w-24 h-24 bg-white/20 p-2 rounded-[2.5rem]"><img src={activeBooking.userId?.profilePicture || 'https://i.pravatar.cc/150'} className="w-full h-full object-cover rounded-[2rem]" alt=""/></div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">{activeBooking.status === 'accepted' ? 'Action Required' : 'Trip in Progress'}</p>
-                   <h2 className="text-4xl font-black tracking-tighter italic">{activeBooking.userId?.name}</h2>
-                   <p className="text-xs font-bold uppercase tracking-widest">{activeBooking.location} • {activeBooking.plan}</p>
+        {incomingBooking && (
+          <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed inset-x-6 bottom-32 z-[100] max-w-md mx-auto">
+             <div className="bg-[#1e293b] text-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.4)] border border-white/5">
+                <div className="flex items-center gap-6 mb-8">
+                   <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center animate-pulse"><Zap size={32} className="text-[#ff385c] fill-current"/></div>
+                   <div>
+                      <h4 className="text-2xl font-black tracking-tighter italic">New Request!</h4>
+                      <p className="text-xs font-bold text-[#717171] uppercase tracking-widest mt-1">Traveler: {incomingBooking.userId?.name || 'Explorer'}</p>
+                   </div>
                 </div>
-             </div>
-
-             <div className="flex shadow-2xl items-center gap-4 bg-white/10 p-4 rounded-[2.5rem] backdrop-blur-md">
-                {activeBooking.status === 'accepted' ? (
-                  <div className="flex items-center gap-3">
-                     <input 
-                       type="text" maxLength={4} placeholder="Enter OTP" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
-                       className="w-32 bg-white/20 border-none rounded-2xl py-3 px-5 text-center font-black text-slate-900 placeholder:text-slate-900/40"
-                     />
-                     <button onClick={handleVerifyOtp} className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest">Verify & Start</button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-8 px-6 py-2">
-                     <div className="text-center">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 opacity-60">Session</p>
-                        <p className="text-2xl font-black text-slate-900 font-mono tracking-tighter">{Math.floor(tripTimer / 60)}:{(tripTimer % 60).toString().padStart(2, '0')}</p>
-                     </div>
-                     <div className="h-10 w-px bg-slate-900/10" />
-                     <button onClick={handleEndTrip} className="bg-red-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-red-500/20">End Trip</button>
-                  </div>
-                )}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                   <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Plan</p>
+                      <p className="font-bold">{incomingBooking.plan}</p>
+                   </div>
+                   <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Price</p>
+                      <p className="font-black text-emerald-400">₹{incomingBooking.price}</p>
+                   </div>
+                </div>
+                <div className="flex gap-3">
+                   <button onClick={handleAccept} className="flex-1 py-4 bg-[#ff385c] text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-xl">Accept ({countdown}s)</button>
+                   <button onClick={() => setIncomingBooking(null)} className="px-6 py-4 bg-white/5 text-white rounded-xl font-bold text-xs uppercase">Reject</button>
+                </div>
              </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Dashboard UI */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800">
-        <div className="space-y-2">
-           <h1 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter italic">Welcome, {user?.name.split(' ')[0]}</h1>
-           <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Expert Status: {guideStatus}</p>
-        </div>
-        <button 
-          onClick={toggleLive}
-          className={`px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest flex items-center gap-4 transition-all ${isLive ? 'bg-green-500 text-white shadow-2xl' : 'bg-slate-900 dark:bg-primary-600 text-white'}`}
-        >
-          {isLive ? <Wifi className="animate-pulse"/> : <WifiOff/>}
-          {isLive ? 'Online & Searching' : 'Go Online'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <StatCard label="Total Earned" value={`₹${stats.totalEarnings}`} icon={<DollarSign />} color="primary" trend="Lifetime" />
-        <StatCard label="Rating" value={stats.rating.toFixed(1)} icon={<Star />} color="primary" trend="Verified" />
-        <StatCard label="Active Tab" value={activeTab.toUpperCase()} icon={<Activity />} color="secondary" trend="Dashboard" />
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 p-10">
-         <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic mb-8">Recent Activity</h3>
-         <div className="space-y-6">
-            {bookings.filter(b => b.status === 'completed').slice(0, 5).map(b => (
-                <div key={b._id} className="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 space-y-4">
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-5">
-                         <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center"><User className="text-slate-400"/></div>
-                         <div><p className="font-black text-slate-900 dark:text-white">{b.userId?.name}</p><p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{b.location}</p></div>
-                      </div>
-                      <p className="text-xl font-black text-emerald-500">+₹{b.price}</p>
+      {/* 3. ACTIVE SESSION OVERLAY (Sticky Top) */}
+      <AnimatePresence>
+        {activeBooking && (
+          <motion.div initial={{ y: -100 }} animate={{ y: 0 }} className="sticky top-0 z-[150] bg-[#1e293b] p-6 lg:p-10 shadow-2xl border-b border-white/5">
+             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
+                <div className="flex items-center gap-6">
+                   <img src={activeBooking.userId?.profilePicture || 'https://i.pravatar.cc/150'} className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl object-cover" alt=""/>
+                   <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-1">{activeBooking.status === 'ongoing' ? 'Session Live' : 'Waiting for OTP'}</p>
+                      <h4 className="text-2xl font-black text-white tracking-tighter italic">{activeBooking.userId?.name}</h4>
+                      <p className="text-xs font-bold text-[#717171] uppercase tracking-widest">{activeBooking.location} • {activeBooking.plan}</p>
                    </div>
-                   {b.review?.rating && (
-                     <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-2 mb-2">
-                           {[...Array(5)].map((_, i) => (
-                             <Star key={i} size={12} className={`${i < b.review.rating ? 'text-amber-500 fill-current' : 'text-slate-600'}`} />
-                           ))}
-                           <span className="text-[10px] font-black text-slate-400 uppercase ml-2">Traveler Review</span>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                   {activeBooking.status === 'accepted' ? (
+                     <div className="flex items-center gap-2 bg-white/5 p-2 rounded-2xl border border-white/10">
+                        <input type="text" maxLength={4} value={otpInput} onChange={(e) => setOtpInput(e.target.value)} placeholder="User OTP" className="w-24 bg-transparent border-none text-white font-black text-center focus:ring-0 placeholder:opacity-20" />
+                        <button onClick={handleVerifyOtp} className="px-6 py-3 bg-[#ff385c] text-white rounded-xl font-black text-[10px] uppercase tracking-widest">Verify</button>
+                     </div>
+                   ) : (
+                     <div className="flex items-center gap-8 px-6 py-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                        <div className="text-center">
+                           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Timer</p>
+                           <p className="text-2xl font-black text-white font-mono tracking-tighter italic">{Math.floor(tripTimer / 60)}:{(tripTimer % 60).toString().padStart(2, '0')}</p>
                         </div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 font-medium italic">"{b.review.comment}"</p>
+                        <button onClick={handleEndTrip} className="px-8 py-3 bg-rose-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl">End Trip</button>
                      </div>
                    )}
+                   <a href={`tel:${activeBooking.userId?.phone}`} className="p-4 bg-white/10 text-white rounded-2xl hover:bg-white/20 transition-all shadow-xl"><Phone size={20}/></a>
                 </div>
-            ))}
-            {bookings.length === 0 && <p className="text-center text-slate-400 py-10 font-bold italic">No completed trips yet</p>}
-         </div>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-12">
+        {/* DASHBOARD HEADER */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 bg-white p-10 rounded-[3rem] border border-[#dddddd] shadow-soft">
+          <div className="space-y-2">
+             <h1 className="text-4xl font-black text-[#222222] tracking-tighter italic">Ahoy, {user?.name.split(' ')[0]}!</h1>
+             <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-[#717171]'}`}/>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#717171]">Status: {isLive ? 'Broadcasting Presence' : 'Disconnected'}</p>
+             </div>
+          </div>
+          <button 
+            onClick={toggleOnline}
+            className={`px-10 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest flex items-center gap-4 transition-all shadow-2xl ${isLive ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-[#222222] text-white shadow-black/20'}`}
+          >
+            {isLive ? <Wifi size={20} className="animate-pulse"/> : <WifiOff size={20}/>}
+            {isLive ? 'Go Offline' : 'Go Online'}
+          </button>
+        </div>
+
+        {/* STATS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+           <StatCard label="Trip Earnings" value={`₹${stats.totalEarnings}`} icon={<DollarSign/>} trend="Life" />
+           <StatCard label="Avg Rating" value={stats.rating.toFixed(1)} icon={<Star/>} trend="Expert" />
+           <StatCard label="Total Trips" value={allBookings.length} icon={<Clock/>} trend="History" />
+        </div>
+
+        {/* RECENT HISTORY */}
+        <div className="bg-white rounded-[3.5rem] border border-[#dddddd] p-10 shadow-soft overflow-hidden">
+           <div className="flex items-center justify-between mb-10">
+              <h3 className="text-2xl font-black text-[#222222] tracking-tighter italic italic">Recent Activity</h3>
+              <Activity className="text-[#dddddd]" size={24}/>
+           </div>
+           <div className="space-y-6">
+              {allBookings.filter(b => b.status === 'completed').slice(0, 5).map(b => (
+                <div key={b._id} className="p-6 bg-[#f7f7f7] rounded-3xl border border-[#dddddd] flex items-center justify-between group hover:border-[#222222] transition-colors">
+                   <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-[#dddddd]"><User className="text-[#717171]"/></div>
+                      <div>
+                         <p className="font-black text-[#222222] text-lg">{b.userId?.name}</p>
+                         <p className="text-[10px] text-[#717171] font-bold uppercase tracking-widest">{new Date(b.createdAt).toLocaleDateString()}</p>
+                      </div>
+                   </div>
+                   <div className="text-right">
+                      <p className="text-xl font-black text-emerald-600">+₹{b.price}</p>
+                      <div className="flex gap-0.5 mt-1">
+                         {[...Array(5)].map((_, i) => <Star key={i} size={8} className={`${i < (b.review?.rating || 0) ? 'text-amber-400 fill-current' : 'text-[#dddddd]'}`}/>)}
+                      </div>
+                   </div>
+                </div>
+              ))}
+              {allBookings.length === 0 && <p className="text-center text-[#717171] py-10 font-bold italic">No completed trips yet</p>}
+           </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ label, value, icon, color, trend }) => (
-  <div className="bg-white dark:bg-slate-900 p-10 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-soft">
-    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${color === 'primary' ? 'bg-primary-100 text-primary-600' : 'bg-secondary-100 text-secondary-600'}`}>{icon}</div>
-    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-    <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{value}</h3>
-    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">↑ {trend}</p>
+const StatCard = ({ label, value, icon, trend }) => (
+  <div className="bg-white p-10 rounded-[3rem] border border-[#dddddd] shadow-soft group hover:border-[#222222] transition-all">
+    <div className="w-16 h-16 bg-[#f7f7f7] rounded-3xl flex items-center justify-center mb-8 shadow-inner group-hover:bg-[#222222] group-hover:text-white transition-all">{icon}</div>
+    <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest mb-2">{label}</p>
+    <h3 className="text-5xl font-black text-[#222222] tracking-tighter italic">{value}</h3>
+    <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-[#f7f7f7] rounded-full text-[9px] font-black uppercase tracking-widest text-[#717171]">
+       <Zap size={10}/> {trend}
+    </div>
   </div>
 );
 
