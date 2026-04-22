@@ -57,7 +57,12 @@ const Login = () => {
       else if (role === 'guide') navigate('/guide');
       else navigate('/');
     } catch (error) {
-      alert('Demo login failed. Please try again.');
+      console.error('Demo Login Error:', error);
+      if (!error.response) {
+        alert('Server is waking up (Render Free Tier). Please wait 30 seconds and try again!');
+      } else {
+        alert('Demo login failed: ' + (error.response.data?.message || 'Please try again.'));
+      }
     }
   };
 

@@ -25,6 +25,7 @@ app.use(cors({
       'http://localhost:3000',
       'http://127.0.0.1:5173',
       'https://guide-go.vercel.app',
+      'https://guidego.vercel.app',
     ].filter(Boolean);
     // Allow requests with no origin (curl, Postman)
     if (!origin || allowed.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
