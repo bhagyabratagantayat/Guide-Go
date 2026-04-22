@@ -1,117 +1,168 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { getSocket } from '../utils/socket';
-import { useAuth } from './AuthContext';
 
 const BookingContext = createContext();
 
+export const TRIP_STATUS = {
+  IDLE: 'IDLE',
+  SEARCHING: 'SEARCHING',
+  MATCHED: 'MATCHED',
+  ONGOING: 'ONGOING',
+  COMPLETED: 'COMPLETED'
+};
+
 export const BookingProvider = ({ children }) => {
-  const { user } = useAuth();
-  const [tripStatus, setTripStatus] = useState('IDLE'); // IDLE, SEARCHING, MATCHED, ONGOING, COMPLETED
-  const [activeBooking, setActiveBooking] = useState(null);
+  const [tripStatus, setTripStatus] = useState(TRIP_STATUS.IDLE);
+  const [bookingData, setBookingData] = useState(null);
   const [matchedGuide, setMatchedGuide] = useState(null);
+  const [otp, setOtp] = useState('');
   const [tripTimer, setTripTimer] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [isRestoring, setIsRestoring] = useState(true);
+  
+  const timerRef = useRef(null);
+  const socketRef = useRef(null);
 
-  // Restore session on mount
+  // --- Socket Initialization ---
   useEffect(() => {
-    const restoreSession = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+    const userString = localStorage.getItem('gg_user');
+    const user = userString ? JSON.parse(userString) : null;
+    
+    if (user && !socketRef.current) {
+      const socket = getSocket(); // This now uses our optimized socket.js
+      socketRef.current = socket;
 
-      try {
-        const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
-        const { data: bookings } = await api.get(endpoint);
-        
-        // Find latest active booking
-        const active = bookings.find(b => ['searching', 'accepted', 'ongoing'].includes(b.status));
-        
-        if (active) {
-          setActiveBooking(active);
-          if (active.status === 'searching') setTripStatus('SEARCHING');
-          if (active.status === 'accepted') {
-            setTripStatus('MATCHED');
-            setMatchedGuide(user.role === 'guide' ? active.userId : active.guideId);
-          }
-          if (active.status === 'ongoing') {
-            setTripStatus('ONGOING');
-            setMatchedGuide(user.role === 'guide' ? active.userId : active.guideId);
-            
-            // Calculate elapsed time
-            const startTime = new Date(active.startedAt).getTime();
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            setTripTimer(elapsed > 0 ? elapsed : 0);
-          }
-        }
-      } catch (err) {
-        console.error('Session restoration failed:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      socket.on('booking_accepted', (data) => {
+        setMatchedGuide(data.guide);
+        setOtp(data.otp);
+        setTripStatus(TRIP_STATUS.MATCHED);
+      });
 
-    restoreSession();
-  }, [user]);
+      socket.on('trip_started', (data) => {
+        setTripStatus(TRIP_STATUS.ONGOING);
+        startTimer(data.startedAt || new Date());
+      });
 
-  // Socket listeners for real-time sync
-  useEffect(() => {
-    const socket = getSocket();
-    if (!socket || !user) return;
+      socket.on('trip_ended', () => {
+        setTripStatus(TRIP_STATUS.COMPLETED);
+        stopTimer();
+      });
 
-    socket.on('booking_accepted', (data) => {
-      setMatchedGuide(data.guide);
-      setTripStatus('MATCHED');
-      setActiveBooking(prev => ({ ...prev, _id: data.bookingId, status: 'accepted', otp: data.otp }));
-    });
-
-    socket.on('trip_started', (data) => {
-      setTripStatus('ONGOING');
-      setTripTimer(0);
-    });
-
-    socket.on('trip_ended', () => {
-      setTripStatus('COMPLETED');
-    });
-
-    socket.on('booking_cancelled', () => {
-      resetBooking();
-    });
+      socket.on('booking_cancelled', () => {
+        resetBooking();
+      });
+    }
 
     return () => {
-      socket.off('booking_accepted');
-      socket.off('trip_started');
-      socket.off('trip_ended');
-      socket.off('booking_cancelled');
+      if (socketRef.current) {
+        socketRef.current.off('booking_accepted');
+        socketRef.current.off('trip_started');
+        socketRef.current.off('trip_ended');
+        socketRef.current.off('booking_cancelled');
+      }
     };
-  }, [user]);
+  }, []);
 
-  // Timer logic for ongoing trips
+  // Sync with Backend on Mount (Session Recovery)
   useEffect(() => {
-    let interval;
-    if (tripStatus === 'ONGOING') {
-      interval = setInterval(() => {
-        setTripTimer(prev => prev + 1);
-      }, 1000);
+    const restoreSession = async () => {
+      try {
+        const { data: bookings } = await api.get('/bookings/user');
+        if (bookings.length > 0) {
+          const latest = bookings[0];
+          // Only restore if trip is recent (within 12 hours)
+          const isRecent = (new Date() - new Date(latest.createdAt)) < 12 * 60 * 60 * 1000;
+          
+          if (isRecent) {
+            setBookingData(latest);
+            if (latest.status === 'searching') setTripStatus(TRIP_STATUS.SEARCHING);
+            else if (latest.status === 'accepted') {
+              setTripStatus(TRIP_STATUS.MATCHED);
+              setMatchedGuide(latest.guideId);
+              setOtp(latest.otp);
+            } else if (latest.status === 'ongoing') {
+              setTripStatus(TRIP_STATUS.ONGOING);
+              setMatchedGuide(latest.guideId);
+              startTimer(latest.startedAt);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Session restoration failed:', error);
+      } finally {
+        setIsRestoring(false);
+      }
+    };
+    restoreSession();
+
+    // Background sync every 5 seconds to catch missed socket events
+    const syncInterval = setInterval(restoreSession, 5000);
+    return () => clearInterval(syncInterval);
+  }, []);
+
+  const startTimer = (startTime) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    const calculateElapsed = () => {
+      const start = new Date(startTime).getTime();
+      const now = new Date().getTime();
+      const elapsed = Math.floor((now - start) / 1000);
+      setTripTimer(elapsed > 0 ? elapsed : 0);
+    };
+
+    calculateElapsed();
+    timerRef.current = setInterval(calculateElapsed, 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  const startSearching = async (params) => {
+    try {
+      setTripStatus(TRIP_STATUS.SEARCHING);
+      const { data } = await api.post('/bookings', params);
+      setBookingData(data);
+      return data;
+    } catch (error) {
+      setTripStatus(TRIP_STATUS.IDLE);
+      throw error;
     }
-    return () => clearInterval(interval);
-  }, [tripStatus]);
+  };
+
+  const cancelBooking = async () => {
+    if (!bookingData?._id) return;
+    try {
+      await api.put(`/bookings/${bookingData._id}/status`, { status: 'cancelled' });
+      resetBooking();
+    } catch (error) {
+      console.error('Cancellation failed:', error);
+    }
+  };
 
   const resetBooking = () => {
-    setTripStatus('IDLE');
-    setActiveBooking(null);
+    setTripStatus(TRIP_STATUS.IDLE);
+    setBookingData(null);
     setMatchedGuide(null);
+    setOtp('');
     setTripTimer(0);
+    stopTimer();
   };
+
 
   return (
     <BookingContext.Provider value={{
-      tripStatus, setTripStatus,
-      activeBooking, setActiveBooking,
-      matchedGuide, setMatchedGuide,
-      tripTimer, resetBooking,
-      loading
+      tripStatus,
+      setTripStatus,
+      bookingData,
+      setBookingData,
+      matchedGuide,
+      otp,
+      tripTimer,
+      isRestoring,
+      startSearching,
+      cancelBooking,
+      resetBooking
     }}>
       {children}
     </BookingContext.Provider>

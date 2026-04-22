@@ -1,25 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
   MapPin, Clock, CheckCircle, Search, Phone, 
   MessageSquare, ShieldCheck, Star, Timer, 
   CreditCard, X, ArrowRight, Zap, AlertCircle,
   Navigation, Calendar, ChevronLeft, MoreVertical,
-  ThumbsUp, DollarSign, Wallet, ArrowUpRight,
-  MessageCircle, Send
+  ThumbsUp, DollarSign, Wallet, ArrowUpRight
 } from 'lucide-react';
 import api from '../utils/api';
-import { useBooking } from '../context/BookingContext';
-import { useAuth } from '../context/AuthContext';
+import { getSocket } from '../utils/socket';
+import { useBooking, TRIP_STATUS } from '../context/BookingContext';
 
-const ScreenWrapper = ({ children, title, showBack, onBack, hideHeader }) => (
-  <div className="max-w-md lg:mx-auto w-full min-h-screen flex flex-col bg-white overflow-hidden relative shadow-2xl lg:border-x border-[#dddddd]">
+const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setScreen }) => (
+  <div 
+    className="max-w-md lg:mx-auto w-full min-h-[calc(100vh-64px)] lg:min-h-screen flex flex-col bg-white overflow-hidden relative shadow-2xl lg:border-x border-[#dddddd]"
+  >
     {!hideHeader && (
       <div className="flex items-center justify-between p-6 bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-[#f7f7f7]">
         <div className="flex items-center gap-4">
-          {showBack && <button onClick={onBack} className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#222222]"><ChevronLeft size={20}/></button>}
+          {showBack && <button onClick={() => setScreen(prevScreen)} className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#222222]"><ChevronLeft size={20}/></button>}
           <h2 className="text-base font-bold text-[#222222] tracking-tight">{title || 'Book Guide'}</h2>
         </div>
         <button className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#717171]"><MoreVertical size={20}/></button>
@@ -30,440 +31,399 @@ const ScreenWrapper = ({ children, title, showBack, onBack, hideHeader }) => (
 );
 
 const BookGuidePage = () => {
-  const { user } = useAuth();
   const { 
-    tripStatus, setTripStatus, activeBooking, setActiveBooking, 
-    matchedGuide, setMatchedGuide, tripTimer, resetBooking 
+    tripStatus, setTripStatus, bookingData, matchedGuide, otp, 
+    tripTimer, isRestoring, startSearching, cancelBooking, resetBooking 
   } = useBooking();
-  const navigate = useNavigate();
-  const routeLocation = useLocation();
 
-  // Local UI State
-  const [localScreen, setLocalScreen] = useState('select-location'); 
+  const [screen, setScreen] = useState('select-location'); 
   const [formData, setFormData] = useState({
-    location: '',
+    location: 'Puri, Odisha',
     plan: '2 Hours',
     language: 'Hindi',
     price: 499
   });
-  
-  const [locations, setLocations] = useState([]);
+
+  const [places, setPlaces] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [userRating, setUserRating] = useState(5);
   const [userComment, setUserComment] = useState('');
+  const [loadingPlaces, setLoadingPlaces] = useState(true);
+  const timeoutRef = useRef(null);
 
-  // Sync with Global tripStatus
-  useEffect(() => {
-    if (tripStatus === 'SEARCHING') setLocalScreen('searching');
-    else if (tripStatus === 'MATCHED') setLocalScreen('guide-found');
-    else if (tripStatus === 'ONGOING') setLocalScreen('trip-live');
-    else if (tripStatus === 'COMPLETED') setLocalScreen('payment');
-  }, [tripStatus]);
+  // Formatting Timer
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')} : ${mins.toString().padStart(2, '0')} : ${secs.toString().padStart(2, '0')}`;
+  };
 
-  // Fetch Locations for Search
+  // --- Fetch Real Places ---
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchPlaces = async () => {
       try {
         const { data } = await api.get('/places');
-        setLocations(data);
+        setPlaces(data);
       } catch (err) {
-        console.error('Failed to fetch locations:', err);
+        console.error('Failed to fetch places:', err);
+      } finally {
+        setLoadingPlaces(false);
       }
     };
-    fetchLocations();
+    fetchPlaces();
   }, []);
 
-  // Handle incoming search from Home
+  // --- Sync Screen with Global tripStatus ---
   useEffect(() => {
-    if (routeLocation.state?.searchParams && tripStatus === 'IDLE') {
-      const { location: loc, plan, language: lang } = routeLocation.state.searchParams;
-      const priceMap = { '2 Hours': 499, '4 Hours': 899, 'Full Day': 1499 };
+    if (tripStatus === TRIP_STATUS.SEARCHING) setScreen('searching');
+    else if (tripStatus === TRIP_STATUS.MATCHED) {
+      setScreen('call-connect');
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }
+    else if (tripStatus === TRIP_STATUS.ONGOING) setScreen('trip-ongoing');
+    else if (tripStatus === TRIP_STATUS.COMPLETED) setScreen('end-trip');
+    else if (tripStatus === TRIP_STATUS.IDLE && screen !== 'booking-form') {
+      setScreen('select-location');
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }
+
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, [tripStatus]);
+
+  // --- Handle Incoming Search from Home ---
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.searchParams) {
+      const { location: loc, plan, language: lang } = location.state.searchParams;
+      
+      // Map plan to price
+      const priceMap = {
+        '2 Hours': 499,
+        '4 Hours': 899,
+        'Full Day': 1499
+      };
+
       setFormData({
-        location: loc,
+        location: loc + ', Odisha',
         plan: plan,
         language: lang,
         price: priceMap[plan] || 499
       });
-      setLocalScreen('booking-form');
+      
+      setScreen('booking-form');
     }
-  }, [routeLocation.state, tripStatus]);
+  }, [location.state]);
 
-  const handleSelectLocation = (loc) => {
-    setFormData({ ...formData, location: loc });
-    setSearchQuery(loc);
-    setShowSuggestions(false);
-    setLocalScreen('booking-form');
-  };
-
+  // --- Actions ---
   const handleFindGuide = async () => {
     try {
-      setTripStatus('SEARCHING');
-      const { data } = await api.post('/bookings', formData);
-      setActiveBooking(data);
+      await startSearching({
+        location: formData.location,
+        plan: formData.plan,
+        language: formData.language,
+        price: formData.price
+      });
+
+      // Timeout for experts unavailable
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        setTripStatus(currentStatus => {
+          if (currentStatus === TRIP_STATUS.SEARCHING) {
+            setScreen('experts-unavailable');
+            return currentStatus;
+          }
+          return currentStatus;
+        });
+      }, 30000); // 30s timeout
+
     } catch (err) {
-      console.error(err);
-      setTripStatus('IDLE');
-      setLocalScreen('booking-form');
+      alert('Search failed. Please try again.');
     }
   };
 
   const handleCancelBooking = async () => {
-    if (activeBooking?._id) {
-      try {
-        await api.put(`/bookings/${activeBooking._id}/status`, { status: 'cancelled' });
-      } catch (err) { console.error(err); }
-    }
-    resetBooking();
-    setLocalScreen('select-location');
+    await cancelBooking();
+    setScreen('select-location');
   };
-
-  const handleCompletePayment = () => {
-    setLocalScreen('review');
-  };
-
+  
   const handleSubmitReview = async () => {
-    if (!activeBooking?._id) return;
+    if (!bookingData?._id) return;
     try {
-      await api.post(`/bookings/${activeBooking._id}/review`, {
+      await api.post(`/bookings/${bookingData._id}/review`, {
         rating: userRating,
         comment: userComment
       });
       resetBooking();
-      navigate('/');
+      setScreen('select-location');
     } catch (err) {
       console.error(err);
       alert('Failed to submit review');
     }
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const filteredLocations = locations.filter(l => 
-    l.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div className="min-h-screen bg-[#f7f7f7]">
+    <div className="min-h-screen bg-[#020617] p-0 desktop:p-12 font-sans selection:bg-blue-500/30">
       <Helmet>
         <title>Book Guide | GuideGo</title>
+        <meta name="description" content="Find and book trusted local guides in Odisha instantly. Personalized smart tours tailored for you." />
       </Helmet>
-
-      <AnimatePresence mode="wait">
+      {isRestoring ? (
+        <div className="min-h-screen lg:min-h-0 lg:h-[800px] flex flex-col items-center justify-center bg-white text-center p-10">
+          <div className="w-12 h-12 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin mb-6" />
+          <h3 className="text-xl font-bold text-[#222222]">Restoring Session...</h3>
+          <p className="text-[#717171] text-[10px] mt-2 uppercase tracking-[0.2em] font-medium">Checking for active trips</p>
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
         
-        {/* 1. LOCATION SCREEN */}
-        {localScreen === 'select-location' && (
-          <motion.div key="loc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ScreenWrapper title="Where to?">
+        {screen === 'select-location' && (
+          <motion.div key="s1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ScreenWrapper setScreen={setScreen} title="Where to?">
               <div className="relative mb-8">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#222222]" size={18} />
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#717171]" size={18} />
                 <input 
                   type="text" 
                   value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search destinations" 
-                  className="w-full bg-white text-[#222222] border border-[#dddddd] rounded-full pl-16 py-4 focus:outline-none focus:ring-2 focus:ring-[#ff385c]/20 shadow-sm" 
+                  className="w-full bg-[#f7f7f7] text-[#222222] border-none rounded-full pl-16 py-4 focus:outline-none focus:ring-2 focus:ring-[#ff385c]/20" 
                 />
-                {showSuggestions && searchQuery && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#dddddd] overflow-hidden z-[100]">
-                    {filteredLocations.map(l => (
-                      <button 
-                        key={l._id} 
-                        onClick={() => handleSelectLocation(l.name)}
-                        className="w-full px-6 py-4 text-left hover:bg-[#f7f7f7] border-b border-[#f7f7f7] last:border-0 flex items-center gap-3"
-                      >
-                        <MapPin size={16} className="text-[#717171]"/>
-                        <span className="font-bold text-[#222222]">{l.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
-
-              <div className="space-y-6">
-                <h3 className="text-xs font-black uppercase tracking-widest text-[#717171] ml-1">Popular Areas</h3>
-                {locations.slice(0, 3).map(loc => (
-                  <div key={loc._id} onClick={() => handleSelectLocation(loc.name)} className="group cursor-pointer">
-                    <div className="relative aspect-[16/9] rounded-[1.5rem] overflow-hidden mb-3">
-                      <img src={loc.image || 'https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" alt=""/>
-                      <div className="absolute top-4 left-4">
-                        <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-bold text-[#222222] flex items-center shadow-sm">
-                          <Zap size={10} className="mr-1 text-[#ff385c] fill-current"/> Available Now
-                        </span>
-                      </div>
-                    </div>
-                    <div className="px-1 flex justify-between items-end">
-                      <div>
-                        <h4 className="font-bold text-[#222222] text-lg">{loc.name}</h4>
-                        <p className="text-sm font-medium text-[#717171]">{loc.city}</p>
-                      </div>
-                      <ArrowRight className="text-[#dddddd] group-hover:text-[#222222] transition-colors" size={20}/>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex gap-4 mb-8 overflow-x-auto no-scrollbar pb-2">
+                 <button className="bg-[#222222] text-white px-6 py-2 rounded-full text-xs font-bold">All</button>
+                 <button className="bg-white border border-[#dddddd] text-[#222222] px-6 py-2 rounded-full text-xs font-bold whitespace-nowrap">Service Areas</button>
               </div>
-            </ScreenWrapper>
-          </motion.div>
-        )}
-
-        {/* 2. PLAN SELECTION */}
-        {localScreen === 'booking-form' && (
-          <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <ScreenWrapper title="Plan your trip" showBack onBack={() => setLocalScreen('select-location')}>
-              <div className="space-y-8 flex-1 flex flex-col pb-24">
-                <div className="bg-[#f7f7f7] p-6 rounded-2xl border border-[#dddddd] flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm"><MapPin size={20} className="text-[#ff385c]"/></div>
-                  <div><p className="text-[10px] font-bold text-[#717171] uppercase tracking-widest">Destination</p><p className="font-bold text-[#222222]">{formData.location}</p></div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[11px] font-bold uppercase text-[#717171] tracking-[0.1em]">Select duration</label>
-                  <div className="grid grid-cols-1 gap-3">
-                    {[{l: '2 Hours', p: 499}, {l: '4 Hours', p: 899}, {l: 'Full Day', p: 1499}].map(p => (
-                      <div key={p.l} onClick={() => setFormData({...formData, plan: p.l, price: p.p})} className={`p-6 rounded-2xl border-2 transition-all flex justify-between items-center cursor-pointer ${formData.plan === p.l ? 'border-[#222222] bg-[#f7f7f7] shadow-inner' : 'border-[#dddddd] bg-white hover:border-[#222222]/30'}`}>
-                        <div className="flex items-center gap-4">
-                           <div className={`w-3 h-3 rounded-full border-2 ${formData.plan === p.l ? 'bg-[#222222] border-[#222222]' : 'border-[#dddddd]'}`}/>
-                           <p className="font-bold text-[#222222]">{p.l}</p>
-                        </div>
-                        <p className="text-xl font-black text-[#222222]">₹{p.p}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[11px] font-bold uppercase text-[#717171] tracking-[0.1em]">Preferred Language</label>
-                  <div className="flex gap-2 p-1 bg-[#f7f7f7] rounded-xl border border-[#dddddd]">
-                    {['English', 'Hindi', 'Odia'].map(l => (
-                      <button key={l} onClick={() => setFormData({...formData, language: l})} className={`flex-1 py-3 rounded-lg font-bold transition-all text-xs ${formData.language === l ? 'bg-[#222222] text-white shadow-lg' : 'text-[#717171] hover:bg-white'}`}>{l}</button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="fixed bottom-0 left-0 right-0 lg:absolute lg:left-0 lg:right-0 bg-white p-6 border-t border-[#f7f7f7] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-50">
-                  <div className="max-w-md mx-auto flex items-center justify-between gap-6">
-                    <div><p className="text-[10px] font-bold text-[#717171] uppercase">Total Price</p><p className="text-2xl font-black text-[#222222]">₹{formData.price}</p></div>
-                    <button onClick={handleFindGuide} className="flex-1 py-4 bg-[#ff385c] text-white rounded-xl font-bold text-sm hover:bg-[#e00b41] transition-all shadow-xl shadow-rose-500/20">Confirm & Find Guide</button>
-                  </div>
-                </div>
-              </div>
-            </ScreenWrapper>
-          </motion.div>
-        )}
-
-        {/* 3. SEARCHING SCREEN */}
-        {localScreen === 'searching' && (
-          <motion.div key="search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ScreenWrapper hideHeader>
-              <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                <div className="relative mb-16">
-                  <div className="w-40 h-40 border-2 border-[#ff385c]/20 rounded-full animate-[ping_2s_infinite]" />
-                  <div className="absolute inset-0 w-40 h-40 border-2 border-[#ff385c]/10 rounded-full animate-[ping_3s_infinite]" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-20 h-20 bg-[#ff385c] rounded-3xl rotate-45 flex items-center justify-center shadow-2xl shadow-rose-500/40">
-                      <Search size={32} className="text-white -rotate-45" />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="text-3xl font-black text-[#222222] tracking-tighter">Finding your expert</h3>
-                  <p className="text-[#717171] font-medium">Searching for guides in <span className="text-[#222222] font-bold">{formData.location}</span>...</p>
-                  <div className="pt-8 flex justify-center gap-2">
-                    {[0, 1, 2].map(i => <div key={i} className="w-2 h-2 bg-[#ff385c] rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />)}
-                  </div>
-                </div>
-                <button onClick={handleCancelBooking} className="mt-auto py-4 text-[#717171] font-bold text-xs uppercase tracking-widest hover:text-[#222222]">Cancel Request</button>
-              </div>
-            </ScreenWrapper>
-          </motion.div>
-        )}
-
-        {/* 4. GUIDE FOUND + CALL CONNECT */}
-        {localScreen === 'guide-found' && (
-          <motion.div key="found" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <ScreenWrapper hideHeader>
-              <div className="space-y-8 flex-1 flex flex-col py-10">
-                <div className="text-center">
-                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-emerald-100">
-                      <CheckCircle size={14}/> Expert Matched
-                   </div>
-                   <h3 className="text-4xl font-black text-[#222222] tracking-tighter">Guide Found!</h3>
-                </div>
-
-                <div className="bg-white p-6 rounded-[2.5rem] border border-[#dddddd] shadow-xl">
-                   <div className="flex items-center gap-6 mb-8">
-                      <img src={matchedGuide?.profilePicture || 'https://i.pravatar.cc/150'} className="w-24 h-24 rounded-3xl object-cover shadow-lg" alt=""/>
-                      <div className="flex-1">
-                         <h4 className="font-black text-2xl text-[#222222] tracking-tight">{matchedGuide?.name}</h4>
-                         <div className="flex items-center gap-3 mt-2">
-                            <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-2 py-0.5 rounded-lg text-[10px] font-black">
-                               <Star size={12} className="fill-current" /> 4.8
-                            </div>
-                            <span className="text-[10px] font-bold text-[#717171] uppercase tracking-widest">5+ Yrs Exp</span>
+              <div className="grid gap-6">
+                 {places.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(place => (
+                   <div key={place._id} onClick={() => { setFormData({...formData, location: place.name}); setScreen('booking-form'); }} className="group cursor-pointer">
+                      <div className="relative aspect-[16/10] rounded-[1.5rem] overflow-hidden mb-3 shadow-md">
+                         <img src={place.image || `https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80`} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" alt=""/>
+                         <div className="absolute top-4 left-4">
+                            <span className="px-3 py-1.5 bg-white/95 backdrop-blur rounded-full text-[10px] font-black text-[#222222] flex items-center shadow-lg">
+                              <Zap size={10} className="mr-1.5 text-[#ff385c] fill-current"/> ONLINE NOW
+                            </span>
                          </div>
-                         <p className="text-xs text-[#717171] mt-2 font-medium">Fluent in {matchedGuide?.languages?.join(', ') || 'Hindi, Odia, English'}</p>
+                      </div>
+                      <div className="px-2">
+                         <h4 className="font-bold text-[#222222] text-lg tracking-tight">{place.name}, Odisha</h4>
+                         <p className="text-sm font-medium text-[#717171]">{place.description || 'Heritage & Culture Tour'}</p>
                       </div>
                    </div>
+                 ))}
+                 {!loadingPlaces && places.length === 0 && <p className="text-center py-10 text-[#717171]">No locations found</p>}
+              </div>
+            </ScreenWrapper>
+          </motion.div>
+        )}
 
-                   <div className="bg-[#f7f7f7] p-6 rounded-3xl text-center border border-[#dddddd] mb-8">
-                      <p className="text-[10px] font-black uppercase text-[#ff385c] mb-4 tracking-[0.3em]">Meeting Code (OTP)</p>
-                      <div className="flex justify-center gap-3">
-                         {(activeBooking?.otp || '0000').split('').map((num, i) => (
-                           <div key={i} className="w-12 h-16 bg-white border border-[#dddddd] rounded-xl flex items-center justify-center text-3xl font-black text-[#222222] shadow-sm">{num}</div>
-                         ))}
-                      </div>
-                   </div>
-
-                   <div className="grid grid-cols-3 gap-3">
-                      <a href={`tel:${matchedGuide?.phone || '9999999999'}`} className="flex flex-col items-center gap-2 p-4 bg-[#f7f7f7] rounded-2xl hover:bg-[#222222] hover:text-white transition-all group">
-                         <Phone size={20} className="text-[#222222] group-hover:text-white" />
-                         <span className="text-[10px] font-bold uppercase">Call</span>
-                      </a>
-                      <a href={`https://wa.me/91${matchedGuide?.phone || '9999999999'}`} className="flex flex-col items-center gap-2 p-4 bg-[#f7f7f7] rounded-2xl hover:bg-[#25D366] hover:text-white transition-all group">
-                         <MessageCircle size={20} className="text-[#222222] group-hover:text-white" />
-                         <span className="text-[10px] font-bold uppercase">WhatsApp</span>
-                      </a>
-                      <a href={`sms:${matchedGuide?.phone || '9999999999'}`} className="flex flex-col items-center gap-2 p-4 bg-[#f7f7f7] rounded-2xl hover:bg-[#222222] hover:text-white transition-all group">
-                         <Send size={20} className="text-[#222222] group-hover:text-white" />
-                         <span className="text-[10px] font-bold uppercase">Message</span>
-                      </a>
-                   </div>
-                </div>
-
-                <div className="bg-[#f7f7f7] p-6 rounded-3xl border border-[#dddddd] space-y-3">
-                   <div className="flex justify-between text-xs"><span className="text-[#717171] font-bold uppercase tracking-widest">Plan</span><span className="text-[#222222] font-black uppercase tracking-widest">{formData.plan}</span></div>
-                   <div className="flex justify-between text-xs"><span className="text-[#717171] font-bold uppercase tracking-widest">Language</span><span className="text-[#222222] font-black uppercase tracking-widest">{formData.language}</span></div>
-                   <div className="flex justify-between text-xs pt-3 border-t border-[#dddddd]"><span className="text-[#717171] font-bold uppercase tracking-widest">Total Cost</span><span className="text-xl font-black text-[#222222]">₹{formData.price}</span></div>
-                </div>
-
-                <div className="mt-auto space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-blue-50 text-blue-700 rounded-2xl text-[10px] font-bold leading-relaxed border border-blue-100">
-                    <ShieldCheck size={20} className="shrink-0"/> Wait for the guide to arrive and share the OTP only after you meet them.
+        {screen === 'booking-form' && (
+          <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ScreenWrapper setScreen={setScreen} title="Plan your trip" showBack prevScreen="select-location">
+               <div className="space-y-10 flex-1 flex flex-col">
+                  <div className="space-y-4">
+                     <label className="text-[11px] font-bold uppercase text-[#222222] ml-1 tracking-[0.1em]">Destination</label>
+                     <div className="relative">
+                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-[#ff385c]" size={18} />
+                        <input readOnly value={formData.location} className="w-full bg-white text-[#222222] border border-[#dddddd] rounded-[1.2rem] pl-16 py-5 font-bold focus:outline-none" />
+                     </div>
                   </div>
-                  <button onClick={() => alert('Guide is being notified that you are waiting!')} className="w-full py-5 bg-[#222222] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl">I have called the guide</button>
-                </div>
-              </div>
+                  <div className="space-y-4">
+                     <label className="text-[11px] font-bold uppercase text-[#222222] ml-1 tracking-[0.1em]">Select trip duration</label>
+                     <div className="space-y-3">
+                        {[{l: '2 Hours', p: 499}, {l: '4 Hours', p:899}, {l: 'Full Day', p: 1499}].map(p => (
+                          <div key={p.l} onClick={() => setFormData({...formData, plan: p.l, price: p.p})} className={`p-6 rounded-[1.2rem] border-2 transition-all flex justify-between items-center cursor-pointer ${formData.plan === p.l ? 'border-[#222222] bg-[#f7f7f7]' : 'border-[#dddddd] bg-white'}`}>
+                             <p className="font-bold text-[#222222]">{p.l}</p><p className="text-xl font-bold text-[#222222]">₹{p.p}</p>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+                  <div className="space-y-4">
+                     <label className="text-[11px] font-bold uppercase text-[#222222] ml-1 tracking-[0.1em]">Preferred Language</label>
+                     <div className="flex gap-3">
+                        {['English', 'Hindi', 'Odia'].map(l => (
+                          <button key={l} onClick={() => setFormData({...formData, language: l})} className={`flex-1 py-4 border-2 rounded-[0.8rem] font-bold transition-all text-xs ${formData.language === l ? 'bg-[#222222] border-[#222222] text-white' : 'bg-white border-[#dddddd] text-[#222222]'}`}>{l}</button>
+                        ))}
+                     </div>
+                  </div>
+                  <div className="mt-auto pt-8 border-t border-[#f7f7f7] space-y-6">
+                     <div className="flex items-center justify-between px-2"><p className="text-[11px] font-bold text-[#717171] uppercase tracking-[0.1em]">Total</p><p className="text-4xl font-bold text-[#222222]">₹{formData.price}</p></div>
+                     <button onClick={handleFindGuide} className="w-full py-5 bg-[#ff385c] text-white rounded-xl font-bold text-base hover:bg-[#e00b41] transition-all">Confirm & Find Guide</button>
+                  </div>
+               </div>
             </ScreenWrapper>
           </motion.div>
         )}
 
-        {/* 5. TRIP LIVE SCREEN */}
-        {localScreen === 'trip-live' && (
-          <motion.div key="live" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ScreenWrapper hideHeader>
-              <div className="flex-1 flex flex-col pt-12 pb-10">
-                <div className="text-center mb-12">
-                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 border border-emerald-100">
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Live Trip
-                   </div>
-                   <h3 className="text-6xl font-black text-[#222222] tracking-tighter italic">{formatTime(tripTimer)}</h3>
-                   <p className="text-[#717171] font-bold uppercase tracking-widest text-xs mt-4">Session Progress</p>
-                </div>
-
-                <div className="bg-white p-8 rounded-[3rem] border border-[#dddddd] shadow-2xl relative overflow-hidden flex-1 flex flex-col justify-center">
-                   <div className="absolute top-0 right-0 p-8 text-[#f7f7f7]"><Zap size={120} className="fill-current"/></div>
-                   
-                   <div className="relative z-10 text-center">
-                      <img src={matchedGuide?.profilePicture || 'https://i.pravatar.cc/150'} className="w-32 h-32 rounded-[2.5rem] mx-auto mb-8 border-4 border-white shadow-xl" alt=""/>
-                      <h4 className="text-3xl font-black text-[#222222] tracking-tighter mb-2 italic">{matchedGuide?.name}</h4>
-                      <p className="text-sm font-bold text-[#717171] uppercase tracking-widest mb-10">Exploring {formData.location}</p>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                         <a href={`tel:${matchedGuide?.phone}`} className="flex items-center justify-center gap-3 py-4 bg-[#222222] text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl">
-                            <Phone size={16}/> Call
-                         </a>
-                         <button onClick={() => navigate('/emergency')} className="flex items-center justify-center gap-3 py-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl font-bold text-xs uppercase tracking-widest">
-                            <AlertCircle size={16}/> Support
-                         </button>
-                      </div>
-                   </div>
-                </div>
-
-                <p className="text-center text-[10px] font-black text-[#717171] uppercase tracking-widest mt-12 opacity-60">Enjoy your tour with GuideGo</p>
-              </div>
+        {screen === 'searching' && (
+          <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ScreenWrapper setScreen={setScreen} hideHeader>
+               <div className="flex-1 flex flex-col items-center justify-center p-10 text-center bg-[#0f172a]">
+                  <div className="relative mb-16">
+                     <div className="w-48 h-48 border border-white/5 rounded-full animate-ping" />
+                     <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-24 h-24 bg-[#ff385c]/20 rounded-full flex items-center justify-center animate-pulse">
+                          <Search size={40} className="text-[#ff385c]" />
+                        </div>
+                     </div>
+                  </div>
+                  <div className="space-y-4 mb-20">
+                     <h3 className="text-3xl font-black text-white tracking-tighter">Finding Experts</h3>
+                     <p className="text-white/40 text-sm font-medium">Connecting you with active guides in {formData.location}...</p>
+                  </div>
+                  <button onClick={handleCancelBooking} className="mt-auto w-full py-5 bg-white/5 text-white/60 rounded-2xl font-bold text-sm border border-white/10 hover:bg-white/10 transition-all">Cancel Request</button>
+               </div>
             </ScreenWrapper>
           </motion.div>
         )}
 
-        {/* 6. PAYMENT + SUMMARY */}
-        {localScreen === 'payment' && (
-          <motion.div key="pay" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-            <ScreenWrapper hideHeader>
-              <div className="space-y-12 flex-1 flex flex-col py-12">
-                <div className="text-center">
-                   <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner"><CheckCircle size={48}/></div>
-                   <h3 className="text-4xl font-black text-[#222222] tracking-tighter">Trip Summary</h3>
-                </div>
 
-                <div className="bg-[#f7f7f7] p-8 rounded-[3rem] border border-[#dddddd] space-y-6">
-                   <div className="flex justify-between items-end border-b border-[#dddddd] pb-6">
-                      <div><p className="text-[10px] font-bold text-[#717171] uppercase">Duration</p><p className="text-2xl font-black text-[#222222]">{Math.floor(tripTimer / 60)} mins</p></div>
-                      <div className="text-right"><p className="text-[10px] font-bold text-[#717171] uppercase">Location</p><p className="text-lg font-bold text-[#222222]">{formData.location}</p></div>
-                   </div>
-                   <div className="flex justify-between items-center pt-2">
-                      <p className="text-base font-bold text-[#717171]">Total Fee</p>
-                      <p className="text-5xl font-black text-[#222222] tracking-tighter italic">₹{formData.price}</p>
-                   </div>
-                </div>
+        {screen === 'call-connect' && (
+          <motion.div key="s5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col">
+            <ScreenWrapper setScreen={setScreen} hideHeader>
+               <div className="flex-1 flex flex-col bg-[#0f172a] p-10 space-y-8 min-h-full">
+                  <div className="text-center space-y-6">
+                     <div className="relative w-32 h-32 mx-auto">
+                        <img src={matchedGuide?.profilePicture || 'https://i.pravatar.cc/150'} className="w-full h-full rounded-full object-cover border-4 border-[#3b82f6]" alt=""/>
+                        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 border-4 border-[#0f172a] rounded-full" />
+                     </div>
+                     <div>
+                        <h3 className="text-3xl font-black text-white italic tracking-tighter">{matchedGuide?.name || 'Your Guide'}</h3>
+                        <div className="flex items-center justify-center gap-2 mt-1 text-white/60">
+                           <Star size={14} className="text-amber-500 fill-current" />
+                           <span className="text-xs font-black">4.8 (312 Reviews)</span>
+                        </div>
+                     </div>
+                  </div>
 
-                <div className="space-y-4 mt-auto">
-                   <p className="text-center text-[10px] font-black text-[#717171] uppercase tracking-widest">Select Payment Method</p>
-                   <div className="grid grid-cols-2 gap-4">
-                      <button onClick={handleCompletePayment} className="flex flex-col items-center gap-3 p-6 bg-white border-2 border-[#222222] rounded-[2rem] hover:bg-[#f7f7f7] transition-all">
-                         <DollarSign size={24}/> <span className="text-xs font-bold uppercase">Cash</span>
-                      </button>
-                      <button onClick={handleCompletePayment} className="flex flex-col items-center gap-3 p-6 bg-white border border-[#dddddd] rounded-[2rem] hover:bg-[#f7f7f7] transition-all">
-                         <Zap size={24}/> <span className="text-xs font-bold uppercase">UPI</span>
-                      </button>
-                   </div>
-                </div>
-              </div>
+                  {/* COMMUNICATION BUTTONS */}
+                  <div className="grid grid-cols-3 gap-4 px-4">
+                     <a href={`tel:${matchedGuide?.phone || '+919876543210'}`} className="flex flex-col items-center gap-3">
+                        <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/20"><Phone size={24} fill="currentColor"/></div>
+                        <span className="text-[10px] font-black text-white/60 uppercase">Call</span>
+                     </a>
+                     <a href={`https://wa.me/${matchedGuide?.phone?.replace(/\D/g, '') || '919876543210'}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-3">
+                        <div className="w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center text-white shadow-lg shadow-[#25D366]/20"><MessageSquare size={24} fill="currentColor"/></div>
+                        <span className="text-[10px] font-black text-white/60 uppercase">WhatsApp</span>
+                     </a>
+                     <a href={`sms:${matchedGuide?.phone || '+919876543210'}`} className="flex flex-col items-center gap-3">
+                        <div className="w-14 h-14 bg-[#3b82f6] rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-600/20"><Zap size={24} fill="currentColor"/></div>
+                        <span className="text-[10px] font-black text-white/60 uppercase">SMS</span>
+                     </a>
+                  </div>
+                  <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10 text-center space-y-4">
+                     <p className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Your Verification OTP</p>
+                     <div className="flex justify-center gap-3">
+                        {String(otp || '----').split('').map((digit, i) => (
+                          <div key={i} className="w-12 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl font-black text-white border border-white/5">{digit}</div>
+                        ))}
+                     </div>
+                     <p className="text-[10px] font-bold text-[#ff385c] mt-4 uppercase tracking-widest italic">Share this code with your guide to start</p>
+                  </div>
+
+                  <button onClick={handleCancelBooking} className="w-full py-5 text-rose-500/80 font-black uppercase tracking-widest text-[10px] border border-rose-500/20 rounded-2xl bg-rose-500/5 hover:bg-rose-500/10 transition-all mt-auto">Cancel Booking</button>
+               </div>
             </ScreenWrapper>
           </motion.div>
         )}
 
-        {/* 7. REVIEW SCREEN */}
-        {localScreen === 'review' && (
-          <motion.div key="review" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ScreenWrapper hideHeader>
-              <div className="space-y-10 flex-1 flex flex-col py-12">
-                <div className="text-center">
-                  <img src={matchedGuide?.profilePicture} className="w-24 h-24 rounded-3xl mx-auto mb-6 shadow-xl object-cover" alt=""/>
-                  <h3 className="text-4xl font-black text-[#222222] tracking-tighter italic">How was {matchedGuide?.name}?</h3>
-                </div>
+        {screen === 'trip-ongoing' && (
+          <motion.div key="s7" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ScreenWrapper setScreen={setScreen} hideHeader>
+               <div className="flex-1 space-y-10 flex flex-col py-10 bg-[#0f172a] -m-6 p-6">
+                  <div className="bg-white/5 p-10 rounded-[3rem] text-center space-y-6 border border-white/10 shadow-2xl">
+                     <p className="text-[10px] font-black uppercase text-white/40 tracking-[0.4em]">Live Trip Session</p>
+                     <h2 className="text-5xl font-black text-[#ff385c] tracking-tighter italic font-mono">{formatTime(tripTimer)}</h2>
+                     <div className="flex items-center justify-center gap-4 bg-emerald-500/10 w-fit mx-auto px-6 py-2 rounded-full border border-emerald-500/20">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                        <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Exploring Now</span>
+                     </div>
+                  </div>
 
-                <div className="flex justify-center gap-4 py-4">
-                  {[1, 2, 3, 4, 5].map(star => ( 
-                    <button 
-                      key={star} 
-                      onClick={() => setUserRating(star)}
-                      className={`transition-all duration-300 transform ${userRating >= star ? 'scale-110' : 'scale-100 opacity-30 grayscale'}`}
-                    >
-                      <Star size={44} className={userRating >= star ? 'text-amber-400 fill-current' : 'text-[#dddddd]'} /> 
-                    </button>
-                  ))}
-                </div>
+                  <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10 flex items-center gap-6">
+                     <img src={matchedGuide?.profilePicture || 'https://i.pravatar.cc/150'} className="w-16 h-16 rounded-[1rem] object-cover border border-white/10" alt=""/>
+                     <div className="flex-1">
+                        <h4 className="font-black text-lg text-white italic">{matchedGuide?.name}</h4>
+                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Assigned Expert</p>
+                     </div>
+                     <a href={`tel:${matchedGuide?.phone || '+919876543210'}`} className="w-12 h-12 bg-[#3b82f6] rounded-2xl flex items-center justify-center text-white shadow-lg">
+                        <Phone size={20} fill="currentColor" />
+                     </a>
+                  </div>
 
-                <div className="bg-[#f7f7f7] p-8 rounded-[2rem] border border-[#dddddd] flex-1">
-                  <textarea 
-                    value={userComment}
-                    onChange={(e) => setUserComment(e.target.value)}
-                    placeholder="Describe your adventure with our expert..." 
-                    className="w-full bg-transparent border-none text-[#222222] font-medium p-0 focus:ring-0 h-full min-h-[150px] resize-none text-sm placeholder:text-slate-400" 
-                  />
-                </div>
+                  <div className="mt-auto space-y-4">
+                     <button className="w-full py-5 bg-white/5 text-white/60 rounded-2xl font-bold text-xs uppercase tracking-widest border border-white/10 flex items-center justify-center gap-3">
+                        <ShieldCheck size={18} /> Emergency Support
+                     </button>
+                  </div>
+               </div>
+            </ScreenWrapper>
+          </motion.div>
+        )}
 
-                <button onClick={handleSubmitReview} className="w-full py-5 bg-[#ff385c] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-rose-500/20">Submit & Finish</button>
-              </div>
+        {screen === 'end-trip' && (
+          <motion.div key="s9" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col">
+            <ScreenWrapper setScreen={setScreen} hideHeader>
+               <div className="flex-1 flex flex-col bg-[#0f172a] -m-6 p-10 space-y-10 min-h-full">
+                  <div className="text-center space-y-4">
+                     <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-6 border border-emerald-500/20">
+                        <CheckCircle size={48} />
+                     </div>
+                     <h3 className="text-4xl font-black text-white italic tracking-tighter">Trip Completed!</h3>
+                     <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Thank you for your journey</p>
+                  </div>
+
+                  <div className="bg-white/5 p-10 rounded-[3rem] border border-white/5 space-y-6">
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-8">Summary</p>
+                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Location</span><span className="text-sm font-bold text-white italic">{formData.location}</span></div>
+                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Total Duration</span><span className="text-sm font-bold text-white font-mono">{formatTime(tripTimer)}</span></div>
+                     <div className="flex justify-between items-center"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Plan</span><span className="text-sm font-bold text-white italic">{formData.plan}</span></div>
+                     <div className="flex justify-between items-center pt-8 border-t border-white/5"><span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Price Paid</span><span className="text-3xl font-black text-white">₹{formData.price}</span></div>
+                  </div>
+
+                  <button onClick={() => setScreen('review')} className="w-full py-5 bg-[#ff385c] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-[#ff385c]/40 mt-auto">Rate Experience</button>
+               </div>
+            </ScreenWrapper>
+          </motion.div>
+        )}
+
+        {screen === 'review' && (
+          <motion.div key="s10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col">
+            <ScreenWrapper setScreen={setScreen} hideHeader>
+               <div className="flex-1 flex flex-col bg-[#0f172a] -m-6 p-10 space-y-10 min-h-full">
+                  <div className="text-center space-y-4">
+                     <h3 className="text-4xl font-black text-white italic tracking-tighter">Rate Your Guide</h3>
+                     <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">How was your experience with {matchedGuide?.name || 'Arjun'}?</p>
+                  </div>
+
+                  <div className="flex justify-center gap-3 py-6">
+                     {[1, 2, 3, 4, 5].map(star => ( 
+                       <Star 
+                        key={star} 
+                        size={44} 
+                        onClick={() => setUserRating(star)}
+                        className={`${userRating >= star ? 'text-amber-500 fill-current' : 'text-white/10'} cursor-pointer transition-all hover:scale-110`} 
+                       /> 
+                     ))}
+                  </div>
+
+                  <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/5">
+                     <textarea 
+                       value={userComment}
+                       onChange={(e) => setUserComment(e.target.value)}
+                       placeholder="Amazing experience!..." 
+                       className="w-full bg-transparent border-none text-white font-medium p-0 focus:ring-0 h-32 placeholder:text-white/10" 
+                     />
+                  </div>
+
+                  <button onClick={handleSubmitReview} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-white/10 mt-auto">Submit Review & Finish</button>
+               </div>
             </ScreenWrapper>
           </motion.div>
         )}
         
         </AnimatePresence>
+      )}
     </div>
   );
 };

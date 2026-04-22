@@ -87,8 +87,14 @@ const verifyOtp = asyncHandler(async (req, res, next) => {
 
   // Notify both
   if (req.io) {
-    req.io.to(booking.userId.toString()).emit('trip_started', { bookingId: booking._id });
-    req.io.to(booking.guideId.toString()).emit('trip_started', { bookingId: booking._id });
+    req.io.to(booking.userId.toString()).emit('trip_started', { 
+      bookingId: booking._id,
+      startedAt: booking.startedAt
+    });
+    req.io.to(booking.guideId.toString()).emit('trip_started', { 
+      bookingId: booking._id,
+      startedAt: booking.startedAt
+    });
   }
 
   res.json(booking);

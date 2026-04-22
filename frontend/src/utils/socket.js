@@ -2,13 +2,18 @@ import { io } from 'socket.io-client';
 
 let socket;
 
-export const connectSocket = (user) => {
+export const connectSocket = (userId, role, guideId) => {
   if (!socket) {
     socket = io(import.meta.env.VITE_SOCKET_URL || 'https://guide-go-backend.onrender.com', {
+      transports: ['websocket'], // Force WebSocket for instant real-time
       auth: {
         token: localStorage.getItem('gg_token'),
-        user
-      }
+        userId,
+        role,
+        guideId
+      },
+      reconnectionAttempts: 5,
+      timeout: 10000
     });
 
     socket.on('connect', () => {
@@ -27,7 +32,9 @@ export const getSocket = () => {
     // Attempt rescue with fallback
     const userString = localStorage.getItem('gg_user');
     const user = userString ? JSON.parse(userString) : null;
-    return connectSocket(user);
+    if (user) {
+      return connectSocket(user._id, user.role, user.guideId);
+    }
   }
   return socket;
 };

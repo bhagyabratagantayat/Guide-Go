@@ -39,18 +39,24 @@ const initSocket = (server) => {
   startSimulator();
 
   io.on('connection', (socket) => {
+    const userId = socket.handshake.auth.userId;
+    if (userId) {
+      socket.join(userId);
+      console.log(`User ${userId} automatically joined room`);
+    }
+
     console.log(`New connection: ${socket.id}`);
 
-    // Join room based on user role or ID
+    // Manual join fallback
     socket.on('join', (data) => {
-      socket.join(data.userId);
-      console.log(`User ${data.userId} joined room`);
+      if (data.userId) {
+        socket.join(data.userId);
+        console.log(`User ${data.userId} manually joined room`);
+      }
     });
 
     // Guide sends location update
     socket.on('updateLocation', (data) => {
-      console.log(`Location update from guide ${data.guideId}:`, data.location);
-      
       io.emit('guideLocationUpdate', {
         guideId: data.guideId,
         location: data.location

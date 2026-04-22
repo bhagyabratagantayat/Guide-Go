@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { HelmetProvider } from 'react-helmet-async';
+import { BookingProvider, useBooking, TRIP_STATUS } from './context/BookingContext';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -60,17 +61,16 @@ import GuideGuard from './components/GuideGuard';
 
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
-import { BookingProvider, useBooking } from './context/BookingContext.jsx';
 
 function AppContent() {
   const { user } = useAuth();
-  const { tripStatus } = useBooking();
   const [notification, setNotification] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const socketRef = useRef();
   const location = useLocation();
+  const { tripStatus } = useBooking();
 
-  const isTripLive = tripStatus === 'ONGOING';
+  const isTripLive = tripStatus === TRIP_STATUS.ONGOING;
 
   useEffect(() => {
     if (user) {
@@ -93,7 +93,7 @@ function AppContent() {
     <>
 
       <div className="flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
-        {/* Mobile Header - Hidden during live trip */}
+        {/* Mobile Header */}
         {!isTripLive && (
           <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[var(--bg-sidebar)] border-b border-[var(--border)] flex items-center justify-between px-6 z-[900]">
             <div className="flex items-center gap-3">
@@ -110,21 +110,19 @@ function AppContent() {
           </header>
         )}
 
-        {/* Sidebar - Fixed Left - Hidden during live trip */}
-        {!isTripLive && (
-          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} className="w-[260px] flex-shrink-0" />
-        )}
+        {/* Sidebar - Fixed Left */}
+        {!isTripLive && <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} className="w-[260px] flex-shrink-0" />}
         
         {/* Backdrop for mobile */}
-        {isSidebarOpen && !isTripLive && (
+        {isSidebarOpen && (
           <div 
             className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[950]"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
 
-        {/* Main Content Area - Margins removed during live trip */}
-        <main className={`flex-1 ${!isTripLive ? 'lg:ml-[260px] pt-16 lg:pt-0' : 'ml-0 pt-0'} min-h-screen overflow-y-auto`}>
+        {/* Main Content Area */}
+        <main className={`flex-1 ${!isTripLive ? 'lg:ml-[260px]' : ''} ml-0 min-h-screen ${!isTripLive ? 'pt-16 lg:pt-0' : ''} overflow-y-auto`}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               {/* Public Routes */}
@@ -207,13 +205,13 @@ function App() {
     <ThemeProvider>
       <CurrencyProvider>
         <AuthProvider>
-          <BookingProvider>
-            <HelmetProvider>
-              <Router>
+          <HelmetProvider>
+            <Router>
+              <BookingProvider>
                 <AppContent />
-              </Router>
-            </HelmetProvider>
-          </BookingProvider>
+              </BookingProvider>
+            </Router>
+          </HelmetProvider>
         </AuthProvider>
       </CurrencyProvider>
     </ThemeProvider>
