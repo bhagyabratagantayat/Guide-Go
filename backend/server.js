@@ -11,6 +11,7 @@ const connectDB = require('./config/db');
 
 const http = require('http');
 const initSocket = require('./utils/socket');
+const { ensureDemoAccounts } = require('./utils/autoSeed');
 
 const app = express();
 const server = http.createServer(app);
@@ -93,6 +94,7 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+    await ensureDemoAccounts();
 
     const PORT = config.port;
     server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
