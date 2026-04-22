@@ -92,8 +92,13 @@ export const BookingProvider = ({ children }) => {
               setMatchedGuide(latest.guideId);
               startTimer(latest.startedAt);
             } else if (latest.status === 'completed') {
-              setTripStatus(TRIP_STATUS.COMPLETED);
-              stopTimer();
+              // Only show review screen if not already reviewed
+              if (!latest.review?.rating) {
+                setTripStatus(TRIP_STATUS.COMPLETED);
+                stopTimer();
+              } else {
+                setTripStatus(TRIP_STATUS.IDLE);
+              }
             }
           }
         }

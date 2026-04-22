@@ -8,7 +8,8 @@ import {
   CreditCard, X, ArrowRight, Zap, AlertCircle,
   Navigation, Calendar, ChevronLeft, MoreVertical,
   ThumbsUp, DollarSign, Wallet, ArrowUpRight,
-  Clock3, Globe, Zap as ZapIcon
+  Clock3, Globe, Zap as ZapIcon, Share2, Info,
+  Flag, Heart, ShieldAlert
 } from 'lucide-react';
 import api from '../utils/api';
 import { useBooking, TRIP_STATUS } from '../context/BookingContext';
@@ -40,7 +41,7 @@ const BookGuidePage = () => {
     location: 'Puri, Odisha',
     plan: '2 Hours',
     language: 'Hindi',
-    price: 499
+    price: 349
   });
 
   const [places, setPlaces] = useState([]);
@@ -50,12 +51,20 @@ const BookGuidePage = () => {
   const [loadingPlaces, setLoadingPlaces] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, '0')} : ${mins.toString().padStart(2, '0')} : ${secs.toString().padStart(2, '0')}`;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const calculateLiveCost = (seconds, totalAmount, planLabel) => {
+    const planHours = planLabel === 'Full Day' ? 8 : parseInt(planLabel);
+    const totalSeconds = planHours * 3600;
+    const cost = (totalAmount / totalSeconds) * seconds;
+    return Math.max(0, Math.min(totalAmount, Math.round(cost)));
   };
 
   useEffect(() => {
@@ -76,9 +85,14 @@ const BookGuidePage = () => {
     if (tripStatus === TRIP_STATUS.SEARCHING) setScreen('searching');
     else if (tripStatus === TRIP_STATUS.MATCHED) setScreen('call-connect');
     else if (tripStatus === TRIP_STATUS.ONGOING) setScreen('trip-ongoing');
-    else if (tripStatus === TRIP_STATUS.COMPLETED) setScreen('end-trip');
+    else if (tripStatus === TRIP_STATUS.COMPLETED) {
+       if (bookingData?.review?.rating) {
+          setIsSuccess(true);
+       }
+       setScreen('end-trip');
+    }
     else if (tripStatus === TRIP_STATUS.IDLE && screen !== 'booking-form') setScreen('select-location');
-  }, [tripStatus]);
+  }, [tripStatus, screen]);
 
   const location = useLocation();
   useEffect(() => {
@@ -100,7 +114,19 @@ const BookGuidePage = () => {
       await startSearching(formData);
       setScreen('searching');
     } catch (err) {
-      alert('Failed to start search. Please try again.');
+      const errorMsg = err.response?.data?.message || err.message || 'Unknown error occurred';
+      alert(`Failed to start search: ${errorMsg}`);
+      console.error('Search Start Error:', err);
+    }
+  };
+
+  const handleEndTrip = async () => {
+    if (!window.confirm('Are you sure you want to end the trip now?')) return;
+    try {
+      await api.post(`/bookings/end/${bookingData._id}`);
+      setTripStatus(TRIP_STATUS.COMPLETED);
+    } catch (err) {
+      alert('Failed to end trip. Please try again.');
     }
   };
 
@@ -127,6 +153,11 @@ const BookGuidePage = () => {
   const filteredPlaces = places.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleShareTrip = () => {
+     const text = `I'm on a trip with GuideGo! Track my location and session in ${formData.location}.`;
+     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] lg:p-10 flex items-center justify-center">
@@ -441,97 +472,250 @@ const BookGuidePage = () => {
             </motion.div>
           )}
 
-          {/* 5. TRIP ONGOING */}
+          {/* 5. TRIP ONGOING (ADVANCED PRODUCT-LEVEL DASHBOARD) */}
           {screen === 'trip-ongoing' && (
-            <motion.div key="ongoing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-md">
-               <ScreenWrapper title="Trip Ongoing" hideHeader>
-                  <div className="flex flex-col items-center text-center space-y-10 py-10">
-                     <div className="w-40 h-40 bg-[#222222] rounded-full flex flex-col items-center justify-center border-[8px] border-[#f7f7f7] shadow-2xl relative">
-                        <Timer size={32} className="text-[#ff385c] absolute -top-4" />
-                        <span className="text-3xl font-black text-white font-mono">{formatTime(tripTimer)}</span>
-                        <span className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-1">Elapsed Time</span>
+            <motion.div key="ongoing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-6xl">
+               <ScreenWrapper title="Active Adventure" hideHeader maxWidth="max-w-none">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
+                     
+                     {/* --- LEFT COL: GUIDE INFO & ACTIONS --- */}
+                     <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-[#222222] p-8 rounded-[2.5rem] text-white shadow-2xl space-y-8 h-full">
+                           <div className="flex flex-col items-center text-center space-y-4">
+                              <div className="relative">
+                                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/10 p-1">
+                                    <img 
+                                       src={matchedGuide?.profilePicture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80'} 
+                                       className="w-full h-full object-cover rounded-full" 
+                                       alt="" 
+                                    />
+                                 </div>
+                                 <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#222222]" />
+                              </div>
+                              <div className="space-y-1">
+                                 <h3 className="text-2xl font-black italic">{matchedGuide?.name || 'Arjun Das'}</h3>
+                                 <div className="flex items-center justify-center gap-1.5 text-amber-500">
+                                    <Star size={14} fill="currentColor" />
+                                    <span className="text-xs font-black text-white/60">4.9 • Superguide</span>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="grid grid-cols-3 gap-3">
+                              <a href={`tel:${matchedGuide?.mobile}`} className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all">
+                                 <Phone size={20} />
+                                 <span className="text-[8px] font-black uppercase">Call</span>
+                              </a>
+                              <button 
+                                 onClick={() => navigate(`/chat/${bookingData?._id}`)}
+                                 className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all"
+                              >
+                                 <MessageSquare size={20} />
+                                 <span className="text-[8px] font-black uppercase">Chat</span>
+                              </button>
+                              <button onClick={handleShareTrip} className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all">
+                                 <Share2 size={20} />
+                                 <span className="text-[8px] font-black uppercase">Share</span>
+                              </button>
+                           </div>
+
+                           <div className="pt-6 border-t border-white/5 space-y-4">
+                              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40">
+                                 <span>Languages</span>
+                                 <span className="text-white">{matchedGuide?.languages?.join(', ') || 'English, Hindi, Odia'}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40">
+                                 <span>Experience</span>
+                                 <span className="text-white">5+ Years</span>
+                              </div>
+                           </div>
+                        </div>
                      </div>
-                     <div className="space-y-4">
-                        <h2 className="text-3xl font-black text-[#222222] italic">Exploring {formData.location}</h2>
-                        <p className="text-sm font-bold text-[#717171] leading-relaxed">Your guide <span className="text-[#222222]">{matchedGuide?.name}</span> is with you. Enjoy the experience!</p>
+
+                     {/* --- MIDDLE COL: LIVE TIMER & BILLING --- */}
+                     <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white p-10 rounded-[2.5rem] border border-[#eeeeee] flex flex-col items-center text-center space-y-10 justify-center h-full">
+                           <div className="relative">
+                              <svg className="w-48 h-48 -rotate-90">
+                                 <circle cx="96" cy="96" r="88" className="stroke-[#f7f7f7] stroke-[8]" fill="transparent" />
+                                 <motion.circle 
+                                    cx="96" cy="96" r="88" 
+                                    className="stroke-[#ff385c] stroke-[8]" 
+                                    fill="transparent" 
+                                    strokeDasharray="553"
+                                    initial={{ strokeDashoffset: 553 }}
+                                    animate={{ strokeDashoffset: 553 - (553 * (tripTimer % 60) / 60) }}
+                                    transition={{ duration: 1 }}
+                                 />
+                              </svg>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1">
+                                 <Timer size={24} className="text-[#ff385c]" />
+                                 <span className="text-4xl font-black text-[#222222] font-mono tracking-tighter">{formatTime(tripTimer)}</span>
+                                 <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Live Trip Time</span>
+                              </div>
+                           </div>
+
+                           <div className="w-full bg-[#f7f7f7] p-8 rounded-[2rem] space-y-1 border border-[#eeeeee]">
+                              <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Estimated Cost (Live)</p>
+                              <p className="text-5xl font-black text-emerald-500 italic">₹{calculateLiveCost(tripTimer, formData.price, formData.plan)}</p>
+                              <p className="text-[10px] font-bold text-[#717171] mt-2 italic">Based on {formData.plan} plan</p>
+                           </div>
+
+                           <button 
+                              onClick={handleEndTrip}
+                              className="w-full py-6 bg-[#222222] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all"
+                           >
+                              End Trip & Pay
+                           </button>
+                        </div>
                      </div>
-                     <div className="w-full flex gap-3">
-                        <button className="flex-1 py-4 bg-white border border-[#dddddd] text-[#222222] rounded-2xl text-[10px] font-black uppercase tracking-widest">Support</button>
-                        <button className="flex-1 py-4 bg-[#222222] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl">Safety SOS</button>
+
+                     {/* --- RIGHT COL: TRIP INFO & SAFETY --- */}
+                     <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-[#f7f7f7] p-8 rounded-[2.5rem] border border-[#eeeeee] flex flex-col justify-between h-full">
+                           <div className="space-y-8">
+                              <div className="space-y-4">
+                                 <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                    <h4 className="text-[10px] font-black text-[#ff385c] uppercase tracking-widest">Now Exploring</h4>
+                                 </div>
+                                 <h2 className="text-3xl font-black text-[#222222] italic leading-tight">{formData.location}</h2>
+                                 <div className="bg-white p-6 rounded-2xl border border-[#eeeeee] space-y-4">
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[10px] font-bold text-[#717171] uppercase">Package</span>
+                                       <span className="text-[10px] font-black text-[#222222]">{formData.plan} Adventure</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[10px] font-bold text-[#717171] uppercase">Language</span>
+                                       <span className="text-[10px] font-black text-[#222222]">{formData.language}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                       <span className="text-[10px] font-bold text-[#717171] uppercase">Total Limit</span>
+                                       <span className="text-[10px] font-black text-rose-500 font-mono">₹{formData.price}</span>
+                                    </div>
+                                 </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                 <button 
+                                    onClick={() => setShowReportModal(true)}
+                                    className="flex items-center justify-center gap-3 p-5 bg-white rounded-2xl text-rose-500 font-black text-[10px] uppercase tracking-widest border border-rose-50 hover:bg-rose-50 transition-all"
+                                 >
+                                    <Flag size={14} /> Report
+                                 </button>
+                                 <button className="flex items-center justify-center gap-3 p-5 bg-white rounded-2xl text-[#222222] font-black text-[10px] uppercase tracking-widest border border-[#dddddd] hover:bg-[#f7f7f7] transition-all">
+                                    <Info size={14} /> Details
+                                 </button>
+                              </div>
+                           </div>
+
+                           <button className="w-full py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 flex items-center justify-center gap-3 hover:bg-rose-600 transition-all mt-10">
+                              <ShieldAlert size={16} /> EMERGENCY SOS (24/7)
+                           </button>
+                        </div>
                      </div>
                   </div>
                </ScreenWrapper>
             </motion.div>
           )}
 
-          {/* 6. END TRIP / REVIEW */}
+          {/* 6. END TRIP / REVIEW (OVERHAULED UI) */}
           {screen === 'end-trip' && (
-            <motion.div key="end" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
-               <ScreenWrapper title="Trip Summary" hideHeader>
+            <motion.div key="end" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-6xl">
+               <ScreenWrapper title="Trip Summary" hideHeader maxWidth="max-w-none">
                   {isSuccess ? (
-                     <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center shadow-xl">
-                           <CheckCircle size={48} />
+                     <div className="flex flex-col items-center justify-center py-32 space-y-8">
+                        <motion.div 
+                           initial={{ scale: 0, rotate: -180 }} 
+                           animate={{ scale: 1, rotate: 0 }} 
+                           className="w-32 h-32 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-white"
+                        >
+                           <CheckCircle size={64} strokeWidth={3} />
                         </motion.div>
-                        <div className="text-center space-y-2">
-                           <h2 className="text-3xl font-black text-[#222222] italic">Feedback Saved!</h2>
-                           <p className="text-sm font-bold text-[#717171]">Thank you for traveling with GuideGo.</p>
+                        <div className="text-center space-y-3">
+                           <h2 className="text-4xl font-black text-[#222222] italic">Review Already Saved!</h2>
+                           <p className="text-sm font-bold text-[#717171] uppercase tracking-[0.2em]">Thank you for traveling with GuideGo.</p>
                         </div>
+                        <button 
+                           onClick={() => { resetBooking(); navigate('/'); }}
+                           className="px-10 py-4 bg-[#222222] text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl"
+                        >
+                           Back to Home
+                        </button>
                      </div>
                   ) : (
-                     <div className="space-y-10">
-                        <div className="text-center space-y-2">
-                           <h2 className="text-3xl font-black text-[#222222] italic">How was your trip?</h2>
-                           <p className="text-xs font-bold text-[#717171] uppercase tracking-widest">Review your experience with {matchedGuide?.name}</p>
+                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-10">
+                        {/* Left: Summary & Guide */}
+                        <div className="space-y-10">
+                           <div className="space-y-4 text-center lg:text-left">
+                              <h2 className="text-5xl font-black text-[#222222] italic leading-tight">How was your trip?</h2>
+                              <p className="text-xs font-bold text-[#717171] uppercase tracking-[0.3em]">Your feedback helps Arjun grow</p>
+                           </div>
+
+                           <div className="bg-[#f7f7f7] p-10 rounded-[3rem] border border-[#eeeeee] space-y-8">
+                              <div className="flex items-center gap-6">
+                                 <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                                    <img src={matchedGuide?.profilePicture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80'} className="w-full h-full object-cover" alt="" />
+                                 </div>
+                                 <div>
+                                    <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Guide</p>
+                                    <h4 className="text-2xl font-black italic text-[#222222]">{matchedGuide?.name || 'Arjun Das'}</h4>
+                                 </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="bg-white p-6 rounded-3xl border border-[#eeeeee] text-center">
+                                    <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Duration</span>
+                                    <p className="text-xl font-black text-[#222222]">{formData.plan}</p>
+                                 </div>
+                                 <div className="bg-white p-6 rounded-3xl border border-[#eeeeee] text-center">
+                                    <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Amount</span>
+                                    <p className="text-xl font-black text-emerald-600">₹{formData.price}</p>
+                                 </div>
+                              </div>
+                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                           <div className="bg-[#f7f7f7] p-6 rounded-3xl border border-[#eeeeee] text-center space-y-1">
-                              <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Duration</span>
-                              <p className="text-xl font-black text-[#222222]">{formData.plan}</p>
-                           </div>
-                           <div className="bg-[#f7f7f7] p-6 rounded-3xl border border-[#eeeeee] text-center space-y-1">
-                              <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Amount</span>
-                              <p className="text-xl font-black text-emerald-600 font-mono italic">₹{formData.price}</p>
-                           </div>
-                        </div>
-
-                        <div className="space-y-6">
-                           <div className="flex flex-col items-center gap-4">
-                              <div className="flex gap-2">
+                        {/* Right: Rating Form */}
+                        <div className="space-y-10 bg-white p-2 rounded-[3rem]">
+                           <div className="flex flex-col items-center gap-6">
+                              <div className="flex gap-3">
                                  {[1, 2, 3, 4, 5].map((star) => (
                                     <button 
                                        key={star} 
                                        onClick={() => setUserRating(star)}
-                                       className="p-1 transition-transform hover:scale-125 active:scale-95"
+                                       className="p-1 transition-all hover:scale-125 active:scale-95"
                                     >
                                        <Star 
-                                          size={36} 
-                                          className={`${star <= userRating ? 'text-amber-500 fill-current' : 'text-[#dddddd]'}`} 
+                                          size={48} 
+                                          className={`${star <= userRating ? 'text-amber-500 fill-current drop-shadow-lg' : 'text-[#dddddd]'}`} 
                                        />
                                     </button>
                                  ))}
                               </div>
-                              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">
-                                 {userRating === 5 ? 'Exceptional!' : userRating === 4 ? 'Very Good' : 'Good'}
+                              <span className="px-6 py-2 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-amber-100">
+                                 {userRating === 5 ? '🔥 Exceptional!' : userRating === 4 ? '✨ Very Good' : userRating === 3 ? '👍 Good' : '⭐ Average'}
                               </span>
                            </div>
 
-                           <textarea 
-                              placeholder="Write your experience here..." 
-                              value={userComment}
-                              onChange={(e) => setUserComment(e.target.value)}
-                              className="w-full p-6 bg-[#f7f7f7] border border-[#eeeeee] rounded-[2rem] h-32 focus:ring-2 focus:ring-[#222222] transition-all text-sm font-medium resize-none"
-                           />
-                        </div>
+                           <div className="space-y-4">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-6">Share your story</label>
+                              <textarea 
+                                 placeholder="Tell us about the secret spots, the stories, and the service..." 
+                                 value={userComment}
+                                 onChange={(e) => setUserComment(e.target.value)}
+                                 className="w-full p-8 bg-[#f7f7f7] border border-[#eeeeee] rounded-[2.5rem] h-40 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white focus:border-emerald-500 transition-all text-sm font-medium resize-none shadow-inner"
+                              />
+                           </div>
 
-                        <button 
-                           onClick={handleSubmitReview}
-                           disabled={isSubmitting}
-                           className="w-full py-6 bg-[#222222] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 disabled:opacity-50 active:scale-95 transition-all"
-                        >
-                           {isSubmitting ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Complete & Pay'}
-                        </button>
+                           <button 
+                              onClick={handleSubmitReview}
+                              disabled={isSubmitting}
+                              className="w-full py-7 bg-[#222222] text-white rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                           >
+                              {isSubmitting ? <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" /> : <>Finalize & Pay ₹{formData.price} <ArrowRight size={20} /></>}
+                           </button>
+                        </div>
                      </div>
                   )}
                </ScreenWrapper>
@@ -539,6 +723,29 @@ const BookGuidePage = () => {
           )}
         </AnimatePresence>
       )}
+
+      {/* --- REPORT MODAL --- */}
+      <AnimatePresence>
+         {showReportModal && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[2000] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+               <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white rounded-[3rem] p-10 max-w-md w-full space-y-8 shadow-2xl">
+                  <div className="text-center space-y-2">
+                     <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ShieldAlert size={32} />
+                     </div>
+                     <h3 className="text-2xl font-black text-[#222222] italic">Report Issue</h3>
+                     <p className="text-sm font-medium text-[#717171]">Your safety is our priority. Tell us what's wrong.</p>
+                  </div>
+                  <div className="space-y-3">
+                     {['Guide Misbehavior', 'Route Deviation', 'Safety Concern', 'Pricing Issue', 'Other'].map(r => (
+                        <button key={r} onClick={() => setShowReportModal(false)} className="w-full py-4 bg-[#f7f7f7] rounded-2xl text-[11px] font-black uppercase tracking-widest text-[#222222] hover:bg-rose-500 hover:text-white transition-all border border-[#eeeeee]">{r}</button>
+                     ))}
+                  </div>
+                  <button onClick={() => setShowReportModal(false)} className="w-full py-4 text-[#717171] text-[10px] font-black uppercase tracking-widest">Dismiss</button>
+               </motion.div>
+            </motion.div>
+         )}
+      </AnimatePresence>
     </div>
   );
 };

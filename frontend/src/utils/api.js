@@ -1,10 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://guide-go-backend.onrender.com/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: import.meta.env.VITE_API_URL || 'https://guide-go-backend.onrender.com/api'
+  // Removed static Content-Type to allow FormData to set its own boundaries
 });
 
 // Add a request interceptor to attach JWT
@@ -23,18 +21,28 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Detailed Debugging Snippet (Ready-to-paste style but permanent)
+    // Safety check for payload logging (avoid crashing on FormData)
+    let payload = 'None';
+    try {
+      if (error.config?.data) {
+        payload = typeof error.config.data === 'string' 
+          ? JSON.parse(error.config.data) 
+          : 'FormData/Binary Content';
+      }
+    } catch (e) {
+      payload = 'Unparseable Data';
+    }
+
     console.group(`🚨 API ERROR: [${error.config?.method?.toUpperCase()}] ${error.config?.url}`);
     console.error('Status:', error.response?.status);
     console.error('Message:', error.response?.data?.message || error.message);
-    console.error('Payload:', error.config?.data ? JSON.parse(error.config.data) : 'None');
+    console.error('Payload:', payload);
     console.groupEnd();
 
     if (error.response?.status === 401) {
       localStorage.removeItem('gg_token');
       localStorage.removeItem('gg_user');
       localStorage.removeItem('userInfo');
-      // Only redirect if not already on login
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }

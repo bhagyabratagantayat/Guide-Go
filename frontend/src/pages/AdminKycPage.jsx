@@ -17,7 +17,7 @@ const AdminKycPage = () => {
   const fetchPending = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/admin/kyc/list');
+      const { data } = await api.get('/admin/kyc/pending');
       setGuides(data);
     } catch (error) {
       toast.error('Failed to fetch pending verifications');

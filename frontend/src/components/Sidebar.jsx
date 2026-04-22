@@ -50,11 +50,13 @@ const Sidebar = ({ isOpen, onClose }) => {
   ];
 
   const guideLinks = [
-    { section: 'MANAGEMENT', items: [
+    { section: 'MANAGEMENT', items: (user?.kycStatus === 'approved' && user?.profileComplete) ? [
       { path: '/guide', label: 'Dashboard', icon: Home },
       { path: '/guide/bookings', label: 'Bookings', icon: Calendar },
       { path: '/guide/chat', label: 'Messages', icon: MessageCircle },
       { path: '/guide/earnings', label: 'Earnings', icon: DollarSign },
+    ] : [
+      { path: '/guide/verify', label: 'Verify Identity', icon: ShieldCheck, isPrimary: true },
     ]},
     { section: 'ACCOUNT', items: [
       { path: '/profile', label: 'Profile', icon: User },

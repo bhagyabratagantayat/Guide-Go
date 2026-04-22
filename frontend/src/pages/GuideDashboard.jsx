@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,8 +9,19 @@ import {
   Wifi, WifiOff, MapPin, Calendar, CheckCircle, 
   XCircle, DollarSign, User, Clock, Star, 
   ArrowUpRight, ChevronRight, Activity, Shield,
-  Navigation, Phone, MessageSquare, Timer, Zap
+  Navigation, Phone, MessageSquare, Timer, Zap,
+  TrendingUp, Users, Award, Briefcase
 } from 'lucide-react';
+
+const DashboardSkeleton = () => (
+  <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-20 animate-pulse">
+    <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-[3rem]" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-slate-100 dark:bg-slate-800 rounded-[2rem]" />)}
+    </div>
+    <div className="h-[500px] bg-slate-100 dark:bg-slate-800 rounded-[3rem]" />
+  </div>
+);
 
 const GuideDashboard = () => {
   const { user } = useAuth();
@@ -20,9 +31,9 @@ const GuideDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [guideStatus, setGuideStatus] = useState('pending');
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ totalEarnings: 0, pendingBookings: 0, rating: 5.0 });
   const [packages, setPackages] = useState([]);
   const [activeTab, setActiveTab] = useState('bookings');
+  const [guideData, setGuideData] = useState(null);
 
   // Real-time Booking States
   const [incomingBooking, setIncomingBooking] = useState(null);
@@ -34,6 +45,19 @@ const GuideDashboard = () => {
   const [selectedLangs, setSelectedLangs] = useState(['Hindi', 'English']);
   const [showGoLiveConfig, setShowGoLiveConfig] = useState(false);
 
+  // Optimized Stats Calculation
+  const stats = useMemo(() => {
+    const completed = bookings.filter(b => b.status === 'completed');
+    const earnings = completed.reduce((sum, b) => sum + (b.price || 0), 0);
+    const pendingCount = bookings.filter(b => b.status === 'searching').length;
+    return {
+      totalEarnings: earnings,
+      pendingBookings: pendingCount,
+      rating: guideData?.rating || 5.0,
+      totalTrips: completed.length
+    };
+  }, [bookings, guideData]);
+
   useEffect(() => {
     fetchDashboardData();
     const socket = getSocket();
@@ -42,7 +66,6 @@ const GuideDashboard = () => {
     }
   }, []);
 
-  // Sync socket listeners with isLive state
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
@@ -93,13 +116,10 @@ const GuideDashboard = () => {
     return () => clearInterval(interval);
   }, [activeBooking]);
 
-  // Countdown for incoming booking
   useEffect(() => {
     let timer;
     if (incomingBooking && countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
+      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
     } else if (countdown === 0) {
       setIncomingBooking(null);
     }
@@ -108,29 +128,18 @@ const GuideDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [{ data: bookingData }, { data: guideData }] = await Promise.all([
+      const [{ data: bData }, { data: gData }] = await Promise.all([
         api.get('/bookings/guide'),
         api.get('/guides/profile')
       ]);
-      setBookings(bookingData);
-      setIsLive(guideData.isLive);
-      setGuideStatus(guideData.status);
+      setBookings(bData);
+      setGuideData(gData);
+      setIsLive(gData.isLive);
+      setGuideStatus(gData.status);
+      setPackages(gData.packages || []);
       
-      // Check for active (accepted or ongoing) booking
-      const current = bookingData.find(b => ['accepted', 'ongoing'].includes(b.status));
+      const current = bData.find(b => ['accepted', 'ongoing'].includes(b.status));
       setActiveBooking(current || null);
-
-      const earnings = bookingData
-        .filter(b => b.status === 'completed')
-        .reduce((sum, b) => sum + (b.price || 500), 0);
-      const pending = bookingData.filter(b => b.status === 'searching').length;
-      
-      setStats({ 
-        totalEarnings: earnings || 0, 
-        pendingBookings: pending,
-        rating: guideData.rating || 5.0 
-      });
-      setPackages(guideData.packages || []);
     } catch (error) {
       console.error('Error fetching guide data:', error);
     } finally {
@@ -142,16 +151,12 @@ const GuideDashboard = () => {
     if (!incomingBooking) return;
     try {
       const { data } = await api.put(`/bookings/accept/${incomingBooking._id}`);
-      
-      // Update local state immediately for instant feedback
       setIncomingBooking(null);
       setActiveBooking({
         ...incomingBooking,
         status: 'accepted',
-        otp: data.otp // OTP comes from acceptance response
+        otp: data.otp
       });
-      
-      // Re-fetch in background to ensure all data (like User object) is populated
       fetchDashboardData();
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to accept booking');
@@ -160,25 +165,20 @@ const GuideDashboard = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if (!activeBooking || otpInput.length < 4) return;
     try {
-      const { data } = await api.post(`/bookings/verify-otp/${activeBooking._id}`, { otpEntered: otpInput });
-      
-      // Immediate update
-      setActiveBooking(prev => ({ ...prev, status: 'ongoing', startedAt: data.startedAt }));
-      setOtpInput('');
+      await api.post(`/bookings/verify-otp/${activeBooking._id}`, { otpEntered: otpInput });
       fetchDashboardData();
+      setOtpInput('');
     } catch (error) {
-      alert('Incorrect OTP code');
+      const msg = error.response?.data?.message || 'Invalid OTP';
+      alert(msg);
     }
   };
 
   const handleEndTrip = async () => {
-    if (!activeBooking) return;
+    if (!window.confirm('Are you sure you want to end this trip?')) return;
     try {
       await api.post(`/bookings/end/${activeBooking._id}`);
-      
-      // Immediate update
       setActiveBooking(null);
       fetchDashboardData();
     } catch (error) {
@@ -201,11 +201,10 @@ const GuideDashboard = () => {
       const msg = error.response?.data?.message || error.message || 'Update failed';
       const code = error.response?.status || '500';
       alert(`Status Update Failed (${code}): ${msg}`);
-      console.error('Toggle Live Error:', error.response?.data);
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  if (loading) return <DashboardSkeleton />;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-20 dark:bg-slate-950 min-h-screen">
@@ -248,156 +247,160 @@ const GuideDashboard = () => {
       <AnimatePresence>
         {activeBooking && (
           <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 shadow-2xl border border-white/5 flex flex-col lg:flex-row items-center justify-between gap-10 mb-12">
-             <div className="flex flex-col sm:flex-row items-center gap-8 text-white text-center sm:text-left">
-                <div className="relative">
-                  <img src={activeBooking.userId?.profilePicture || 'https://i.pravatar.cc/150'} className="w-24 h-24 rounded-[2rem] object-cover border-4 border-white/10" alt=""/>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-4 border-[#0f172a] rounded-full" />
+             <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+                   <Activity size={32} className="text-emerald-500 animate-pulse" />
                 </div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">{activeBooking.status === 'accepted' ? 'Action Required' : 'Trip in Progress'}</p>
-                   <h2 className="text-4xl font-black tracking-tighter italic">{activeBooking.userId?.name}</h2>
-                   <div className="flex items-center gap-2 justify-center sm:justify-start">
-                      <MapPin size={12} className="text-[#ff385c]"/>
-                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">{activeBooking.location} • {activeBooking.plan}</p>
-                   </div>
+                <div>
+                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> Live Session
+                   </span>
+                   <h2 className="text-3xl font-black text-white italic tracking-tighter mt-1">Tour in {activeBooking.location}</h2>
                 </div>
              </div>
 
-             <div className="flex flex-col sm:flex-row shadow-2xl items-center gap-4 bg-white/5 p-4 rounded-[2.5rem] border border-white/10 backdrop-blur-md">
+             <div className="flex flex-col md:flex-row items-center gap-6">
                 {activeBooking.status === 'accepted' ? (
-                  <>
-                     <a href={`tel:${activeBooking.userId?.phone || '+919876543210'}`} className="bg-emerald-500 p-4 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
-                        <Phone size={20} fill="currentColor"/>
-                     </a>
-                     <div className="flex items-center gap-3">
-                        <input 
-                          type="text" maxLength={4} placeholder="Enter OTP" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
-                          className="w-32 bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-center font-black text-white placeholder:text-white/20"
-                        />
-                        <button onClick={handleVerifyOtp} className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Verify & Start</button>
-                     </div>
-                  </>
+                   <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 flex items-center gap-6">
+                      <div className="space-y-1">
+                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Enter Trip OTP</p>
+                         <input 
+                            type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
+                            placeholder="0000" className="bg-transparent border-none text-2xl font-black text-white p-0 focus:ring-0 w-24 tracking-[0.2em]" 
+                         />
+                      </div>
+                      <button onClick={handleVerifyOtp} className="px-8 py-3 bg-white text-[#0f172a] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all">Start Trip</button>
+                   </div>
                 ) : (
-                  <div className="flex items-center gap-8 px-6 py-2">
-                     <div className="text-center">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Live Duration</p>
-                        <p className="text-3xl font-black text-white font-mono tracking-tighter">{Math.floor(tripTimer / 60)}:{(tripTimer % 60).toString().padStart(2, '0')}</p>
-                     </div>
-                     <div className="h-10 w-px bg-white/10" />
-                     <button onClick={handleEndTrip} className="bg-rose-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20">End Trip</button>
-                  </div>
+                   <div className="flex items-center gap-10">
+                      <div className="text-center space-y-1">
+                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Elapsed Time</p>
+                         <p className="text-3xl font-black text-white font-mono">{Math.floor(tripTimer / 60)}:{Math.floor(tripTimer % 60).toString().padStart(2, '0')}</p>
+                      </div>
+                      <button onClick={handleEndTrip} className="px-10 py-4 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all">Complete Trip</button>
+                   </div>
                 )}
              </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Dashboard UI */}
-      <div className="bg-[#0f172a] p-10 rounded-[3rem] border border-white/5 space-y-10">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-          <div className="space-y-1">
-             <h1 className="text-4xl font-black text-white tracking-tighter italic">Welcome, {user?.name.split(' ')[0]}</h1>
-          </div>
-          <button 
-            onClick={() => isLive ? toggleLive() : setShowGoLiveConfig(true)}
-            className={`px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-4 transition-all ${isLive ? 'bg-emerald-500 text-white shadow-2xl' : 'bg-white text-slate-900'}`}
-          >
-            {isLive ? <Wifi className="animate-pulse"/> : <WifiOff/>}
-            {isLive ? 'You are Online' : 'Go Online'}
-          </button>
-        </div>
-
-        {/* GO LIVE CONFIG (Area Selection) */}
-        {showGoLiveConfig && !isLive && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-10 border-t border-white/5 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-               <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Select Service Areas</p>
-                  <div className="flex flex-wrap gap-2">
-                     {['Puri', 'Konark', 'Bhubaneswar', 'Cuttack'].map(area => (
-                       <button 
-                        key={area} onClick={() => setSelectedAreas(prev => prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area])}
-                        className={`px-6 py-2.5 rounded-full text-[10px] font-bold border transition-all ${selectedAreas.includes(area) ? 'bg-[#ff385c] border-[#ff385c] text-white' : 'bg-transparent border-white/10 text-white/60'}`}
-                       >
-                          {area}
-                       </button>
-                     ))}
-                  </div>
+      {/* 3. QUICK STATS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+         {[
+            { label: 'Total Earnings', value: `₹${stats.totalEarnings}`, icon: <DollarSign />, color: 'emerald' },
+            { label: 'Pending Requests', value: stats.pendingBookings, icon: <Activity />, color: 'amber' },
+            { label: 'Overall Rating', value: stats.rating, icon: <Star />, color: 'blue' },
+            { label: 'Total Trips', value: stats.totalTrips, icon: <Award />, color: 'rose' }
+         ].map((s, i) => (
+            <motion.div 
+               key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+               className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-4"
+            >
+               <div className={`w-12 h-12 bg-${s.color}-50 dark:bg-${s.color}-500/10 text-${s.color}-500 rounded-2xl flex items-center justify-center`}>
+                  {s.icon}
                </div>
-               <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">Service Languages</p>
-                  <div className="flex flex-wrap gap-2">
-                     {['Hindi', 'English', 'Odia'].map(lang => (
-                       <button 
-                        key={lang} onClick={() => setSelectedLangs(prev => prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang])}
-                        className={`px-6 py-2.5 rounded-full text-[10px] font-bold border transition-all ${selectedLangs.includes(lang) ? 'bg-blue-600 border-blue-600 text-white' : 'bg-transparent border-white/10 text-white/60'}`}
-                       >
-                          {lang}
-                       </button>
-                     ))}
+               <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white mt-1 italic">{s.value}</p>
+               </div>
+            </motion.div>
+         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+         {/* 4. MAIN ACTION: LIVE TOGGLE */}
+         <div className="lg:col-span-1">
+            <div className={`p-10 rounded-[3rem] transition-all duration-500 shadow-2xl relative overflow-hidden ${isLive ? 'bg-emerald-500 text-white' : 'bg-slate-900 text-white/40'}`}>
+               {isLive && <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }} transition={{ repeat: Infinity, duration: 3 }} className="absolute inset-0 bg-white rounded-full scale-150" />}
+               
+               <div className="relative z-10 space-y-10">
+                  <div className="flex justify-between items-start">
+                     <div>
+                        <h3 className="text-3xl font-black italic tracking-tighter text-white">Go Live</h3>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isLive ? 'text-white/60' : 'text-white/20'}`}>
+                           {isLive ? 'You are visible to travelers' : 'Appear offline to others'}
+                        </p>
+                     </div>
+                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${isLive ? 'bg-white/20 border-white/20 text-white' : 'bg-white/5 border-white/5 text-white/20'}`}>
+                        {isLive ? <Wifi size={24} /> : <WifiOff size={24} />}
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <button 
+                        onClick={toggleLive}
+                        className={`w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-2xl ${isLive ? 'bg-white text-emerald-500' : 'bg-emerald-500 text-white'}`}
+                     >
+                        {isLive ? 'Stop Session' : 'Start Session'}
+                     </button>
+                     <p className="text-[9px] text-center font-bold uppercase tracking-widest opacity-40">Verification Status: {guideStatus}</p>
                   </div>
                </div>
             </div>
-            <button onClick={() => { toggleLive(); setShowGoLiveConfig(false); }} className="w-full py-5 bg-white text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs">Confirm & Start Earning</button>
-          </motion.div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <StatCard label="Total Earned" value={`₹${stats.totalEarnings}`} icon={<DollarSign />} color="primary" trend="Lifetime" />
-        <StatCard label="Rating" value={stats.rating.toFixed(1)} icon={<Star />} color="primary" trend="Verified" />
-        <StatCard label="Active Tab" value={activeTab.toUpperCase()} icon={<Activity />} color="secondary" trend="Dashboard" />
-      </div>
-
-      <div className="bg-[#0f172a] rounded-[3.5rem] border border-white/5 p-10">
-         <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-black text-white tracking-tighter uppercase italic">Recent Trips</h3>
-            <button className="text-[10px] font-black uppercase text-blue-500 tracking-widest">View All</button>
          </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {bookings.filter(b => b.status === 'completed').slice(0, 4).map(b => (
-                <div key={b._id} className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 space-y-6">
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                         <div className="w-14 h-14 bg-[#1e293b] rounded-2xl flex items-center justify-center text-white/20"><User size={24}/></div>
-                         <div>
-                            <p className="font-black text-white italic">{b.userId?.name}</p>
-                            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{new Date(b.createdAt).toLocaleDateString()}</p>
-                         </div>
-                      </div>
-                      <div className="text-right">
-                         <p className="text-2xl font-black text-emerald-500">₹{b.price}</p>
-                         <p className="text-[9px] font-black text-white/20 uppercase tracking-widest">{b.plan}</p>
-                      </div>
-                   </div>
-                   {b.review?.rating && (
-                     <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                           {[...Array(5)].map((_, i) => (
-                             <Star key={i} size={10} className={`${i < b.review.rating ? 'text-amber-500 fill-current' : 'text-white/10'}`} />
-                           ))}
-                        </div>
-                        <p className="text-[10px] text-white/40 font-bold italic truncate ml-4">"{b.review.comment}"</p>
+
+         {/* 5. RECENT BOOKINGS TABLE */}
+         <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden h-full">
+               <div className="p-8 lg:p-10 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white italic tracking-tighter">Recent Activities</h3>
+                  <div className="flex gap-2">
+                     {['bookings', 'reviews'].map(tab => (
+                        <button 
+                           key={tab} onClick={() => setActiveTab(tab)}
+                           className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-slate-900 text-white' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'}`}
+                        >
+                           {tab}
+                        </button>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="p-4 lg:p-8">
+                  {activeTab === 'bookings' ? (
+                     <div className="space-y-4">
+                        {bookings.slice(0, 5).map((b, i) => (
+                           <motion.div 
+                              key={b._id} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.1 }}
+                              className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:bg-white dark:hover:bg-slate-800 transition-all shadow-sm hover:shadow-xl"
+                           >
+                              <div className="flex items-center gap-6">
+                                 <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                    <Calendar size={20} />
+                                 </div>
+                                 <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(b.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{b.location}</h4>
+                                 </div>
+                              </div>
+                              <div className="text-right">
+                                 <p className="text-sm font-black text-slate-900 dark:text-white italic">₹{b.price}</p>
+                                 <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-full ${b.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>{b.status}</span>
+                              </div>
+                           </motion.div>
+                        ))}
+                        {bookings.length === 0 && <p className="text-center py-10 text-slate-400 text-xs font-bold uppercase tracking-widest">No activities yet</p>}
                      </div>
-                   )}
-                </div>
-            ))}
-            {bookings.length === 0 && <p className="text-center text-white/20 py-10 font-bold italic w-full">No completed trips yet</p>}
+                  ) : (
+                     <div className="space-y-4">
+                        {bookings.filter(b => b.review).slice(0, 5).map((b, i) => (
+                           <motion.div key={i} className="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl space-y-3">
+                              <div className="flex justify-between items-center">
+                                 <div className="flex text-amber-500"><Star size={12} fill="currentColor" /> <Star size={12} fill="currentColor" /> <Star size={12} fill="currentColor" /></div>
+                                 <span className="text-[10px] font-bold text-slate-400">{new Date(b.review.createdAt).toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 italic">"{b.review.comment}"</p>
+                           </motion.div>
+                        ))}
+                     </div>
+                  )}
+               </div>
+            </div>
          </div>
       </div>
     </div>
   );
 };
-
-const StatCard = ({ label, value, icon, color, trend }) => (
-  <div className="bg-[#0f172a] p-10 rounded-[3rem] border border-white/5 shadow-2xl">
-    <div className={`w-14 h-14 rounded-[1.2rem] flex items-center justify-center mb-6 ${color === 'primary' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>{icon}</div>
-    <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">{label}</p>
-    <h3 className="text-4xl font-black text-white tracking-tighter italic">{value}</h3>
-    <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-4 flex items-center gap-2">
-       <ArrowUpRight size={14} className="text-emerald-500"/> {trend}
-    </p>
-  </div>
-);
 
 export default GuideDashboard;

@@ -28,4 +28,9 @@ const bookingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Optimization: Indexing for faster lookups
+bookingSchema.index({ userId: 1 });
+bookingSchema.index({ guideId: 1 });
+bookingSchema.index({ status: 1 });
+
 module.exports = mongoose.model('Booking', bookingSchema);

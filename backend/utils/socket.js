@@ -63,6 +63,44 @@ const initSocket = (server) => {
       });
     });
 
+    // Real-time Chat with Access Control
+    socket.on('sendMessage', async (data) => {
+      const { bookingId, text, recipientId, senderRole } = data;
+      if (!bookingId || !text || !recipientId) return;
+
+      try {
+        const Booking = require('../models/Booking');
+        const booking = await Booking.findById(bookingId);
+
+        if (!booking) {
+          return socket.emit('chatError', { message: 'Booking not found' });
+        }
+
+        // Access Control: Only allow chat if trip is active
+        const allowedStatuses = ['accepted', 'ongoing'];
+        if (!allowedStatuses.includes(booking.status)) {
+          return socket.emit('chatError', { 
+            message: 'Chat closed. Trip is already completed or cancelled.',
+            status: booking.status
+          });
+        }
+
+        // Broadcast to recipient
+        io.to(recipientId).emit('receiveMessage', {
+          _id: Date.now().toString(),
+          bookingId,
+          senderId: userId,
+          senderRole,
+          text,
+          timestamp: new Date()
+        });
+
+      } catch (err) {
+        console.error('Chat Error:', err);
+        socket.emit('chatError', { message: 'Failed to send message' });
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log(`User disconnected: ${socket.id}`);
     });
