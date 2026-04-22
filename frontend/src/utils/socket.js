@@ -4,7 +4,7 @@ let socket;
 
 export const connectSocket = (user) => {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', {
+    socket = io(import.meta.env.VITE_SOCKET_URL || 'https://guide-go-backend.onrender.com', {
       auth: {
         token: localStorage.getItem('gg_token'),
         user
