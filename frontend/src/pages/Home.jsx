@@ -17,6 +17,11 @@ const Home = () => {
   const [currency, setCurrency] = useState('INR');
   const [activeBooking, setActiveBooking] = useState(null);
   const [showSticky, setShowSticky] = useState(false);
+  
+  // Functional Search States
+  const [locationQuery, setLocationQuery] = useState('Puri');
+  const [duration, setDuration] = useState('2 Hours');
+  const [language, setLanguage] = useState('Hindi');
 
   const { scrollY } = useScroll();
 
@@ -115,29 +120,84 @@ const Home = () => {
               </h1>
            </motion.div>
 
-           {/* --- FLOATING SEARCH BAR (AIRBNB STYLE) --- */}
+           {/* --- GUIDEGO PREMIUM SEARCH PANEL (UNIQUE DESIGN) --- */}
            <div className="max-w-4xl mx-auto">
-              <div className="search-pill bg-white w-full h-20 pl-10 pr-4 flex items-center justify-between group cursor-pointer border border-[#dddddd] shadow-xl hover:shadow-2xl transition-all">
-                 <div className="flex-1 flex items-center gap-8 divide-x divide-[#dddddd]">
-                    <div className="flex flex-col text-left">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#222222] mb-1">Where</span>
-                       <span className="text-sm font-medium text-[#717171]">Search destinations</span>
+              <div className="relative">
+                 <div className="bg-white/80 backdrop-blur-2xl w-full rounded-[2.5rem] p-3 border border-white/50 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                    
+                    {/* Location Segment */}
+                    <div className="flex-1 px-8 py-4 rounded-[1.8rem] hover:bg-white transition-all group flex flex-col text-left">
+                       <div className="flex items-center gap-2 mb-1">
+                          <MapPin size={14} className="text-[#ff385c]" />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Where to?</span>
+                       </div>
+                       <select 
+                         value={locationQuery}
+                         onChange={(e) => setLocationQuery(e.target.value)}
+                         className="bg-transparent border-none text-base font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer"
+                       >
+                          <option>Puri</option>
+                          <option>Konark</option>
+                          <option>Bhubaneswar</option>
+                          <option>Cuttack</option>
+                       </select>
                     </div>
-                    <div className="flex flex-col text-left pl-8">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#222222] mb-1">Plan</span>
-                       <span className="text-sm font-medium text-[#717171]">Select duration</span>
+
+                    <div className="hidden md:block w-[1px] h-10 bg-[#dddddd]/50" />
+
+                    {/* Duration Segment */}
+                    <div className="flex-1 px-8 py-4 rounded-[1.8rem] hover:bg-white transition-all group flex flex-col text-left">
+                       <div className="flex items-center gap-2 mb-1">
+                          <Zap size={14} className="text-amber-500" />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[#222222]">The Plan</span>
+                       </div>
+                       <select 
+                         value={duration}
+                         onChange={(e) => setDuration(e.target.value)}
+                         className="bg-transparent border-none text-base font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer"
+                       >
+                          <option>2 Hours</option>
+                          <option>4 Hours</option>
+                          <option>Full Day</option>
+                       </select>
                     </div>
-                    <div className="flex flex-col text-left pl-8">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#222222] mb-1">Language</span>
-                       <span className="text-sm font-medium text-[#717171]">Select preference</span>
+
+                    <div className="hidden md:block w-[1px] h-10 bg-[#dddddd]/50" />
+
+                    {/* Language Segment */}
+                    <div className="flex-1 px-8 py-4 rounded-[1.8rem] hover:bg-white transition-all group flex flex-col text-left">
+                       <div className="flex items-center gap-2 mb-1">
+                          <Globe size={14} className="text-blue-500" />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Speak In</span>
+                       </div>
+                       <select 
+                         value={language}
+                         onChange={(e) => setLanguage(e.target.value)}
+                         className="bg-transparent border-none text-base font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer"
+                       >
+                          <option>Hindi</option>
+                          <option>English</option>
+                          <option>Odia</option>
+                       </select>
                     </div>
+
+                    {/* Search Trigger */}
+                    <button 
+                      onClick={() => navigate('/book-guide', { 
+                        state: { 
+                          searchParams: { 
+                            location: locationQuery, 
+                            plan: duration, 
+                            language: language 
+                          } 
+                        } 
+                      })}
+                      className="h-16 md:h-20 px-8 md:px-12 bg-[#222222] text-white rounded-[1.8rem] flex items-center justify-center gap-3 hover:bg-black active:scale-95 transition-all shadow-xl shadow-black/10 group"
+                    >
+                       <span className="font-bold text-sm hidden md:block">Find Expert</span>
+                       <Search size={20} strokeWidth={3} className="group-hover:scale-110 transition-transform" />
+                    </button>
                  </div>
-                 <button 
-                  onClick={() => navigate('/book-guide')}
-                  className="w-14 h-14 bg-[#ff385c] text-white rounded-full flex items-center justify-center hover:bg-[#e00b41] transition-all"
-                 >
-                    <Search size={22} strokeWidth={3} />
-                 </button>
               </div>
            </div>
 

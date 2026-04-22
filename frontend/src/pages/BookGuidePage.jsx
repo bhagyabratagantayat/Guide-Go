@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { 
   MapPin, Clock, CheckCircle, Search, Phone, 
@@ -146,6 +147,30 @@ const BookGuidePage = () => {
 
     checkActiveSession();
   }, []);
+
+  // --- Handle Incoming Search from Home ---
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.searchParams) {
+      const { location: loc, plan, language: lang } = location.state.searchParams;
+      
+      // Map plan to price
+      const priceMap = {
+        '2 Hours': 499,
+        '4 Hours': 899,
+        'Full Day': 1499
+      };
+
+      setFormData({
+        location: loc + ', Odisha',
+        plan: plan,
+        language: lang,
+        price: priceMap[plan] || 499
+      });
+      
+      setScreen('booking-form');
+    }
+  }, [location.state]);
 
   // --- Actions ---
   const handleFindGuide = async () => {
