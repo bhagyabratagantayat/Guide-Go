@@ -5,24 +5,29 @@ const api = axios.create({
   withCredentials: true // Crucial for HttpOnly cookies
 });
 
-// Response interceptor for token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle Token Expired
+    // Prevent infinite loop if refresh token itself fails
+    if (originalRequest.url.includes('/auth/refresh-token')) {
+      return Promise.reject(error);
+    }
+
+    // Handle Token Expired (401)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        await axios.post(`${api.defaults.baseURL}/auth/refresh-token`, {}, { withCredentials: true });
+        await api.post('/auth/refresh-token');
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, logout
+        // Refresh failed, clear user and redirect
         localStorage.removeItem('gg_user');
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
+        return Promise.reject(refreshError);
       }
     }
 

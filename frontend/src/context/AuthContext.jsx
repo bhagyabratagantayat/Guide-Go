@@ -12,11 +12,19 @@ export const AuthProvider = ({ children }) => {
       const userData = JSON.parse(localStorage.getItem('gg_user'));
       if (userData) {
         try {
+          // If we have local user data, try to sync with server
           const { data } = await api.get('/auth/profile');
           setUser({ ...userData, ...data });
         } catch (error) {
-          localStorage.removeItem('gg_user');
-          setUser(null);
+          // Only clear if it's a definitive auth failure (401/403)
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            console.warn('Session expired or invalid, logging out...');
+            localStorage.removeItem('gg_user');
+            setUser(null);
+          } else {
+            // Server might be down or network issue, keep local state for now
+            setUser(userData);
+          }
         }
       }
       setLoading(false);

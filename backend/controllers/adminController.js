@@ -91,6 +91,11 @@ const updateGuideStatus = asyncHandler(async (req, res, next) => {
   guide.status = status;
   await guide.save();
 
+  // SYNC: If approved, ensure the User model role is also 'guide'
+  if (status === 'approved') {
+    await User.findByIdAndUpdate(guide.userId, { role: 'guide' });
+  }
+
   // Notify guide via socket
   if (req.io) {
     req.io.to(guide.userId.toString()).emit('notification', {

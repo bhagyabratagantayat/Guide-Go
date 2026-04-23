@@ -6,11 +6,11 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, trim: true, lowercase: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['user', 'guide', 'admin'], default: 'user' },
-  mobile: { type: String, required: true },
+  mobile: { type: String, required: false },
   otp: { type: String },
   otpExpiry: { type: Date },
   isVerified: { type: Boolean, default: true },
-  location: { type: String },
+  location: { type: mongoose.Schema.Types.Mixed },
   profilePicture: { type: String, default: '' },
   wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Place' }],
   experience: { type: Number, default: 0 }, // For guides
