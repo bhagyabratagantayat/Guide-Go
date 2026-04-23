@@ -25,10 +25,12 @@ const setTokenCookies = (res, user) => {
   const accessToken = generateAccessToken(user._id, user.role);
   const refreshToken = generateRefreshToken(user._id, user.role);
 
+  const isProd = process.env.NODE_ENV === 'production';
+  
   const cookieOptions = {
     httpOnly: true,
-    secure: config.env === 'production',
-    sameSite: config.env === 'production' ? 'none' : 'lax',
+    secure: isProd, // Force secure in production
+    sameSite: isProd ? 'none' : 'lax', // Must be 'none' for cross-site (Vercel -> Render)
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   };
 
