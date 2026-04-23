@@ -9,7 +9,6 @@ const cookieParser = require('cookie-parser');
 const requestLogger = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 const connectDB = require('./config/db');
-const { ensureDemoAccounts } = require('./utils/autoSeed');
 
 const http = require('http');
 const initSocket = require('./utils/socket');
@@ -105,7 +104,6 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
-    await ensureDemoAccounts();
 
     const PORT = config.port;
     server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
