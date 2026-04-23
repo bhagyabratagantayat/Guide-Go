@@ -12,6 +12,32 @@ const generateOTP = () => {
   return otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
 };
 
+// ── TOKEN HELPERS ───────────────────────────────────────────
+const generateAccessToken = (id, role) => {
+  return jwt.sign({ id, role }, config.jwtSecret, { expiresIn: '15m' }); // Short lived
+};
+
+const generateRefreshToken = (id, role) => {
+  return jwt.sign({ id, role }, config.refreshTokenSecret, { expiresIn: '7d' }); // Longer lived
+};
+
+const setTokenCookies = (res, user) => {
+  const accessToken = generateAccessToken(user._id, user.role);
+  const refreshToken = generateRefreshToken(user._id, user.role);
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: config.env === 'production',
+    sameSite: config.env === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  };
+
+  res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
+  res.cookie('refreshToken', refreshToken, cookieOptions);
+
+  return refreshToken;
+};
+
 const registerUser = asyncHandler(async (req, res, next) => {
   const { name, email, password, role, mobile, location } = req.body;
   const normalizedEmail = email.trim().toLowerCase();
@@ -121,7 +147,7 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
           <div style="padding: 40px; text-align: center;">
             <h2 style="font-weight: 900; letter-spacing: -0.02em; color: #0f172a;">Welcome to the Fold, ${user.name}</h2>
             <p style="line-height: 1.6; color: #64748b; margin-bottom: 30px;">Your explorer profile is now live. You can start booking verified local guides or managing your tour operations immediately.</p>
-            <a href="https://guidego-travel.vercel.app/login" style="display: inline-block; background: #0f172a; color: white; padding: 18px 40px; border-radius: 16px; text-decoration: none; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; shadow: 0 10px 15px rgba(0,0,0,0.2);">Enter the Platform</a>
+            <a href="${config.clientUrl}/login" style="display: inline-block; background: #0f172a; color: white; padding: 18px 40px; border-radius: 16px; text-decoration: none; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; shadow: 0 10px 15px rgba(0,0,0,0.2);">Enter the Platform</a>
           </div>
         </div>
       </div>
@@ -131,7 +157,7 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
       email: user.email,
       subject: 'Welcome to GuideGo - Profile Verified 🎉',
       htmlMessage: successHtml,
-      message: `Your GuideGo profile is verified! Login at: https://guidego-travel.vercel.app/login`
+      message: `Your GuideGo profile is verified! Login at: ${config.clientUrl}/login`
     });
   } catch (error) {
     logger.error(`Welcome email failure: ${error.message}`);
@@ -150,6 +176,11 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
     }
   }
   
+  // Set cookies
+  const refreshToken = setTokenCookies(res, user);
+  user.refreshToken = refreshToken;
+  await user.save();
+  
   res.json({
     _id: user._id,
     name: user.name,
@@ -159,7 +190,6 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
     location: user.location,
     kycStatus,
     profileComplete,
-    token: generateToken(user._id, user.role),
   });
 });
 
@@ -195,9 +225,27 @@ const loginUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Invalid email or password', 401, 'INVALID_CREDENTIALS'));
   }
 
+  // Check if account is locked
+  if (user.lockUntil && user.lockUntil > Date.now()) {
+    return next(new ErrorResponse('Account locked due to too many failed attempts. Please try again later.', 403, 'ACCOUNT_LOCKED'));
+  }
+
   if (!(await user.comparePassword(password))) {
+    // Increment login attempts
+    user.loginAttempts += 1;
+    if (user.loginAttempts >= 5) {
+      user.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 mins lock
+      user.loginAttempts = 0; // Reset after lock
+      await user.save();
+      return next(new ErrorResponse('Account locked due to too many failed attempts. Please try again later.', 403, 'ACCOUNT_LOCKED'));
+    }
+    await user.save();
     return next(new ErrorResponse('Invalid email or password', 401, 'INVALID_CREDENTIALS'));
   }
+
+  // Reset attempts on success
+  user.loginAttempts = 0;
+  user.lockUntil = undefined;
 
   logger.info(`User logged in: ${user.email}`);
 
@@ -214,6 +262,11 @@ const loginUser = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // Set cookies
+  const refreshToken = setTokenCookies(res, user);
+  user.refreshToken = refreshToken;
+  await user.save();
+
   res.json({
     _id: user._id,
     name: user.name,
@@ -223,8 +276,44 @@ const loginUser = asyncHandler(async (req, res, next) => {
     location: user.location,
     kycStatus,
     profileComplete,
-    token: generateToken(user._id, user.role),
   });
+});
+
+const refreshToken = asyncHandler(async (req, res, next) => {
+  const token = req.cookies.refreshToken;
+  if (!token) return next(new ErrorResponse('Not authorized', 401));
+
+  const decoded = jwt.verify(token, config.refreshTokenSecret);
+  const user = await User.findById(decoded.id);
+
+  if (!user || user.refreshToken !== token) {
+    return next(new ErrorResponse('Invalid refresh token', 401));
+  }
+
+  const accessToken = generateAccessToken(user._id, user.role);
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: config.env === 'production',
+    sameSite: config.env === 'production' ? 'none' : 'lax',
+    maxAge: 15 * 60 * 1000
+  });
+
+  res.json({ success: true });
+});
+
+const logoutUser = asyncHandler(async (req, res, next) => {
+  res.cookie('accessToken', '', { maxAge: 1 });
+  res.cookie('refreshToken', '', { maxAge: 1 });
+  
+  if (req.user) {
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.refreshToken = undefined;
+      await user.save();
+    }
+  }
+
+  res.json({ success: true });
 });
 
 const forgotPassword = asyncHandler(async (req, res, next) => {
@@ -466,6 +555,8 @@ const generateToken = (id, role) => {
 module.exports = { 
   registerUser, 
   loginUser, 
+  logoutUser,
+  refreshToken,
   verifyOTP, 
   resendOTP,
   forgotPassword, 

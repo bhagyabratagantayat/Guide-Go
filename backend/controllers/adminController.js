@@ -134,9 +134,18 @@ const updateUserRole = asyncHandler(async (req, res, next) => {
 const deleteUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) return next(new ErrorResponse('User not found', 404));
+
+  // Cascading Delete: Remove associated Guide profile
+  if (user.role === 'guide') {
+    await Guide.findOneAndDelete({ userId: user._id });
+  }
+
+  // Optional: Remove associated bookings (or mark them as cancelled)
+  await Booking.deleteMany({ userId: user._id });
+  await Booking.deleteMany({ guideId: user._id });
   
   await user.deleteOne();
-  res.json({ success: true, message: 'User removed' });
+  res.json({ success: true, message: 'User and all associated data removed successfully' });
 });
 
 // @desc    Create a new admin

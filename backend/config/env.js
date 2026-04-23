@@ -17,6 +17,7 @@ const config = {
   port: parseInt(process.env.PORT, 10) || 5000,
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
+  refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET || 'guidego_refresh_secret_key_2026',
   geminiApiKey: process.env.GEMINI_API_KEY,
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
@@ -33,7 +34,8 @@ const config = {
     smtpUser: process.env.SMTP_USER,
     smtpPass: process.env.SMTP_PASS,
     from: process.env.EMAIL_FROM || 'guidego2026@gmail.com'
-  }
+  },
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173'
 };
 
 console.log('🚀 SYSTEM STARTING WITH CONFIG:');

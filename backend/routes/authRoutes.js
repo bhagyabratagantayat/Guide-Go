@@ -9,7 +9,9 @@ const {
   resetPassword,
   getProfile,
   testEmail,
-  googleSync
+  googleSync,
+  refreshToken,
+  logoutUser
 } = require('../controllers/authController');
 const { authenticateUser } = require('../middleware/auth');
 const {
@@ -32,6 +34,8 @@ router.post('/forgot-password', validateForgotPassword, forgotPassword);
 router.post('/verify-reset-otp', validateVerifyResetOTP, verifyResetOTP);
 router.post('/reset-password', validateResetPassword, resetPassword);
 router.post('/google-sync', googleSync);
+router.post('/refresh-token', refreshToken);
+router.post('/logout', logoutUser);
 router.get('/profile', authenticateUser, getProfile);
 
 module.exports = router;

@@ -124,7 +124,7 @@ const Register = () => {
                 onChange={(e) => setRole(e.target.value)}
                 className="input-field pl-12 appearance-none bg-[var(--bg-input)]"
               >
-                <option value="user" className="bg-[var(--bg-card)]">Traveler</option>
+                <option value="user" className="bg-[var(--bg-card)]">User</option>
                 <option value="guide" className="bg-[var(--bg-card)]">Guide</option>
               </select>
             </div>

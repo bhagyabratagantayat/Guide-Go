@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
@@ -20,6 +20,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +30,7 @@ const Login = () => {
       const role = data.role;
       if (role === 'admin') navigate('/admin');
       else if (role === 'guide') navigate('/guide/verify-identity');
-      else navigate('/');
+      else navigate(from, { replace: true });
     } catch (error) {
       if (error.response?.data?.errorCode === 'NOT_VERIFIED') {
         const normalizedEmail = email.trim().toLowerCase();
@@ -55,7 +57,7 @@ const Login = () => {
       const role = data.role;
       if (role === 'admin') navigate('/admin');
       else if (role === 'guide') navigate('/guide');
-      else navigate('/');
+      else navigate(from, { replace: true });
     } catch (error) {
       console.error('Demo Login Error:', error);
       if (!error.response) {
@@ -144,7 +146,7 @@ const Login = () => {
                 onClick={() => handleDemoLogin('user@demo.com', 'demo123')}
                 className="flex items-center justify-between px-6 py-3.5 bg-white/5 border border-white/5 rounded-xl hover:bg-[var(--accent-bg)] hover:text-[var(--accent)] transition-all group"
               >
-                 <span className="text-[10px] font-black uppercase tracking-widest">Explorer Demo</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest">User Demo</span>
                  <ArrowRight className="w-4 h-4 opacity-30 group-hover:opacity-100" />
               </button>
               <button 

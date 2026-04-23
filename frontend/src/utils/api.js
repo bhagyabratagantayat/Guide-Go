@@ -1,26 +1,31 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://guide-go-backend.onrender.com/api'
-  // Removed static Content-Type to allow FormData to set its own boundaries
+  baseURL: import.meta.env.VITE_API_URL || 'https://guide-go-backend.onrender.com/api',
+  withCredentials: true // Crucial for HttpOnly cookies
 });
 
-// Add a request interceptor to attach JWT
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('gg_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Global response interceptor for detailed error logging & 401s
+// Response interceptor for token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Handle Token Expired
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        await axios.post(`${api.defaults.baseURL}/auth/refresh-token`, {}, { withCredentials: true });
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, logout
+        localStorage.removeItem('gg_user');
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    }
+
     // Safety check for payload logging (avoid crashing on FormData)
     let payload = 'None';
     try {
@@ -36,17 +41,8 @@ api.interceptors.response.use(
     console.group(`🚨 API ERROR: [${error.config?.method?.toUpperCase()}] ${error.config?.url}`);
     console.error('Status:', error.response?.status);
     console.error('Message:', error.response?.data?.message || error.message);
-    console.error('Payload:', payload);
     console.groupEnd();
 
-    if (error.response?.status === 401) {
-      localStorage.removeItem('gg_token');
-      localStorage.removeItem('gg_user');
-      localStorage.removeItem('userInfo');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-    }
     return Promise.reject(error);
   }
 );

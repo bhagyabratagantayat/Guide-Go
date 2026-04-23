@@ -21,6 +21,9 @@ const userSchema = new mongoose.Schema({
   supabaseId: { type: String, default: '' },
   avatar: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
+  loginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date },
+  refreshToken: { type: String },
 });
 
 userSchema.pre('save', async function () {

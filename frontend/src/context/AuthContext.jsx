@@ -8,12 +8,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('gg_token');
-    const userData = JSON.parse(localStorage.getItem('gg_user'));
-    if (token && userData) {
-      setUser(userData);
-    }
-    setLoading(false);
+    const checkAuth = async () => {
+      const userData = JSON.parse(localStorage.getItem('gg_user'));
+      if (userData) {
+        try {
+          const { data } = await api.get('/auth/profile');
+          setUser({ ...userData, ...data });
+        } catch (error) {
+          localStorage.removeItem('gg_user');
+          setUser(null);
+        }
+      }
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -22,7 +30,6 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('gg_token', data.token);
     localStorage.setItem('gg_user', JSON.stringify(data));
     setUser(data);
     return { data };
@@ -34,8 +41,12 @@ export const AuthProvider = ({ children }) => {
     setUser(newUser);
   };
 
-  const logout = () => {
-    localStorage.removeItem('gg_token');
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
     localStorage.removeItem('gg_user');
     localStorage.removeItem('userInfo');
     setUser(null);
@@ -43,7 +54,6 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOTP = async (email, otp) => {
     const { data } = await api.post('/auth/verify-otp', { email, otp });
-    localStorage.setItem('gg_token', data.token);
     localStorage.setItem('gg_user', JSON.stringify(data));
     setUser(data);
     return data;

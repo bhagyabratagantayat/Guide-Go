@@ -7,28 +7,34 @@ const asyncHandler = require('../middleware/asyncHandler');
 const authenticateUser = asyncHandler(async (req, res, next) => {
   let token;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, config.jwtSecret);
-      
-      req.user = await User.findById(decoded.id).select('-password');
-      
-      if (!req.user) {
-        console.log("AUTH ERROR: User not found for ID", decoded.id);
-        return next(new ErrorResponse('Not authorized - user no longer exists', 401, 'UNAUTHORIZED'));
-      }
-      
-      console.log("AUTH SUCCESS: User", req.user.email);
-      return next();
-    } catch (error) {
-      console.error('Auth Middleware Token Error:', error.message);
-      return next(new ErrorResponse('Not authorized, token failed', 401, 'UNAUTHORIZED'));
-    }
+  if (req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {
     return next(new ErrorResponse('Not authorized, no token provided', 401, 'UNAUTHORIZED'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    
+    req.user = await User.findById(decoded.id).select('-password');
+    
+    if (!req.user) {
+      console.log("AUTH ERROR: User not found for ID", decoded.id);
+      return next(new ErrorResponse('Not authorized - user no longer exists', 401, 'UNAUTHORIZED'));
+    }
+    
+    console.log("AUTH SUCCESS: User", req.user.email);
+    return next();
+  } catch (error) {
+    console.error('Auth Middleware Token Error:', error.message);
+    if (error.name === 'TokenExpiredError') {
+      return next(new ErrorResponse('Token expired', 401, 'TOKEN_EXPIRED'));
+    }
+    return next(new ErrorResponse('Not authorized, token failed', 401, 'UNAUTHORIZED'));
   }
 });
 

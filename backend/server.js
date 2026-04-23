@@ -5,6 +5,7 @@ const config = require('./config/env');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { xss } = require('express-xss-sanitizer');
+const cookieParser = require('cookie-parser');
 const requestLogger = require('./middleware/requestLogger');
 const logger = require('./utils/logger');
 const connectDB = require('./config/db');
@@ -55,10 +56,19 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Strict rate limiting for Auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50, // Limit to 50 requests per 15 mins
+  message: 'Too many authentication attempts, please try again later'
+});
+app.use('/api/auth', authLimiter);
+
 // Data sanitization against XSS
 app.use(xss());
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(requestLogger);
 
 // Attach Socket.IO to req

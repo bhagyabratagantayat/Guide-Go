@@ -7,7 +7,6 @@ import {
   LogOut, MessageCircle, DollarSign
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useCurrency } from '../context/CurrencyContext';
 import { motion } from 'framer-motion';
 import logo from '../assets/GuideGo Logo.jpeg';
 
@@ -15,7 +14,6 @@ import { X } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
-  const { currency, setCurrency } = useCurrency();
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -128,42 +126,44 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Footer */}
       <div className="p-8 border-t border-[#f7f7f7] space-y-8">
-        {/* Currency Toggle */}
-        <div className="flex bg-[#f7f7f7] rounded-xl p-1 border border-[#ebebeb]">
-          {['INR', 'USD'].map((curr) => (
-            <button
-              key={curr}
-              onClick={() => setCurrency(curr)}
-              className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
-                currency === curr 
-                ? 'bg-white text-[#222222] shadow-sm shadow-black/5' 
-                : 'text-[#6a6a6a] hover:text-[#222222]'
-              }`}
-            >
-              {curr}
-            </button>
-          ))}
-        </div>
 
         {/* User Card */}
-        <div className="flex items-center justify-between group">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-full bg-[#f7f7f7] border border-[#dddddd] flex items-center justify-center text-[#ff385c] font-bold text-lg overflow-hidden shrink-0 shadow-sm">
-              {user?.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
+        {/* User Card / Login Actions */}
+        {user ? (
+          <div className="flex items-center justify-between group">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-full bg-[#f7f7f7] border border-[#dddddd] flex items-center justify-center text-[#ff385c] font-bold text-lg overflow-hidden shrink-0 shadow-sm">
+                {user?.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[14px] font-bold text-[#222222] leading-none mb-1 truncate">{user?.name || 'Guest'}</span>
+                <span className="text-[10px] text-[#6a6a6a] font-medium truncate">{user?.role || 'User'}</span>
+              </div>
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[14px] font-bold text-[#222222] leading-none mb-1 truncate">{user?.name || 'Guest'}</span>
-              <span className="text-[10px] text-[#6a6a6a] font-medium truncate">{user?.role || 'Explorer'}</span>
-            </div>
+            <button 
+              onClick={logout}
+              className="p-3 text-[#6a6a6a] hover:text-[#ff385c] hover:bg-[#f7f7f7] rounded-full transition-all"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
-          <button 
-            onClick={logout}
-            className="p-3 text-[#6a6a6a] hover:text-[#ff385c] hover:bg-[#f7f7f7] rounded-full transition-all"
-            title="Logout"
-          >
-            <LogOut size={20} />
-          </button>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => navigate('/register')}
+              className="w-full py-4 bg-[#ff385c] text-white rounded-xl text-[12px] font-black uppercase tracking-widest shadow-lg shadow-[#ff385c]/20 hover:bg-[#e31c5f] transition-all active:scale-95"
+            >
+              Join Now
+            </button>
+            <button 
+              onClick={() => navigate('/login')}
+              className="w-full py-4 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-[12px] font-black uppercase tracking-widest hover:bg-[#f7f7f7] transition-all"
+            >
+              Login Access
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

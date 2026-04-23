@@ -58,6 +58,10 @@ import ChatList from './pages/guide/ChatList';
 import GuideVerifyPage from './pages/GuideVerifyPage';
 import GuideSetupPage from './pages/GuideSetupPage';
 import GuideGuard from './components/GuideGuard';
+import ForgotPassword from './pages/ForgotPassword';
+import VerifyOTP from './pages/VerifyOTP';
+import VerifyResetOTP from './pages/VerifyResetOTP';
+import ResetPassword from './pages/ResetPassword';
 
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { CurrencyProvider } from './context/CurrencyContext.jsx';
@@ -129,13 +133,17 @@ function AppContent() {
               <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
               <Route path="/login" element={<PageWrapper><AuthPage /></PageWrapper>} />
               <Route path="/register" element={<PageWrapper><AuthPage /></PageWrapper>} />
+              <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
+              <Route path="/verify-otp" element={<PageWrapper><VerifyOTP /></PageWrapper>} />
+              <Route path="/verify-reset-otp" element={<PageWrapper><VerifyResetOTP /></PageWrapper>} />
+              <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfilePage /></ProtectedRoute>} />
               
               {/* Core Feature Routes */}
               <Route path="/book-guide" element={<ProtectedRoute><PageWrapper><BookGuidePage /></PageWrapper></ProtectedRoute>} />
               <Route path="/location/:name" element={<PageWrapper><LocationDetailPage /></PageWrapper>} />
-              <Route path="/guides/:id" element={<PageWrapper><GuideProfile /></PageWrapper>} />
+              <Route path="/guides/:id" element={<ProtectedRoute><PageWrapper><GuideProfile /></PageWrapper></ProtectedRoute>} />
               
               {/* Protected Sidebar Routes */}
               <Route path="/audio-guide" element={<ProtectedRoute><PageWrapper><AudioGuidePage /></PageWrapper></ProtectedRoute>} />
