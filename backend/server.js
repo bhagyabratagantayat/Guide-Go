@@ -15,7 +15,7 @@ const initSocket = require('./utils/socket');
 
 const app = express();
 const server = http.createServer(app);
-const io = initSocket(server);
+let io; // Will be initialized after DB connection
 
 // ── CORS ──────────────────────────────────────────────────────
 app.use(cors({
@@ -104,6 +104,7 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+    io = initSocket(server);
 
     const PORT = config.port;
     server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
