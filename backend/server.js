@@ -94,6 +94,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 app.use('/api/hotels', require('./routes/hotelRoutes'));
 app.use('/api/sos', require('./routes/sosRoutes'));
+app.use('/api/weather', require('./routes/weatherRoutes'));
 
 app.get('/', (req, res) => {
   res.send('GuideGo API is running...');

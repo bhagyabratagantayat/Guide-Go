@@ -1,198 +1,187 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sun, CloudRain, Cloud, Wind, Droplets, MapPin, 
-  Navigation, Sunrise, Sunset, CalendarDays, Loader2,
-  CloudLightning, CloudSnow, CloudFog
+  Navigation, Sunrise, Sunset, CalendarDays, Search,
+  CloudLightning, CloudSnow, Loader2, AlertCircle
 } from 'lucide-react';
+import api from '../utils/api';
 import { Helmet } from 'react-helmet-async';
 
-const API_KEY = '8738efe202ebcdb3b3c1a3af42d52c06';
-
 const Weather = () => {
+  const [city, setCity] = useState('Bhubaneswar');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [weatherData, setWeatherData] = useState(null);
-  const [forecastData, setForecastData] = useState([]);
 
-  useEffect(() => {
-    fetchWeather();
-  }, []);
-
-  const fetchWeather = async () => {
+  const fetchWeather = async (targetCity) => {
     try {
       setLoading(true);
-      // Get user location from profile or default to Bhubaneswar
-      const userData = JSON.parse(localStorage.getItem('gg_user'));
-      const city = userData?.location?.split(',')[0] || 'Bhubaneswar';
-
-      // 1. Fetch Current Weather
-      const currentRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
-      
-      // 2. Fetch 5 Day / 3 Hour Forecast (Free API usually provides this)
-      const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`);
-
-      // Process current weather
-      const current = currentRes.data;
-      setWeatherData({
-        temp: Math.round(current.main.temp),
-        condition: current.weather[0].description,
-        mainCondition: current.weather[0].main,
-        humidity: current.main.humidity,
-        wind: Math.round(current.wind.speed * 3.6), // Convert m/s to km/h
-        loc: `${current.name}, ${current.sys.country}`,
-        sunrise: new Date(current.sys.sunrise * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sunset: new Date(current.sys.sunset * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-
-      // Process forecast (Group by day and get noon temperature)
-      const dailyData = [];
-      const seenDates = new Set();
-      
-      forecastRes.data.list.forEach(item => {
-        const date = new Date(item.dt * 1000).toLocaleDateString();
-        if (!seenDates.has(date) && dailyData.length < 5) {
-          seenDates.add(date);
-          dailyData.push({
-            day: new Date(item.dt * 1000).toLocaleDateString([], { weekday: 'short' }),
-            temp: Math.round(item.main.temp),
-            main: item.weather[0].main
-          });
-        }
-      });
-      setForecastData(dailyData);
-      
-      setLoading(false);
+      setError(null);
+      const { data } = await api.get(`/weather/${targetCity}`);
+      if (data.success) {
+        setWeather(data);
+      }
     } catch (err) {
-      console.error('Weather Fetch Error:', err);
-      setError('Unable to load weather data. Please check your location settings.');
+      setError(err.response?.data?.message || 'City not found. Please try again.');
+    } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeather(city);
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      fetchWeather(searchQuery);
+      setCity(searchQuery);
+      setSearchQuery('');
     }
   };
 
   const getWeatherIcon = (condition, size = 24) => {
-    switch (condition?.toLowerCase()) {
-      case 'clear': return <Sun size={size} className="text-amber-500" />;
-      case 'clouds': return <Cloud size={size} className="text-blue-400" />;
-      case 'rain': 
-      case 'drizzle': return <CloudRain size={size} className="text-blue-500" />;
-      case 'thunderstorm': return <CloudLightning size={size} className="text-purple-500" />;
-      case 'snow': return <CloudSnow size={size} className="text-sky-200" />;
-      case 'mist':
-      case 'smoke':
-      case 'haze':
-      case 'fog': return <CloudFog size={size} className="text-slate-400" />;
-      default: return <Cloud size={size} className="text-blue-400" />;
-    }
+    const c = condition?.toLowerCase() || '';
+    if (c.includes('sun') || c.includes('clear')) return <Sun size={size} className="text-amber-400" />;
+    if (c.includes('rain')) return <CloudRain size={size} className="text-blue-400" />;
+    if (c.includes('thunder')) return <CloudLightning size={size} className="text-purple-400" />;
+    if (c.includes('snow')) return <CloudSnow size={size} className="text-slate-100" />;
+    if (c.includes('wind')) return <Wind size={size} className="text-emerald-400" />;
+    return <Cloud size={size} className="text-slate-400" />;
   };
 
-  if (loading) {
+  if (loading && !weather) {
     return (
-      <div className="h-screen flex items-center justify-center bg-slate-950">
-        <div className="text-center space-y-4">
-           <Loader2 size={48} className="text-blue-600 animate-spin mx-auto" />
-           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Syncing Climate Data...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Retrieving Satellite Data...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-10 max-w-7xl mx-auto space-y-12 bg-slate-950 min-h-screen rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
-      <Helmet><title>Weather | GuideGo</title></Helmet>
+    <div className="p-10 max-w-7xl mx-auto space-y-12 bg-slate-950 min-h-screen rounded-[3rem] border border-white/5 relative overflow-hidden shadow-2xl">
+      <Helmet><title>Weather Dashboard | GuideGo</title></Helmet>
       
-      {/* Glow Effects */}
+      {/* Dynamic Glows */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-600/5 blur-[120px] -z-10" />
 
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
         <div>
-          <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-2">Climate Insights</h1>
-          <h2 className="text-5xl font-black italic font-serif text-white tracking-tight">Weather Forecast</h2>
+          <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-2">Atmospheric Intelligence</h1>
+          <h2 className="text-5xl font-black italic font-serif text-white tracking-tight">Weather Dashboard</h2>
         </div>
-        <div className="bg-white/5 backdrop-blur-xl px-8 py-4 rounded-2xl flex items-center gap-4 text-blue-400 border border-white/10 shadow-2xl">
-           <MapPin size={20} />
-           <span className="text-[12px] font-black uppercase tracking-widest leading-none">{weatherData?.loc}</span>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:max-w-xl">
+           <form onSubmit={handleSearch} className="relative flex-grow group">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+              <input 
+                type="text" 
+                placeholder="Search any city (e.g. Puri, London)..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-900/50 border border-white/5 rounded-2xl pl-16 pr-6 py-5 text-white font-bold placeholder:text-slate-600 outline-none focus:border-blue-500/50 transition-all backdrop-blur-xl"
+              />
+           </form>
+           {weather && (
+             <div className="bg-blue-600/10 px-8 py-5 rounded-2xl flex items-center gap-3 text-blue-400 border border-blue-500/20 backdrop-blur-xl">
+                <MapPin size={18} />
+                <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5 whitespace-nowrap">{weather.current.loc}</span>
+             </div>
+           )}
         </div>
       </div>
 
-      {error ? (
-        <div className="p-20 bg-red-500/5 border border-red-500/20 rounded-[2.5rem] text-center space-y-4">
-           <h3 className="text-xl font-bold text-red-500">{error}</h3>
-           <button onClick={fetchWeather} className="text-white bg-red-500 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Retry Connection</button>
-        </div>
-      ) : (
+      {error && (
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-500">
+          <AlertCircle size={24} />
+          <p className="text-sm font-bold uppercase tracking-widest">{error}</p>
+        </motion.div>
+      )}
+
+      {weather && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 relative z-10">
-          {/* Main Current Weather Card */}
+          {/* Main Card */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 bg-slate-900/40 border border-white/10 p-12 rounded-[3rem] relative overflow-hidden flex flex-col justify-between min-h-[450px] group backdrop-blur-3xl shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="lg:col-span-2 bg-slate-900/40 border border-white/5 p-12 rounded-[2.5rem] relative overflow-hidden flex flex-col justify-between min-h-[450px] shadow-2xl backdrop-blur-xl"
           >
-             {/* Large background icon */}
-             <div className="absolute -right-20 -top-20 opacity-5 group-hover:rotate-12 transition-transform duration-[2s]">
-                {getWeatherIcon(weatherData?.mainCondition, 400)}
+             <div className="absolute -right-20 -top-20 opacity-10 rotate-12 scale-150">
+                {getWeatherIcon(weather.current.condition, 300)}
              </div>
              
              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-10">
-                <div className="space-y-8">
-                   <div className="flex items-center gap-3 text-slate-400">
-                      <Navigation size={16} className="text-blue-500" />
-                      <span className="text-[11px] font-black uppercase tracking-widest leading-none">{weatherData?.loc}</span>
+                <div className="space-y-6">
+                   <div className="flex items-center gap-2 text-slate-400">
+                      <Navigation size={14} className="text-blue-500" />
+                      <span className="text-[10px] font-black uppercase tracking-widest leading-none">Local Condition</span>
                    </div>
                    <div className="flex items-baseline gap-6">
-                      <h3 className="text-8xl font-black text-white leading-none -ml-1 tracking-tighter drop-shadow-2xl">{weatherData?.temp}°</h3>
-                      <span className="text-4xl font-bold text-slate-500 italic font-serif">Celsius</span>
+                      <h3 className="text-[100px] font-black text-white leading-none -ml-1 tracking-tighter shadow-blue-500/20 drop-shadow-2xl">
+                        {weather.current.temp}°
+                      </h3>
+                      <div className="space-y-1">
+                        <span className="text-2xl font-black text-blue-500 uppercase tracking-tighter block">Celsius</span>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+                           <Sparkles size={12} className="text-amber-400"/>
+                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Feels Real</span>
+                        </div>
+                      </div>
                    </div>
                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-500/20 rounded-2xl">{getWeatherIcon(weatherData?.mainCondition, 32)}</div>
-                      <p className="text-2xl font-black text-white uppercase tracking-[0.2em]">{weatherData?.condition}</p>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        {getWeatherIcon(weather.current.condition, 40)}
+                      </div>
+                      <div>
+                        <p className="text-2xl font-black text-white italic font-serif leading-none mb-2">{weather.current.condition}</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{weather.current.description}</p>
+                      </div>
                    </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-6 w-full md:w-auto">
-                   <WeatherStat icon={Droplets} label="Humidity" value={`${weatherData?.humidity}%`} color="text-blue-500" />
-                   <WeatherStat icon={Wind} label="Wind" value={`${weatherData?.wind} km/h`} color="text-emerald-500" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto">
+                   <WeatherStat icon={Droplets} label="Humidity" value={`${weather.current.humidity}%`} color="text-blue-400" />
+                   <WeatherStat icon={Wind} label="Wind Speed" value={`${weather.current.wind} km/h`} color="text-emerald-400" />
                 </div>
              </div>
 
-             <div className="border-t border-white/5 pt-10 mt-12 flex flex-wrap gap-16 relative z-10">
-                <SunInfo icon={Sunrise} label="Sunrise" value={weatherData?.sunrise} color="text-amber-500" />
-                <SunInfo icon={Sunset} label="Sunset" value={weatherData?.sunset} color="text-orange-500" />
+             <div className="border-t border-white/5 pt-10 mt-12 flex flex-wrap gap-12">
+                <SunInfo icon={Sunrise} label="Sunrise" value={weather.current.sunrise} />
+                <SunInfo icon={Sunset} label="Sunset" value={weather.current.sunset} />
              </div>
           </motion.div>
 
-          {/* Weekly Outlook Card */}
+          {/* Forecast List */}
           <motion.div 
-             initial={{ opacity: 0, x: 20 }}
-             animate={{ opacity: 1, x: 0 }}
-             className="bg-slate-900/60 border border-white/10 p-10 rounded-[3rem] backdrop-blur-3xl shadow-2xl flex flex-col"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-slate-900/40 border border-white/5 p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-xl flex flex-col"
           >
-             <div className="flex items-center gap-4 mb-10">
-                <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500"><CalendarDays size={24}/></div>
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 mt-1">Weekly Outlook</h4>
+             <div className="flex items-center gap-4 mb-10 pb-6 border-b border-white/5">
+                <CalendarDays className="text-blue-500" size={24} />
+                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 mt-1">5-Day Outlook</h4>
              </div>
-             
-             <div className="space-y-2 flex-grow">
-                {forecastData.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between py-6 group/row hover:bg-white/5 transition-all px-6 rounded-3xl border border-transparent hover:border-white/5">
-                     <span className="text-[13px] font-black text-white w-14 uppercase tracking-widest">{f.day}</span>
-                     <div className="flex-grow flex justify-center">
-                        {getWeatherIcon(f.main, 24)}
+             <div className="space-y-4 flex-grow">
+                {weather.forecast.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between p-5 bg-white/5 rounded-3xl border border-white/5 hover:border-blue-500/30 transition-all group">
+                     <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest w-12">{f.day}</span>
+                     <div className="flex flex-col items-center gap-1">
+                        {getWeatherIcon(f.condition, 20)}
+                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">{f.condition}</span>
                      </div>
-                     <div className="w-14 text-right">
+                     <div className="text-right">
                         <span className="text-xl font-black text-white">{f.temp}°</span>
                      </div>
                   </div>
                 ))}
              </div>
-
-             <div className="mt-10 p-6 bg-blue-600/10 rounded-3xl border border-blue-500/20 text-center">
-                <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest leading-relaxed">
-                   Live Data Powered by OpenWeather Engine
-                </p>
-             </div>
+             <p className="mt-8 text-[8px] text-center font-black text-slate-700 uppercase tracking-[0.4em]">Updated Live via OpenWeather</p>
           </motion.div>
         </div>
       )}
@@ -201,21 +190,21 @@ const Weather = () => {
 };
 
 const WeatherStat = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-white/5 p-8 rounded-[2rem] border border-white/5 flex flex-col items-center justify-center min-w-[140px] shadow-xl group/stat hover:bg-white/10 transition-all">
-     <Icon size={28} className={`${color} mb-4 group-hover/stat:scale-110 transition-transform`} />
-     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{label}</p>
-     <p className="text-2xl font-black text-white">{value}</p>
+  <div className="bg-white/5 p-6 rounded-[2rem] border border-white/5 flex flex-col items-center justify-center min-w-[140px] backdrop-blur-md">
+     <Icon size={24} className={`${color} mb-3`} />
+     <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">{label}</p>
+     <p className="text-xl font-black text-white">{value}</p>
   </div>
 );
 
-const SunInfo = ({ icon: Icon, label, value, color }) => (
-  <div className="flex items-center gap-6 group/sun">
-     <div className={`p-4 bg-white/5 rounded-2xl ${color} group-hover/sun:bg-white/10 transition-all`}>
+const SunInfo = ({ icon: Icon, label, value }) => (
+  <div className="flex items-center gap-5">
+     <div className="p-4 bg-white/5 rounded-2xl text-blue-500 border border-white/5">
         <Icon size={24} />
      </div>
      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 leading-none mb-2">{label}</p>
-        <p className="text-2xl font-black text-white italic font-serif leading-none">{value}</p>
+        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 leading-none mb-1">{label}</p>
+        <p className="text-lg font-black text-white italic font-serif">{value}</p>
      </div>
   </div>
 );
