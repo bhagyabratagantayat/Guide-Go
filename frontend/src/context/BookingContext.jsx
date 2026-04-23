@@ -68,11 +68,8 @@ export const BookingProvider = ({ children }) => {
   // Sync with Backend on Mount (Session Recovery)
   useEffect(() => {
     const restoreSession = async () => {
-      const token = localStorage.getItem('gg_token');
-      if (!token) {
-        setIsRestoring(false);
-        return;
-      }
+      // With HttpOnly cookies, we don't check for local token. 
+      // The API call itself will tell us if we are authorized.
 
       try {
         const { data } = await api.get('/bookings/user');

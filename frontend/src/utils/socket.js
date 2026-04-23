@@ -4,16 +4,16 @@ let socket;
 
 export const connectSocket = (userId, role, guideId) => {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SOCKET_URL || 'https://guide-go-backend.onrender.com', {
-      transports: ['websocket'], // Force WebSocket for instant real-time
+    socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', {
+      transports: ['websocket'],
+      withCredentials: true, // Crucial for cookies
       auth: {
-        token: localStorage.getItem('gg_token'),
         userId,
         role,
         guideId
       },
-      reconnectionAttempts: 5,
-      timeout: 10000
+      reconnectionAttempts: 10,
+      timeout: 20000
     });
 
     socket.on('connect', () => {

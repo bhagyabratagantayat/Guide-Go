@@ -71,10 +71,13 @@ const GuideDashboard = () => {
     if (!socket) return;
 
     const handleNewBooking = (data) => {
+      // Show popup ONLY if live
       if (isLive) {
         setIncomingBooking(data.booking);
-        setCountdown(5);
+        setCountdown(60); // 60 seconds to respond
       }
+      // Always refresh data to update the 'Pending Requests' counter
+      fetchDashboardData();
     };
 
     const handleTripStarted = () => {
