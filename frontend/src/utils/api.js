@@ -5,6 +5,17 @@ const api = axios.create({
   withCredentials: true // Crucial for HttpOnly cookies
 });
 
+// REQUEST INTERCEPTOR: Inject token from localStorage into Headers
+api.interceptors.request.use((config) => {
+  const userData = JSON.parse(localStorage.getItem('gg_user'));
+  if (userData?.token) {
+    config.headers.Authorization = `Bearer ${userData.token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

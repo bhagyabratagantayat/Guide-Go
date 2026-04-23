@@ -37,7 +37,7 @@ const setTokenCookies = (res, user) => {
   res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
   res.cookie('refreshToken', refreshToken, cookieOptions);
 
-  return refreshToken;
+  return { accessToken, refreshToken };
 };
 
 const registerUser = asyncHandler(async (req, res, next) => {
@@ -179,7 +179,7 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
   }
   
   // Set cookies
-  const refreshToken = setTokenCookies(res, user);
+  const { accessToken, refreshToken } = setTokenCookies(res, user);
   user.refreshToken = refreshToken;
   await user.save();
   
@@ -192,6 +192,7 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
     location: user.location,
     kycStatus,
     profileComplete,
+    token: accessToken
   });
 });
 
@@ -210,7 +211,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       logger.info(`Demo login successful for role: ${user.role}`);
       
       // Set cookies for demo user
-      const refreshToken = setTokenCookies(res, user);
+      const { accessToken, refreshToken } = setTokenCookies(res, user);
       user.refreshToken = refreshToken;
       await user.save({ validateBeforeSave: false });
 
@@ -221,7 +222,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
         role: user.role,
         mobile: user.mobile,
         location: user.location,
-        isDemo: true
+        isDemo: true,
+        token: accessToken
       });
     }
   }
@@ -282,7 +284,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
   }
 
   // Set cookies
-  const refreshToken = setTokenCookies(res, user);
+  const { accessToken, refreshToken } = setTokenCookies(res, user);
   user.refreshToken = refreshToken;
   await user.save({ validateBeforeSave: false });
 
@@ -295,6 +297,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
     location: user.location,
     kycStatus,
     profileComplete,
+    token: accessToken
   });
 });
 
