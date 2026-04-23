@@ -27,7 +27,7 @@ const Login = () => {
       const { data } = await login(email, password);
       const role = data.role;
       if (role === 'admin') navigate('/admin');
-      else if (role === 'guide') navigate('/guide/verify');
+      else if (role === 'guide') navigate('/guide/verify-identity');
       else navigate('/');
     } catch (error) {
       if (error.response?.data?.errorCode === 'NOT_VERIFIED') {

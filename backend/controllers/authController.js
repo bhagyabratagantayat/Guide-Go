@@ -137,6 +137,19 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
     logger.error(`Welcome email failure: ${error.message}`);
   }
   
+  // Fetch guide status if user is a guide
+  let kycStatus = 'not_submitted';
+  let profileComplete = false;
+  
+  if (user.role === 'guide') {
+    const Guide = require('../models/Guide');
+    const guide = await Guide.findOne({ userId: user._id });
+    if (guide) {
+      kycStatus = guide.kycStatus;
+      profileComplete = guide.profileComplete;
+    }
+  }
+  
   res.json({
     _id: user._id,
     name: user.name,
@@ -144,6 +157,8 @@ const verifyOTP = asyncHandler(async (req, res, next) => {
     role: user.role,
     mobile: user.mobile,
     location: user.location,
+    kycStatus,
+    profileComplete,
     token: generateToken(user._id, user.role),
   });
 });
@@ -185,6 +200,20 @@ const loginUser = asyncHandler(async (req, res, next) => {
   }
 
   logger.info(`User logged in: ${user.email}`);
+
+  // Fetch guide status if user is a guide
+  let kycStatus = 'not_submitted';
+  let profileComplete = false;
+  
+  if (user.role === 'guide') {
+    const Guide = require('../models/Guide');
+    const guide = await Guide.findOne({ userId: user._id });
+    if (guide) {
+      kycStatus = guide.kycStatus;
+      profileComplete = guide.profileComplete;
+    }
+  }
+
   res.json({
     _id: user._id,
     name: user.name,
@@ -192,6 +221,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
     role: user.role,
     mobile: user.mobile,
     location: user.location,
+    kycStatus,
+    profileComplete,
     token: generateToken(user._id, user.role),
   });
 });

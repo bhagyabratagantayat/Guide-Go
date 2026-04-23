@@ -35,11 +35,11 @@ const GuideSetupPage = () => {
       try {
         const { data } = await api.get('/kyc/status');
         if (data.kycStatus !== 'approved') {
-          navigate('/guide/verify');
+          navigate('/guide/verify-identity');
           return;
         }
         if (data.profileComplete) {
-          navigate('/guide/dashboard');
+          navigate('/guide');
           return;
         }
         setLoading(false);
@@ -78,7 +78,7 @@ const GuideSetupPage = () => {
     try {
       await api.post('/kyc/service', formData);
       toast.success("Profile Activated! You are now live.");
-      navigate('/guide/dashboard');
+      navigate('/guide');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save profile');
     } finally {

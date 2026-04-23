@@ -308,7 +308,7 @@ const GuideOnboardingPage = () => {
             Your application is being reviewed. You'll appear in search once verified by our team (usually within 24 hours).
           </p>
           <button 
-            onClick={() => navigate('/guide/dashboard')}
+            onClick={() => navigate('/guide')}
             className="btn-primary w-full"
           >
             Go to Dashboard

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const SelfieCameraBox = ({ onCapture, capturedFile }) => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -134,6 +135,7 @@ const GuideVerifyPage = () => {
   });
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
 
   const fetchStatus = useCallback(async (showLoading = false) => {
     if (showLoading) setStatus('loading');
@@ -142,11 +144,16 @@ const GuideVerifyPage = () => {
       setStatus(data.kycStatus);
       setReason(data.rejectionReason);
       
+      // Sync global state
+      if (user.kycStatus !== data.kycStatus || user.profileComplete !== data.profileComplete) {
+         updateUser({ kycStatus: data.kycStatus, profileComplete: data.profileComplete });
+      }
+      
       if (data.kycStatus === 'approved') {
         if (!data.profileComplete) {
           navigate('/guide/setup');
         } else {
-          navigate('/guide/dashboard');
+          navigate('/guide');
         }
       }
     } catch (error) {
@@ -233,6 +240,11 @@ const GuideVerifyPage = () => {
         <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // If already approved, don't render anything while redirecting
+  if (status === 'approved') {
+    return null;
   }
 
   return (

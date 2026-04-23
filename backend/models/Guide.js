@@ -43,6 +43,10 @@ const guideSchema = new mongoose.Schema({
   isLive: {
     type: Boolean,
     default: false
+  },
+  blockedUntil: {
+    type: Date,
+    default: null
   }
 });
 

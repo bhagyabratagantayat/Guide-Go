@@ -34,7 +34,7 @@ export default function CompleteProfilePage() {
       // Update AuthContext with new token (role may have changed)
       login(res.data.user, res.data.token);
 
-      if (role === 'guide') navigate('/guide/verify', { replace: true });
+      if (role === 'guide') navigate('/guide/verify-identity', { replace: true });
       else navigate('/', { replace: true });
 
     } catch (err) {

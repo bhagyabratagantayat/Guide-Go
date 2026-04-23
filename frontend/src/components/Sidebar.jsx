@@ -56,7 +56,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       { path: '/guide/chat', label: 'Messages', icon: MessageCircle },
       { path: '/guide/earnings', label: 'Earnings', icon: DollarSign },
     ] : [
-      { path: '/guide/verify', label: 'Verify Identity', icon: ShieldCheck, isPrimary: true },
+      { path: '/guide/verify-identity', label: 'Verify Identity', icon: ShieldCheck, isPrimary: true },
     ]},
     { section: 'ACCOUNT', items: [
       { path: '/profile', label: 'Profile', icon: User },

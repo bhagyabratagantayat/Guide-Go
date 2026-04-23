@@ -28,6 +28,12 @@ export const AuthProvider = ({ children }) => {
     return { data };
   };
 
+  const updateUser = (data) => {
+    const newUser = { ...user, ...data };
+    localStorage.setItem('gg_user', JSON.stringify(newUser));
+    setUser(newUser);
+  };
+
   const logout = () => {
     localStorage.removeItem('gg_token');
     localStorage.removeItem('gg_user');
@@ -72,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ 
       user, loading, login, logout, register, verifyOTP, resendOTP,
-      forgotPassword, verifyResetOTP, resetPassword 
+      forgotPassword, verifyResetOTP, resetPassword, updateUser 
     }}>
       {children}
     </AuthContext.Provider>

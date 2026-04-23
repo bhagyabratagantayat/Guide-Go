@@ -3,7 +3,7 @@ import api from '../../utils/api';
 import { 
   UserCheck, UserX, MapPin, ExternalLink, 
   ShieldCheck, Languages, Clock, CheckCircle,
-  Search, Trash2, Ban, UserMinus, Info,
+  Search, Trash2, Ban, UserMinus, Info, X,
   Briefcase, IndianRupee, Globe, Award,
   Mail, Phone, Filter
 } from 'lucide-react';
@@ -15,6 +15,8 @@ const AdminGuides = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedDossier, setSelectedDossier] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(null);
 
   const fetchGuides = async () => {
     try {
@@ -38,6 +40,17 @@ const AdminGuides = () => {
       fetchGuides();
     } catch (error) {
       toast.error('Failed to update status');
+    }
+  };
+
+  const handleModerate = async (id, action) => {
+    if (action === 'block' && !window.confirm('Are you sure you want to BLOCK this guide?')) return;
+    try {
+      await api.put(`/admin/guides/${id}/moderate`, { action });
+      toast.success(`Guide ${action}ed successfully`);
+      fetchGuides();
+    } catch (error) {
+      toast.error('Moderation failed');
     }
   };
 
@@ -92,7 +105,7 @@ const AdminGuides = () => {
           </div>
 
           <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-100 dark:border-slate-800">
-            {['all', 'pending', 'approved', 'rejected'].map(s => (
+            {['all', 'pending', 'approved', 'rejected', 'blocked'].map(s => (
               <button 
                 key={s}
                 onClick={() => setFilterStatus(s)}
@@ -129,7 +142,8 @@ const AdminGuides = () => {
                       </div>
                       <div className={`absolute -bottom-2 -right-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter italic border-4 border-white dark:border-slate-900 shadow-xl ${
                         guide.status === 'approved' ? 'bg-green-500 text-white' : 
-                        guide.status === 'pending' ? 'bg-yellow-400 text-black' : 'bg-red-500 text-white'
+                        guide.status === 'pending' ? 'bg-yellow-400 text-black' : 
+                        guide.status === 'blocked' ? 'bg-red-600 text-white' : 'bg-red-500 text-white'
                       }`}>
                         {guide.status}
                       </div>
@@ -228,11 +242,28 @@ const AdminGuides = () => {
                           </button>
                         </>
                       )}
-                      {guide.status !== 'pending' && (
-                        <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-500 hover:text-slate-900 transition-all">
-                          <ExternalLink size={14} /> Full Dossier
+                      {guide.status === 'approved' && (
+                        <button 
+                          onClick={() => handleModerate(guide._id, 'block')}
+                          className="flex items-center gap-2 px-6 py-3 bg-red-100 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all"
+                        >
+                          <Ban size={14} /> Block
                         </button>
                       )}
+                      {guide.status === 'blocked' && (
+                        <button 
+                          onClick={() => handleModerate(guide._id, 'unblock')}
+                          className="flex items-center gap-2 px-6 py-3 bg-green-100 text-green-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all"
+                        >
+                          <CheckCircle size={14} /> Unblock
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => setSelectedDossier(guide)}
+                        className="flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-500 hover:text-slate-900 transition-all"
+                      >
+                        <ExternalLink size={14} /> Full Dossier
+                      </button>
                    </div>
                 </div>
               </div>
@@ -248,6 +279,132 @@ const AdminGuides = () => {
            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Try adjusting your filters or search query</p>
         </div>
       )}
+
+      {/* KYC Dossier Modal */}
+      <AnimatePresence>
+        {selectedDossier && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-md p-6 flex items-center justify-center"
+            onClick={() => setSelectedDossier(null)}
+          >
+            <motion.div 
+              initial={{ y: 50, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-slate-900 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-[3rem] p-10 shadow-2xl border border-white dark:border-slate-800"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-primary-500/10 rounded-2xl flex items-center justify-center text-primary-500">
+                    <ShieldCheck size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic font-serif leading-none">KYC Evidence Dossier</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Guide ID: {selectedDossier._id}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedDossier(null)}
+                  className="group relative w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all duration-300 shadow-soft"
+                >
+                  <X size={20} className="transition-transform group-hover:rotate-90" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full scale-0 group-hover:scale-100 transition-transform" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                {[
+                  { label: 'Aadhaar Front', key: 'aadhaarFront', type: 'id' },
+                  { label: 'Aadhaar Back', key: 'aadhaarBack', type: 'id' },
+                  { label: 'Identity Selfie', key: 'selfie', type: 'selfie' }
+                ].map(doc => (
+                  <div key={doc.key} className="space-y-3">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                      {doc.label}
+                    </p>
+                    <div 
+                      onClick={() => setShowImageModal(selectedDossier.kycData?.[doc.key])}
+                      className="aspect-[4/3] bg-slate-100 dark:bg-slate-950 rounded-[2rem] overflow-hidden border-4 border-white dark:border-slate-800 shadow-soft group cursor-zoom-in"
+                    >
+                      {selectedDossier.kycData?.[doc.key] ? (
+                        <img 
+                          src={selectedDossier.kycData[doc.key]} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                          alt={doc.label} 
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                          <Info size={24} className="mb-2" />
+                          <span className="text-[8px] font-black uppercase tracking-widest">No Document Found</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50">
+                <div className="flex flex-wrap gap-12">
+                   <div>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Verified Name</p>
+                     <p className="text-sm font-black text-slate-900 dark:text-white uppercase italic font-serif">{selectedDossier.userId?.name}</p>
+                   </div>
+                   <div>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Aadhaar Reference</p>
+                     <p className="text-sm font-black text-primary-600 font-mono tracking-widest">{selectedDossier.kycData?.aadhaarNumber || 'NOT PROVIDED'}</p>
+                   </div>
+                   <div>
+                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Submission Date</p>
+                     <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                       {selectedDossier.kycData?.submittedAt ? new Date(selectedDossier.kycData.submittedAt).toLocaleDateString('en-IN', {
+                         day: 'numeric', month: 'long', year: 'numeric'
+                       }) : 'N/A'}
+                     </p>
+                   </div>
+                </div>
+              </div>
+
+              <div className="mt-12 flex justify-center">
+                <button 
+                  onClick={() => setSelectedDossier(null)}
+                  className="px-14 py-5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-3xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-red-600 hover:text-white transition-all shadow-2xl active:scale-95"
+                >
+                  Close Dossier
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Preview Modal */}
+      <AnimatePresence>
+        {showImageModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-slate-950/95 backdrop-blur-xl p-10 flex items-center justify-center"
+            onClick={() => setShowImageModal(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="relative max-w-4xl w-full flex items-center justify-center"
+            >
+              <img 
+                src={showImageModal} 
+                className="max-w-full max-h-[85vh] object-contain rounded-[2.5rem] shadow-2xl border-4 border-white/10" 
+                alt="Document Preview" 
+              />
+              <button 
+                onClick={() => setShowImageModal(null)}
+                className="absolute -top-6 -right-6 w-14 h-14 bg-white text-slate-900 rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white transition-all duration-300 shadow-2xl group z-50"
+              >
+                <X size={24} className="transition-transform group-hover:rotate-90" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

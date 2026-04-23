@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function GuideGuard({ children }) {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -17,8 +19,13 @@ export default function GuideGuard({ children }) {
         
         const { kycStatus, profileComplete } = data;
         
+        // Sync global auth state if it differs
+        if (user.kycStatus !== kycStatus || user.profileComplete !== profileComplete) {
+           updateUser({ kycStatus, profileComplete });
+        }
+        
         if (kycStatus !== 'approved') {
-          navigate('/guide/verify');
+          navigate('/guide/verify-identity');
         } else if (!profileComplete) {
           navigate('/guide/setup');
         } else {

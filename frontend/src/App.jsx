@@ -154,7 +154,7 @@ function AppContent() {
               <Route path="/help" element={<ProtectedRoute><PageWrapper><HelpPage /></PageWrapper></ProtectedRoute>} />
 
               {/* Guide Flow */}
-              <Route path="/guide/verify" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />
+              <Route path="/guide/verify-identity" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/guide/setup" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideSetupPage /></PageWrapper></ProtectedRoute>} />
               <Route path="/guide" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><GuideDashboard /></PageWrapper></GuideGuard></ProtectedRoute>} />
               <Route path="/guide/bookings" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><Bookings /></PageWrapper></GuideGuard></ProtectedRoute>} />

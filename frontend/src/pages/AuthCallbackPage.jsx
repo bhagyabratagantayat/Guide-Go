@@ -29,7 +29,7 @@ export default function AuthCallbackPage() {
         // Redirect based on role
         const role = res.data.user.role;
         if (role === 'admin') navigate('/admin');
-        else if (role === 'guide') navigate('/guide/verify');
+        else if (role === 'guide') navigate('/guide/verify-identity');
         else navigate('/');
       } catch (err) {
         console.error('Sync error:', err);
