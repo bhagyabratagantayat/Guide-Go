@@ -72,7 +72,12 @@ export const BookingProvider = ({ children }) => {
       // The API call itself will tell us if we are authorized.
 
       try {
-        const { data } = await api.get('/bookings/user');
+        const userString = localStorage.getItem('gg_user');
+        const user = userString ? JSON.parse(userString) : null;
+        if (!user) return;
+
+        const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
+        const { data } = await api.get(endpoint);
         if (data && data.length > 0) {
           // Find the most recent active booking
           const latest = data[0];
