@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sun, CloudRain, Cloud, Wind, Droplets, MapPin, 
   Navigation, Sunrise, Sunset, CalendarDays, Search,
-  CloudLightning, CloudSnow, Loader2, AlertCircle
+  CloudLightning, CloudSnow, Loader2, AlertCircle, Sparkles
 } from 'lucide-react';
 import api from '../utils/api';
 import { Helmet } from 'react-helmet-async';
