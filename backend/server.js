@@ -14,6 +14,7 @@ const http = require('http');
 const initSocket = require('./utils/socket');
 
 const app = express();
+app.set('trust proxy', 1); // Crucial for secure cookies on Render/Vercel
 const server = http.createServer(app);
 let io; // Will be initialized after DB connection
 
