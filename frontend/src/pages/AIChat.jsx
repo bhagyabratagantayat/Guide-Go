@@ -147,7 +147,7 @@ const AIChat = () => {
                <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about Odisha tourism..." className="flex-grow bg-transparent border-none text-white px-6 py-4 font-bold placeholder:text-slate-600 outline-none" />
                <button type="submit" className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-600/20"><Send size={24} /></button>
             </form>
-            <p className="text-[8px] text-center font-black text-slate-700 uppercase tracking-[0.5em]">Powered by GuideGo Intelligence • No API Used</p>
+            <p className="text-[8px] text-center font-black text-slate-700 uppercase tracking-[0.5em]">Powered by GuideGo Intelligence • design by pilu</p>
          </div>
       </div>
     </div>
