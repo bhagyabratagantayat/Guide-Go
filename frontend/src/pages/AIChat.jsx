@@ -7,12 +7,14 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { INDIA_TOURISM_DATA } from '../data/indiaKnowledge';
 
-// 🧠 LOCAL INTELLIGENCE (No API Needed)
+// 🧠 LOCAL INTELLIGENCE (Merged Knowledge)
 const GUIDE_KNOWLEDGE = {
+  ...INDIA_TOURISM_DATA,
   greetings: {
     keywords: ['hi', 'hello', 'namaste', 'hey', 'namaskar'],
-    response: "Namaste! I am your **GuideGo Smart Assistant**. I'm an expert on Odisha tourism and our platform. How can I help you today?"
+    response: "Namaste! I am your **GuideGo Smart Assistant**. I'm an expert on India's top tourist destinations and our platform. How can I help you today?"
   },
   booking: {
     keywords: ['book', 'booking', 'hire', 'find guide', 'how to'],
