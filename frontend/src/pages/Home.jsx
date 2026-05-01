@@ -29,7 +29,7 @@ const Home = () => {
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 200) {
+    if (latest > 350) {
       setShowSticky(true);
     } else {
       setShowSticky(false);
@@ -81,43 +81,95 @@ const Home = () => {
         <meta name="description" content="Discover and book local guides instantly. Experience Odisha with smart AI-powered tourism." />
       </Helmet>
 
-      {/* --- STICKY SEARCH PILL (AIRBNB STYLE) --- */}
+      {/* --- STICKY SEARCH BAR --- */}
       <AnimatePresence>
         {showSticky && (
           <motion.div
-            initial={{ y: -70, opacity: 0, x: '-50%', scale: 0.8 }}
+            initial={{ y: -100, opacity: 0, x: '-50%', scale: 0.95 }}
             animate={{ y: 0, opacity: 1, x: '-50%', scale: 1 }}
-            exit={{ y: -70, opacity: 0, x: '-50%', scale: 0.8 }}
+            exit={{ y: -100, opacity: 0, x: '-50%', scale: 0.95 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-6 left-1/2 lg:left-[calc(50%+130px)] z-[1000] w-[calc(100%-48px)] max-w-md"
+            className="fixed top-6 left-1/2 z-[1000] w-[calc(100%-48px)] max-w-4xl"
           >
-            <div 
-              onClick={() => navigate('/book-guide', { 
-                state: { 
-                  searchParams: { 
-                    location: locationQuery, 
-                    plan: duration, 
-                    language: language 
-                  } 
-                } 
-              })}
-              className="bg-white/90 backdrop-blur-xl h-14 pl-6 pr-2 rounded-full border border-[#dddddd] shadow-2xl flex items-center justify-between group cursor-pointer hover:border-[#222222] transition-all"
-            >
-              <div className="flex items-center gap-3 overflow-hidden">
-                <Search size={16} className="text-[#222222] shrink-0" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[11px] font-bold text-[#222222]">Start your search</span>
-                  <span className="text-[10px] text-[#717171] font-medium truncate">{locationQuery || 'Anywhere'} • {duration} • {language}</span>
+             <div className="bg-[#f0f0f0]/95 backdrop-blur-2xl w-full rounded-[2.5rem] p-2 border border-white/50 shadow-2xl flex flex-col md:flex-row items-stretch md:items-center gap-1">
+                {/* Location Segment */}
+                <div className="flex-1 px-6 py-3 rounded-[2rem] hover:bg-white/80 transition-all group flex flex-col text-left">
+                   <div className="flex items-center gap-2 mb-1">
+                      <MapPin size={12} className="text-[#ff385c]" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[#222222]">Where to?</span>
+                   </div>
+                   <select 
+                     value={locationQuery}
+                     onChange={(e) => setLocationQuery(e.target.value)}
+                     className="bg-transparent border-none text-sm font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer w-full"
+                   >
+                      {places.map(p => (
+                        <option key={p._id} value={p.name}>{p.name}</option>
+                      ))}
+                      {places.length === 0 && <option disabled>No locations available</option>}
+                   </select>
                 </div>
-              </div>
-              <div className="w-10 h-10 bg-[#ff385c] text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:bg-[#e00b41] transition-all">
-                <Search size={16} strokeWidth={3} />
-              </div>
-            </div>
+
+                <div className="hidden md:block w-[1px] h-8 bg-[#dddddd]/80" />
+
+                {/* Duration Segment */}
+                <div className="flex-1 px-6 py-3 rounded-[2rem] hover:bg-white/80 transition-all group flex flex-col text-left">
+                   <div className="flex items-center gap-2 mb-1">
+                      <Zap size={12} className="text-amber-500" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[#222222]">The Plan</span>
+                   </div>
+                   <select 
+                     value={duration}
+                     onChange={(e) => setDuration(e.target.value)}
+                     className="bg-transparent border-none text-sm font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer w-full"
+                   >
+                      <option>1 Hour</option>
+                      <option>2 Hours</option>
+                      <option>4 Hours</option>
+                      <option>Full Day</option>
+                   </select>
+                </div>
+
+                <div className="hidden md:block w-[1px] h-8 bg-[#dddddd]/80" />
+
+                {/* Language Segment */}
+                <div className="flex-1 px-6 py-3 rounded-[2rem] hover:bg-white/80 transition-all group flex flex-col text-left">
+                   <div className="flex items-center gap-2 mb-1">
+                      <Globe size={12} className="text-blue-500" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-[#222222]">Speak In</span>
+                   </div>
+                   <select 
+                     value={language}
+                     onChange={(e) => setLanguage(e.target.value)}
+                     className="bg-transparent border-none text-sm font-bold text-[#222222] focus:ring-0 p-0 cursor-pointer w-full"
+                   >
+                      <option>Hindi</option>
+                      <option>English</option>
+                      <option>Odia</option>
+                   </select>
+                </div>
+
+                {/* Search Trigger */}
+                <button 
+                  onClick={() => navigate('/book-guide', { 
+                    state: { 
+                      searchParams: { 
+                        location: locationQuery, 
+                        plan: duration, 
+                        language: language 
+                      } 
+                    } 
+                  })}
+                  className="h-12 md:h-14 px-6 md:px-8 bg-[#222222] text-white rounded-[2rem] flex items-center justify-center gap-2 hover:bg-black active:scale-95 transition-all shadow-lg group ml-2"
+                >
+                   <span className="font-bold text-sm hidden md:block">Find Expert</span>
+                   <Search size={16} strokeWidth={3} className="group-hover:scale-110 transition-transform" />
+                </button>
+             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* --- HERO SECTION --- */}
       <section className="relative h-[70vh] lg:h-[75vh] w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">

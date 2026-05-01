@@ -83,28 +83,24 @@ const AIChat = () => {
   };
 
   const suggestions = [
-    { text: "Puri Beach", icon: <MapPin size={14}/> },
-    { text: "How to book?", icon: <Zap size={14}/> },
-    { text: "Best Food", icon: <Star size={14}/> },
-    { text: "Konark Temple", icon: <Compass size={14}/> }
+    { text: "Puri Beach", icon: <MapPin size={14} className="text-[#ff385c]"/> },
+    { text: "How to book?", icon: <Zap size={14} className="text-[#ff385c]"/> },
+    { text: "Best Food", icon: <Star size={14} className="text-[#ff385c]"/> },
+    { text: "Konark Temple", icon: <Compass size={14} className="text-[#ff385c]"/> }
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] bg-slate-950 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-white rounded-[2.5rem] border border-[#dddddd] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] relative overflow-hidden">
       <Helmet><title>AI Assistant | GuideGo</title></Helmet>
-      
-      {/* Glow Decor */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[100px] -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-600/10 blur-[100px] -z-10" />
 
       {/* Header */}
-      <div className="p-8 border-b border-white/5 bg-slate-900/50 backdrop-blur-xl flex items-center gap-6">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
+      <div className="p-8 border-b border-[#dddddd] bg-white/90 backdrop-blur-xl flex items-center gap-6">
+        <div className="w-16 h-16 bg-[#ff385c] rounded-2xl flex items-center justify-center text-white shadow-xl shadow-rose-500/20">
           <Bot size={32} />
         </div>
         <div>
-          <h1 className="text-2xl font-black italic text-white tracking-tight">GuideGo AI</h1>
-          <p className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.3em]">Smart Local Engine • Active</p>
+          <h1 className="text-2xl font-black italic text-[#222222] tracking-tight">GuideGo AI</h1>
+          <p className="text-[10px] font-black uppercase text-[#717171] tracking-[0.3em]">Smart Local Engine • Active</p>
         </div>
       </div>
 
@@ -114,20 +110,20 @@ const AIChat = () => {
             <AnimatePresence>
                {messages.map((msg, i) => (
                  <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                   <div className={`p-8 rounded-[2.5rem] max-w-[85%] shadow-2xl ${msg.role === 'user' ? 'bg-blue-600 text-white font-bold rounded-tr-none' : 'bg-slate-900/80 border border-white/5 text-slate-200 rounded-tl-none'}`}>
-                      <div className="flex items-center gap-2 mb-3 opacity-30 text-[9px] font-black uppercase tracking-widest">
+                   <div className={`p-8 rounded-[2.5rem] max-w-[85%] shadow-lg ${msg.role === 'user' ? 'bg-[#ff385c] text-white font-bold rounded-tr-none shadow-rose-500/20' : 'bg-[#f7f7f7] border border-[#dddddd] text-[#222222] rounded-tl-none'}`}>
+                      <div className={`flex items-center gap-2 mb-3 text-[9px] font-black uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-[#717171]'}`}>
                          {msg.role === 'user' ? <User size={12}/> : <Bot size={12}/>} {msg.role === 'user' ? 'Traveler' : 'Assistant'}
                       </div>
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                      {msg.role === 'user' && <div className="mt-3 flex justify-end opacity-20"><CheckCheck size={14}/></div>}
+                      {msg.role === 'user' && <div className="mt-3 flex justify-end text-white/50"><CheckCheck size={14}/></div>}
                    </div>
                  </motion.div>
                ))}
             </AnimatePresence>
             {loading && (
               <div className="flex justify-start">
-                 <div className="bg-slate-900/50 px-8 py-6 rounded-[2.5rem] rounded-tl-none flex gap-2 border border-white/5">
-                    {[0,1,2].map(d => <motion.div key={d} animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1, delay: d*0.2 }} className="w-2 h-2 bg-blue-500 rounded-full" />)}
+                 <div className="bg-[#f7f7f7] px-8 py-6 rounded-[2.5rem] rounded-tl-none flex gap-2 border border-[#dddddd]">
+                    {[0,1,2].map(d => <motion.div key={d} animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1, delay: d*0.2 }} className="w-2 h-2 bg-[#ff385c] rounded-full" />)}
                  </div>
               </div>
             )}
@@ -136,20 +132,20 @@ const AIChat = () => {
       </div>
 
       {/* Input */}
-      <div className="p-8 bg-slate-900/40 border-t border-white/5">
+      <div className="p-8 bg-white border-t border-[#dddddd]">
          <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
                {suggestions.map((s, i) => (
-                 <button key={i} onClick={() => handleSubmit(null, s.text)} className="px-5 py-3 rounded-xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all whitespace-nowrap flex items-center gap-2">
+                 <button key={i} onClick={() => handleSubmit(null, s.text)} className="px-5 py-3 rounded-xl bg-white border border-[#dddddd] shadow-sm text-[10px] font-bold text-[#222222] uppercase tracking-widest hover:border-[#222222] hover:bg-[#f7f7f7] transition-all whitespace-nowrap flex items-center gap-2">
                    {s.icon} {s.text}
                  </button>
                ))}
             </div>
-            <form onSubmit={handleSubmit} className="relative flex items-center bg-slate-800 border border-white/10 rounded-[2.5rem] p-2 pr-4 focus-within:border-blue-500 transition-all">
-               <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about Odisha tourism..." className="flex-grow bg-transparent border-none text-white px-6 py-4 font-bold placeholder:text-slate-600 outline-none" />
-               <button type="submit" className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-600/20"><Send size={24} /></button>
+            <form onSubmit={handleSubmit} className="relative flex items-center bg-white border-2 border-[#dddddd] rounded-[2.5rem] p-2 pr-4 focus-within:border-[#222222] transition-all shadow-sm">
+               <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about Odisha tourism..." className="flex-grow bg-transparent border-none text-[#222222] px-6 py-4 font-bold placeholder:text-[#717171] outline-none" />
+               <button type="submit" className="w-14 h-14 rounded-2xl bg-[#ff385c] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-rose-500/20"><Send size={24} /></button>
             </form>
-            <p className="text-[8px] text-center font-black text-slate-700 uppercase tracking-[0.5em]">Powered by GuideGo Intelligence • design by pilu</p>
+            <p className="text-[8px] text-center font-black text-[#717171] uppercase tracking-[0.5em]">Powered by GuideGo Intelligence • design by pilu</p>
          </div>
       </div>
     </div>
