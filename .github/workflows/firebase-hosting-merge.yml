@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: cd frontend && npm install && npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: https://guide-go-backend.onrender.com/api
+          VITE_SOCKET_URL: https://guide-go-backend.onrender.com
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
