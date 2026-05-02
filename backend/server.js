@@ -69,7 +69,8 @@ app.use('/api/auth', authLimiter);
 // Data sanitization against XSS
 app.use(xss());
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.use(requestLogger);
 
@@ -112,6 +113,22 @@ const startServer = async () => {
     io = initSocket(server);
 
     const PORT = config.port;
+
+    // Handle port cleanup on Windows to prevent EADDRINUSE
+    if (process.platform === 'win32') {
+      const { execSync } = require('child_process');
+      try {
+        const stdout = execSync(`netstat -ano | findstr :${PORT} | findstr LISTENING`).toString();
+        const pid = stdout.split('\n')[0].trim().split(/\s+/).pop();
+        if (pid && pid !== process.pid.toString()) {
+          logger.info(`Killing existing process on port ${PORT} (PID: ${pid})`);
+          execSync(`taskkill /F /PID ${pid}`);
+        }
+      } catch (e) {
+        // Port not in use, ignore
+      }
+    }
+
     server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
   } catch (error) {
     logger.error(`Critical Failure: ${error.message}`);

@@ -8,6 +8,7 @@ const {
   verifyResetOTP,
   resetPassword,
   getProfile,
+  updateProfile,
   testEmail,
   googleSync,
   refreshToken,
@@ -37,5 +38,6 @@ router.post('/google-sync', googleSync);
 router.post('/refresh-token', refreshToken);
 router.post('/logout', logoutUser);
 router.get('/profile', authenticateUser, getProfile);
+router.put('/profile', authenticateUser, updateProfile);
 
 module.exports = router;

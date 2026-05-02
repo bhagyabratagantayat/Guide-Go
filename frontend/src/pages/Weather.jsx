@@ -63,95 +63,95 @@ const Weather = () => {
   }
 
   return (
-    <div className="p-10 max-w-7xl mx-auto space-y-12 bg-slate-950 min-h-screen rounded-[3rem] border border-white/5 relative overflow-hidden shadow-2xl">
+    <div className="p-4 md:p-10 max-w-7xl mx-auto space-y-8 bg-[#f7f7f7] min-h-screen rounded-[2rem] border border-[#ebebeb] relative overflow-hidden">
       <Helmet><title>Weather Dashboard | GuideGo</title></Helmet>
       
-      {/* Dynamic Glows */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] -z-10" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-600/5 blur-[120px] -z-10" />
+      {/* Subtle Background Elements */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#ff385c]/5 blur-[120px] -z-10" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/5 blur-[100px] -z-10" />
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
         <div>
-          <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500 mb-2">Atmospheric Intelligence</h1>
-          <h2 className="text-5xl font-black italic font-serif text-white tracking-tight">Weather Dashboard</h2>
+          <h1 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#ff385c] mb-1">Atmospheric Intelligence</h1>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[#222222] tracking-tight">Weather Dashboard</h2>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full lg:max-w-xl">
-           <form onSubmit={handleSearch} className="relative flex-grow group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:max-w-xl">
+           <form onSubmit={handleSearch} className="relative flex-grow shadow-sm">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#717171]" size={18} />
               <input 
                 type="text" 
                 placeholder="Search any city (e.g. Puri, London)..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900/50 border border-white/5 rounded-2xl pl-16 pr-6 py-5 text-white font-bold placeholder:text-slate-600 outline-none focus:border-blue-500/50 transition-all backdrop-blur-xl"
+                className="w-full bg-white border border-[#dddddd] rounded-full pl-14 pr-6 py-4 text-[#222222] font-semibold placeholder:text-[#717171] outline-none focus:ring-2 focus:ring-[#ff385c]/20 focus:border-[#ff385c] transition-all"
               />
            </form>
            {weather && (
-             <div className="bg-blue-600/10 px-8 py-5 rounded-2xl flex items-center gap-3 text-blue-400 border border-blue-500/20 backdrop-blur-xl">
-                <MapPin size={18} />
-                <span className="text-[10px] font-black uppercase tracking-widest leading-none mt-0.5 whitespace-nowrap">{weather.current.loc}</span>
+             <div className="bg-white px-6 py-4 rounded-full flex items-center gap-3 text-[#222222] border border-[#dddddd] shadow-sm">
+                <MapPin size={16} className="text-[#ff385c]" />
+                <span className="text-[11px] font-bold uppercase tracking-widest">{weather.current.loc}</span>
              </div>
            )}
         </div>
       </div>
 
       {error && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-500">
-          <AlertCircle size={24} />
-          <p className="text-sm font-bold uppercase tracking-widest">{error}</p>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-4 text-[#ff385c]">
+          <AlertCircle size={20} />
+          <p className="text-xs font-bold uppercase tracking-widest">{error}</p>
         </motion.div>
       )}
 
       {weather && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
           {/* Main Card */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="lg:col-span-2 bg-slate-900/40 border border-white/5 p-12 rounded-[2.5rem] relative overflow-hidden flex flex-col justify-between min-h-[450px] shadow-2xl backdrop-blur-xl"
+            className="lg:col-span-2 bg-white border border-[#ebebeb] p-8 md:p-12 rounded-[2rem] relative overflow-hidden flex flex-col justify-between min-h-[480px] shadow-sm"
           >
-             <div className="absolute -right-20 -top-20 opacity-10 rotate-12 scale-150">
-                {getWeatherIcon(weather.current.condition, 300)}
+             <div className="absolute -right-16 -top-16 opacity-5 rotate-12 scale-125">
+                {getWeatherIcon(weather.current.condition, 350)}
              </div>
              
-             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-10">
-                <div className="space-y-6">
-                   <div className="flex items-center gap-2 text-slate-400">
-                      <Navigation size={14} className="text-blue-500" />
-                      <span className="text-[10px] font-black uppercase tracking-widest leading-none">Local Condition</span>
+             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-12">
+                <div className="space-y-8">
+                   <div className="flex items-center gap-2 text-[#717171]">
+                      <Navigation size={14} className="text-[#ff385c]" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Current Condition</span>
                    </div>
                    <div className="flex items-baseline gap-6">
-                      <h3 className="text-[100px] font-black text-white leading-none -ml-1 tracking-tighter shadow-blue-500/20 drop-shadow-2xl">
+                      <h3 className="text-[100px] md:text-[120px] font-extrabold text-[#222222] leading-none tracking-tighter">
                         {weather.current.temp}°
                       </h3>
                       <div className="space-y-1">
-                        <span className="text-2xl font-black text-blue-500 uppercase tracking-tighter block">Celsius</span>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
-                           <Sparkles size={12} className="text-amber-400"/>
-                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Feels Real</span>
+                        <span className="text-2xl font-black text-[#ff385c] uppercase tracking-tighter block">Celsius</span>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-[#f7f7f7] rounded-full border border-[#dddddd]">
+                           <Sparkles size={12} className="text-amber-500"/>
+                           <span className="text-[9px] font-bold text-[#717171] uppercase tracking-widest">Feels Real</span>
                         </div>
                       </div>
                    </div>
-                   <div className="flex items-center gap-4">
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                        {getWeatherIcon(weather.current.condition, 40)}
+                   <div className="flex items-center gap-5">
+                      <div className="p-5 bg-[#f7f7f7] rounded-2xl border border-[#dddddd]">
+                        {getWeatherIcon(weather.current.condition, 44)}
                       </div>
                       <div>
-                        <p className="text-2xl font-black text-white italic font-serif leading-none mb-2">{weather.current.condition}</p>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{weather.current.description}</p>
+                        <p className="text-3xl font-extrabold text-[#222222] leading-none mb-2">{weather.current.condition}</p>
+                        <p className="text-[11px] font-bold text-[#717171] uppercase tracking-widest">{weather.current.description}</p>
                       </div>
                    </div>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto">
-                   <WeatherStat icon={Droplets} label="Humidity" value={`${weather.current.humidity}%`} color="text-blue-400" />
-                   <WeatherStat icon={Wind} label="Wind Speed" value={`${weather.current.wind} km/h`} color="text-emerald-400" />
+                   <WeatherStat icon={Droplets} label="Humidity" value={`${weather.current.humidity}%`} color="text-[#008489]" />
+                   <WeatherStat icon={Wind} label="Wind Speed" value={`${weather.current.wind} km/h`} color="text-[#484848]" />
                 </div>
              </div>
 
-             <div className="border-t border-white/5 pt-10 mt-12 flex flex-wrap gap-12">
+             <div className="border-t border-[#ebebeb] pt-10 mt-12 flex flex-wrap gap-12">
                 <SunInfo icon={Sunrise} label="Sunrise" value={weather.current.sunrise} />
                 <SunInfo icon={Sunset} label="Sunset" value={weather.current.sunset} />
              </div>
@@ -161,27 +161,27 @@ const Weather = () => {
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-slate-900/40 border border-white/5 p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-xl flex flex-col"
+            className="bg-white border border-[#ebebeb] p-8 rounded-[2rem] shadow-sm flex flex-col"
           >
-             <div className="flex items-center gap-4 mb-10 pb-6 border-b border-white/5">
-                <CalendarDays className="text-blue-500" size={24} />
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 mt-1">5-Day Outlook</h4>
+             <div className="flex items-center gap-4 mb-8 pb-5 border-b border-[#ebebeb]">
+                <CalendarDays className="text-[#ff385c]" size={20} />
+                <h4 className="text-[12px] font-black uppercase tracking-[0.2em] text-[#222222]">5-Day Forecast</h4>
              </div>
-             <div className="space-y-4 flex-grow">
+             <div className="space-y-3 flex-grow">
                 {weather.forecast.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between p-5 bg-white/5 rounded-3xl border border-white/5 hover:border-blue-500/30 transition-all group">
-                     <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest w-12">{f.day}</span>
-                     <div className="flex flex-col items-center gap-1">
+                  <div key={i} className="flex items-center justify-between p-4 bg-[#f7f7f7] rounded-2xl border border-[#dddddd] hover:border-[#ff385c]/30 transition-all cursor-default">
+                     <span className="text-[11px] font-bold text-[#484848] uppercase tracking-widest w-12">{f.day}</span>
+                     <div className="flex items-center gap-3">
                         {getWeatherIcon(f.condition, 20)}
-                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">{f.condition}</span>
+                        <span className="text-[9px] font-bold text-[#717171] uppercase tracking-widest hidden sm:block">{f.condition}</span>
                      </div>
                      <div className="text-right">
-                        <span className="text-xl font-black text-white">{f.temp}°</span>
+                        <span className="text-lg font-extrabold text-[#222222]">{f.temp}°</span>
                      </div>
                   </div>
                 ))}
              </div>
-             <p className="mt-8 text-[8px] text-center font-black text-slate-700 uppercase tracking-[0.4em]">Updated Live via OpenWeather</p>
+             <p className="mt-8 text-[9px] text-center font-bold text-[#b0b0b0] uppercase tracking-widest">Powered by OpenWeather API</p>
           </motion.div>
         </div>
       )}
@@ -190,21 +190,21 @@ const Weather = () => {
 };
 
 const WeatherStat = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-white/5 p-6 rounded-[2rem] border border-white/5 flex flex-col items-center justify-center min-w-[140px] backdrop-blur-md">
+  <div className="bg-white p-6 rounded-2xl border border-[#dddddd] flex flex-col items-center justify-center min-w-[140px] shadow-sm">
      <Icon size={24} className={`${color} mb-3`} />
-     <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">{label}</p>
-     <p className="text-xl font-black text-white">{value}</p>
+     <p className="text-[10px] font-bold uppercase tracking-widest text-[#717171] mb-1">{label}</p>
+     <p className="text-xl font-extrabold text-[#222222]">{value}</p>
   </div>
 );
 
 const SunInfo = ({ icon: Icon, label, value }) => (
-  <div className="flex items-center gap-5">
-     <div className="p-4 bg-white/5 rounded-2xl text-blue-500 border border-white/5">
-        <Icon size={24} />
+  <div className="flex items-center gap-4">
+     <div className="p-3 bg-[#f7f7f7] rounded-xl text-[#ff385c] border border-[#dddddd]">
+        <Icon size={20} />
      </div>
      <div>
-        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 leading-none mb-1">{label}</p>
-        <p className="text-lg font-black text-white italic font-serif">{value}</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#717171] leading-none mb-1">{label}</p>
+        <p className="text-lg font-extrabold text-[#222222]">{value}</p>
      </div>
   </div>
 );

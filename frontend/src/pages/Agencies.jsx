@@ -29,20 +29,20 @@ const Agencies = () => {
   }, [searchQuery, activeFilter]);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+    <div className="p-4 md:p-10 max-w-7xl mx-auto space-y-12 bg-[#f7f7f7] min-h-screen">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
         <div>
-          <h1 className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-secondary)] mb-2">Verified Partners</h1>
-          <h2 className="text-4xl font-black italic font-serif text-[var(--text-primary)]">Travel Agencies</h2>
+          <h1 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#ff385c] mb-1">Verified Partners</h1>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[#222222] tracking-tight">Travel Agencies</h2>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-2xl">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-[var(--accent)]" size={18} />
+          <div className="relative flex-1 shadow-sm">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#717171]" size={18} />
             <input 
                type="text" 
                placeholder="Search agency by name or city..." 
-               className="input-field pl-16 py-4"
+               className="w-full pl-14 pr-6 py-4 border border-[#dddddd] rounded-full bg-white text-[#222222] font-semibold focus:ring-2 focus:ring-[#ff385c]/10 focus:border-[#ff385c] outline-none transition-all"
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -54,43 +54,43 @@ const Agencies = () => {
         <AnimatePresence mode="wait">
           {loading ? (
              [...Array(6)].map((_, i) => (
-                <div key={i} className="bg-[var(--bg-card)] border border-[var(--border-color)] h-[400px] rounded-[var(--radius-lg)] animate-pulse" />
+                <div key={i} className="bg-white border border-[#dddddd] h-[400px] rounded-[2rem] animate-pulse" />
              ))
           ) : filteredAgencies.map((agency) => (
             <motion.div 
                key={agency.id}
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden group hover:border-[var(--border-hover)] transition-all p-8 flex flex-col items-center text-center space-y-6"
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="bg-white border border-[#ebebeb] rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500 p-8 flex flex-col items-center text-center"
             >
-              <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-[var(--bg-base)] shadow-2xl relative">
+              <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-[#f7f7f7] shadow-xl relative mb-6">
                  <img src={agency.logoUrl} alt={agency.name} className="w-full h-full object-cover" />
                  {agency.verified && (
-                   <div className="absolute -bottom-1 -right-1 bg-[var(--accent)] p-1.5 rounded-lg border-2 border-[var(--bg-card)]">
+                   <div className="absolute -bottom-1 -right-1 bg-[#ff385c] p-1.5 rounded-lg border-2 border-white">
                       <ShieldCheck size={12} className="text-white" />
                    </div>
                  )}
               </div>
               
-              <div>
-                <h3 className="text-2xl font-black italic font-serif text-[var(--text-primary)] mb-2">{agency.name}</h3>
-                <div className="flex items-center justify-center text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest gap-2">
-                   <MapPin size={12} className="text-[var(--accent)]" /> {agency.location}
+              <div className="mb-6">
+                <h3 className="text-2xl font-extrabold text-[#222222] tracking-tight mb-2">{agency.name}</h3>
+                <div className="flex items-center justify-center text-[10px] font-bold text-[#717171] uppercase tracking-[0.2em] gap-2">
+                   <MapPin size={12} className="text-[#ff385c]" /> {agency.location}
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 py-2 border-y border-[var(--border-color)] w-full justify-center">
-                 <div className="flex items-center gap-1 text-amber-500 font-bold">
-                    <Star size={14} className="fill-current" /> {agency.rating}
+              <div className="flex items-center gap-4 py-3 border-y border-[#f7f7f7] w-full justify-center mb-8">
+                 <div className="flex items-center gap-1.5 text-amber-500 font-bold text-sm">
+                    <Star size={16} className="fill-current" /> {agency.rating}
                  </div>
-                 <div className="w-[1px] h-4 bg-[var(--border-color)]" />
-                 <div className="text-[var(--text-muted)] font-bold text-[10px] uppercase tracking-widest">
-                    Started 2018
+                 <div className="w-[1px] h-4 bg-[#dddddd]" />
+                 <div className="text-[#717171] font-bold text-[10px] uppercase tracking-widest">
+                    Est. 2018
                  </div>
               </div>
 
-              <button className="w-full py-4 bg-white/5 border border-white/5 rounded-[var(--radius-sm)] flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)] hover:bg-[var(--accent)] hover:text-white transition-all">
-                CONTACT AGENCY <ArrowRight size={14} />
+              <button className="w-full py-4 bg-[#f7f7f7] border border-[#dddddd] rounded-xl flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#222222] hover:bg-[#ff385c] hover:text-white hover:border-[#ff385c] transition-all active:scale-95">
+                Contact Agency <ArrowRight size={14} />
               </button>
             </motion.div>
           ))}

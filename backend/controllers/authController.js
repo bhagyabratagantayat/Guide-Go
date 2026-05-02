@@ -7,6 +7,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/asyncHandler');
 const logger = require('../utils/logger');
 const sendEmail = require('../utils/sendEmail');
+const Guide = require('../models/Guide');
 
 const generateOTP = () => {
   return otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
@@ -595,6 +596,58 @@ const googleSync = asyncHandler(async (req, res, next) => {
 });
 
 
+const updateProfile = asyncHandler(async (req, res, next) => {
+  try {
+    const { name, mobile, location, profilePicture, bio, languages, specialties, pricePerHour, pricePerDay, upiId } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    if (!user) return next(new ErrorResponse('User not found', 404));
+
+    // Update common user fields
+    if (name) user.name = name;
+    if (mobile) user.mobile = mobile;
+    if (location) user.location = typeof location === 'object' ? JSON.stringify(location) : location;
+    if (profilePicture) user.profilePicture = profilePicture;
+
+    await user.save({ validateBeforeSave: false });
+
+    // Update guide-specific fields if user is a guide
+    if (user.role === 'guide') {
+      let guide = await Guide.findOne({ userId: user._id });
+      
+      if (guide) {
+        if (bio !== undefined) guide.bio = bio;
+        if (languages !== undefined) guide.languages = languages;
+        if (specialties !== undefined) guide.specialties = specialties;
+        if (pricePerHour !== undefined) guide.pricePerHour = Number(pricePerHour) || 0;
+        if (pricePerDay !== undefined) guide.pricePerDay = Number(pricePerDay) || 0;
+        if (upiId !== undefined) guide.upiId = upiId;
+        if (location) guide.location = typeof location === 'object' ? JSON.stringify(location) : location;
+        if (profilePicture) guide.profileImage = profilePicture;
+        
+        await guide.save();
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        mobile: user.mobile,
+        location: user.location,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    return next(new ErrorResponse(error.message || 'Server Error updating profile', 500));
+  }
+});
+
 module.exports = { 
   registerUser, 
   loginUser, 
@@ -606,6 +659,7 @@ module.exports = {
   verifyResetOTP,
   resetPassword,
   getProfile,
+  updateProfile,
   testEmail,
   googleSync
 };

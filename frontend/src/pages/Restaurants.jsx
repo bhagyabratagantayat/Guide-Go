@@ -20,42 +20,37 @@ const Restaurants = () => {
   );
 
   return (
-    <div className="bg-slate-950 min-h-screen pb-32 transition-colors duration-300 font-sans text-white">
+    <div className="bg-[#f7f7f7] min-h-screen pb-32">
       
       {/* Hero Header Region */}
-      <section className="bg-slate-900 pt-32 pb-16 px-6 lg:px-8 border-b border-slate-800 relative xl:px-12 overflow-hidden">
-         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-[100px] opacity-70 pointer-events-none" />
-         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-10">
-            <div className="space-y-6">
-               <button 
-                  onClick={() => navigate(-1)} 
-                  className="w-12 h-12 bg-slate-800/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all shadow-xl hover:-translate-x-1"
-               >
-                  <ChevronLeft className="w-6 h-6" />
-               </button>
-               <div className="w-20 h-20 bg-orange-500 rounded-[2.5rem] flex items-center justify-center text-slate-950 shadow-[0_10px_30px_rgba(249,115,22,0.3)] rotate-3">
-                  <Utensils className="w-10 h-10" />
+      <section className="bg-white pt-24 pb-12 px-6 lg:px-8 border-b border-[#dddddd] relative">
+         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff385c]/5 rounded-full blur-[120px] pointer-events-none" />
+         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+            <div className="space-y-4">
+               <div className="flex items-center gap-4">
+                  <button 
+                     onClick={() => navigate(-1)} 
+                     className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#222222] border border-[#dddddd] hover:text-[#ff385c] transition-all shadow-sm"
+                  >
+                     <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-[11px] font-black uppercase tracking-[0.4em] text-[#ff385c]">Gastronomy Hub</span>
                </div>
-               <div>
-                  <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter italic font-serif leading-[0.9] mb-4">
-                     Gastronomy Hub
-                  </h1>
-                  <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px]">Premium Dining & Local Flavors</p>
-               </div>
+               <h1 className="text-4xl md:text-6xl font-extrabold text-[#222222] tracking-tighter leading-none">
+                  Local Flavors
+               </h1>
             </div>
             
             {/* Search Bar */}
-            <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
-               <div className="relative group w-full md:w-80">
-                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                     <Search className="h-5 w-5 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
-                  </div>
+            <div className="w-full md:w-auto">
+               <div className="relative group w-full md:w-96 shadow-sm">
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#717171]" size={18} />
                   <input
                      type="text"
-                     placeholder="Search dishes, names..."
+                     placeholder="Search dishes or restaurants..."
                      value={searchQuery}
                      onChange={(e) => setSearchQuery(e.target.value)}
-                     className="block w-full pl-12 pr-6 py-5 border-2 border-slate-800 rounded-[2rem] leading-5 bg-slate-950 text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all font-black tracking-tight"
+                     className="w-full pl-14 pr-6 py-4 border border-[#dddddd] rounded-full bg-white text-[#222222] font-semibold focus:ring-2 focus:ring-[#ff385c]/10 focus:border-[#ff385c] outline-none transition-all"
                   />
                </div>
             </div>
@@ -66,9 +61,7 @@ const Restaurants = () => {
       <div className="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
          {loading ? (
             [...Array(6)].map((_, i) => (
-              <div key={i} className="bg-slate-900 border border-slate-800 rounded-[2.5rem] h-[450px] animate-pulse">
-                <div className="h-56 bg-slate-800 rounded-t-[2.5rem]" />
-              </div>
+              <div key={i} className="bg-white border border-[#dddddd] rounded-[2rem] h-[450px] animate-pulse" />
             ))
          ) : filteredRestaurants.length > 0 ? (
             <AnimatePresence>
@@ -76,68 +69,68 @@ const Restaurants = () => {
                   <motion.div 
                      layout
                      key={res.id}
-                     initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                      transition={{ delay: i * 0.05 }}
-                     className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden group hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-500 flex flex-col cursor-pointer cursor-default"
+                     className="bg-white border border-[#ebebeb] rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500 flex flex-col cursor-default"
                   >
                      {/* Banner wrapper */}
-                     <div className="relative h-60 w-full overflow-hidden rounded-t-[2.5rem] z-0">
+                     <div className="relative h-56 w-full overflow-hidden">
                         <img src={res.bannerUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={res.name} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90" />
                         
-                        <div className="absolute top-5 left-5 right-5 flex justify-between items-start">
-                           <div className="flex bg-slate-950/80 backdrop-blur-md items-center px-4 py-2 rounded-full border border-slate-700/50 text-white space-x-1.5 shadow-lg">
-                              <Star className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
-                              <span className="font-black text-sm">{res.rating}</span>
+                        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                           <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-1.5 shadow-lg">
+                              <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                              <span className="font-black text-xs text-[#222222]">{res.rating}</span>
                            </div>
                            
-                           <div className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg ${res.isOpen ? 'bg-emerald-500 text-slate-950' : 'bg-red-500 text-white'}`}>
+                           <div className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg ${res.isOpen ? 'bg-[#ff385c] text-white' : 'bg-[#717171] text-white'}`}>
                               {res.isOpen ? 'Open Now' : 'Closed'}
                            </div>
                         </div>
-                        
-                        <div className="absolute bottom-5 left-5">
-                           <span className="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest leading-none shadow-lg">
-                              {res.priceLevel} Pricing
-                           </span>
-                        </div>
                      </div>
                      
-                     <div className="p-8 flex flex-col flex-grow relative z-10 bg-slate-900">
+                     <div className="p-6 md:p-8 flex flex-col flex-grow bg-white">
                         <div className="flex justify-between items-start mb-2">
-                           <h3 className="text-2xl font-black text-white italic font-serif leading-tight tracking-tight mb-2 truncate group-hover:text-orange-400 transition-colors">
+                           <h3 className="text-xl font-extrabold text-[#222222] tracking-tight truncate group-hover:text-[#ff385c] transition-colors">
                               {res.name}
                            </h3>
-                           <div className="flex items-center text-slate-400 text-[10px] font-black tracking-widest uppercase ml-2 mt-1">
-                              <MapPin className="w-3.5 h-3.5 mr-1 text-orange-500" /> {res.distance}
-                           </div>
                         </div>
                         
-                        <p className="text-sm text-slate-400 font-medium mb-6 line-clamp-2 leading-relaxed flex-grow">
+                        <div className="flex items-center text-[#717171] text-[10px] font-bold tracking-widest uppercase mb-4">
+                           <MapPin className="w-3 h-3 mr-1 text-[#ff385c]" /> {res.distance} away
+                        </div>
+
+                        <p className="text-xs text-[#717171] font-medium mb-6 line-clamp-2 leading-relaxed">
                            {res.description}
                         </p>
                         
-                        <div className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6">
-                           <Utensils className="w-3.5 h-3.5 text-slate-400" />
-                           <span>{res.category}</span>
-                        </div>
-                        
-                        <div className="pt-6 border-t border-slate-800 flex justify-between items-center">
-                           <div className="flex items-center space-x-2 text-slate-400 text-[9px] uppercase font-black tracking-widest">
-                              <Clock className="w-3.5 h-3.5" />
-                              <span>{res.hours.split(',')[0]}</span>
+                        <div className="mt-auto pt-6 border-t border-[#f7f7f7] flex justify-between items-center">
+                           <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-[#b0b0b0] uppercase tracking-widest mb-1">{res.category}</span>
+                              <div className="flex items-center gap-1.5 text-[#222222] text-xs font-bold">
+                                 <Clock className="w-3.5 h-3.5 text-[#ff385c]" />
+                                 <span>{res.hours.split(',')[0]}</span>
+                              </div>
                            </div>
                            <button 
                               onClick={() => navigate(`/restaurants/${res.id}`)}
-                              className="w-12 h-12 bg-white text-slate-950 rounded-2xl flex items-center justify-center shadow-lg hover:bg-orange-500 hover:text-white transition-all active:scale-95 group/btn"
+                              className="w-10 h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center hover:bg-[#ff385c] hover:text-white transition-all active:scale-95 group/btn"
                            >
-                              <ChevronRight className="w-6 h-6 group-hover/btn:translate-x-1 transition-transform" />
+                              <ChevronRight size={18} />
                            </button>
                         </div>
                      </div>
                   </motion.div>
                ))}
             </AnimatePresence>
+         ) : (
+            <div className="col-span-full text-center py-24 bg-white rounded-[2rem] border border-[#dddddd] shadow-sm">
+               <h3 className="text-2xl font-black text-[#222222] mb-2">No Restaurants Found</h3>
+               <p className="text-[#717171] font-medium">Try searching for something else.</p>
+            </div>
+         )}
+      </div>
+    </div>
          ) : (
             <div className="col-span-full text-center py-32 bg-slate-900 rounded-[3rem] border-2 border-dashed border-slate-800 transition-colors">
                <h3 className="text-3xl font-black text-white italic font-serif mb-4 tracking-tight">No Kitchens Found</h3>

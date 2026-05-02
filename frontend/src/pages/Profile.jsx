@@ -1,111 +1,334 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Mail, MapPin, Camera, Star, 
-  Settings as SettingsIcon, History, LogOut, ShieldCheck
+  Settings as SettingsIcon, History, LogOut, ShieldCheck,
+  Edit3, Save, X, Phone, Globe, Briefcase, IndianRupee,
+  ChevronRight, CheckCircle2, Award
 } from 'lucide-react';
+import api from '../utils/api';
+import { Helmet } from 'react-helmet-async';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    mobile: '',
+    location: '',
+    bio: '',
+    languages: '',
+    pricePerHour: '',
+    upiId: '',
+    profilePicture: ''
+  });
 
-  if (!user) return <div className="p-10 text-white">Please login to view profile.</div>;
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        mobile: user.mobile || '',
+        location: typeof user.location === 'object' ? user.location.address || '' : user.location || '',
+        bio: user.bio || '',
+        languages: Array.isArray(user.languages) ? user.languages.join(', ') : user.languages || '',
+        pricePerHour: user.pricePerHour || '',
+        upiId: user.upiId || '',
+        profilePicture: user.profilePicture || ''
+      });
+    }
+  }, [user]);
+
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f7f7f7]">
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 bg-[#ff385c]/10 rounded-full flex items-center justify-center mx-auto text-[#ff385c]">
+          <User size={32} />
+        </div>
+        <h2 className="text-xl font-bold text-[#222222]">Please login to view profile</h2>
+        <button onClick={() => navigate('/login')} className="px-8 py-3 bg-[#ff385c] text-white rounded-full font-bold shadow-lg">Login</button>
+      </div>
+    </div>
+  );
+
+  const handleUpdate = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const payload = {
+        ...formData,
+        languages: typeof formData.languages === 'string' 
+          ? formData.languages.split(',').map(l => l.trim()).filter(Boolean)
+          : []
+      };
+      const { data } = await api.put('/auth/profile', payload);
+      updateUser(data.user);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Update Error:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profilePicture: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
-    <div className="p-10 max-w-5xl mx-auto space-y-12">
-      <div className="flex flex-col md:flex-row items-center gap-8 bg-[var(--bg-card)] border border-[var(--border-color)] p-12 rounded-[var(--radius-lg)] relative overflow-hidden group hover:border-[var(--border-hover)] transition-all">
-        <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-12 -translate-y-12">
-           <User size={240} className="text-[var(--accent)]" />
-        </div>
-        
-        <div className="relative">
-           <div className="w-40 h-40 rounded-[var(--radius-lg)] bg-[var(--bg-base)] border-4 border-[var(--accent)] p-1 overflow-hidden shadow-2xl">
-              <div className="w-full h-full rounded-[var(--radius-md)] overflow-hidden bg-[var(--bg-card)] flex items-center justify-center">
-                 {user.profilePicture ? (
-                   <img src={user.profilePicture} className="w-full h-full object-cover" />
-                 ) : (
-                   <span className="text-6xl font-black text-[var(--accent)] italic font-serif">{user.name.charAt(0)}</span>
-                 )}
-              </div>
-           </div>
-           <button className="absolute bottom-2 right-2 p-3 bg-[var(--accent)] rounded-2xl text-white border-4 border-[var(--bg-card)] shadow-xl hover:scale-110 transition-transform">
-              <Camera size={20} />
-           </button>
-        </div>
+    <div className="min-h-screen bg-[#f7f7f7] pb-24">
+      <Helmet><title>{user.name} | GuideGo Profile</title></Helmet>
 
-        <div className="text-center md:text-left space-y-4 relative z-10">
-           <div className="space-y-1">
-              <h1 className="text-5xl font-black italic font-serif text-[var(--text-primary)] tracking-tighter leading-none">{user.name}</h1>
-              <p className="text-[10px] font-black uppercase text-[var(--accent)] tracking-[0.4em]">{user.role} Account • Verified Member</p>
-           </div>
-           <div className="flex flex-wrap justify-center md:justify-start gap-4">
-              <InfoChip icon={Mail} label={user.email} />
-              <InfoChip icon={MapPin} label={user.location || 'Bhubaneswar, Odisha'} />
-           </div>
-        </div>
+      {/* Header / Cover Area */}
+      <div className="h-64 bg-gradient-to-r from-[#ff385c] to-[#e31c5f] relative">
+         <div className="absolute inset-0 bg-black/10" />
+         <div className="max-w-5xl mx-auto h-full px-6 relative">
+            <div className="absolute -bottom-16 left-6 flex flex-col md:flex-row items-end gap-6">
+               <div className="relative group">
+                  <div className="w-40 h-40 rounded-[2.5rem] bg-white p-1.5 shadow-2xl overflow-hidden border-4 border-white">
+                     <div className="w-full h-full rounded-[2rem] overflow-hidden bg-[#f7f7f7] flex items-center justify-center">
+                        {formData.profilePicture || user.profilePicture ? (
+                           <img src={formData.profilePicture || user.profilePicture} className="w-full h-full object-cover" alt="Profile" />
+                        ) : (
+                           <span className="text-6xl font-black text-[#ff385c]">{user.name.charAt(0)}</span>
+                        )}
+                     </div>
+                  </div>
+                  {isEditing && (
+                    <label className="absolute bottom-2 right-2 p-3 bg-white rounded-2xl text-[#222222] shadow-xl hover:scale-110 transition-transform cursor-pointer border border-[#ebebeb]">
+                       <Camera size={20} />
+                       <input type="file" hidden onChange={handleImageChange} accept="image/*" />
+                    </label>
+                  )}
+               </div>
+               
+               <div className="pb-4 text-center md:text-left">
+                  <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-md">{user.name}</h1>
+                  <div className="flex items-center gap-2 mt-2">
+                     <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20">
+                        {user.role}
+                     </span>
+                     <span className="flex items-center gap-1 text-[10px] font-bold text-white/80">
+                        <CheckCircle2 size={12} className="text-green-400" /> Verified Member
+                     </span>
+                  </div>
+               </div>
+            </div>
+
+            <div className="absolute bottom-4 right-6 flex gap-3">
+               {!isEditing ? (
+                 <button 
+                   onClick={() => setIsEditing(true)}
+                   className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-all shadow-lg"
+                 >
+                   <Edit3 size={16} /> Edit Profile
+                 </button>
+               ) : (
+                 <div className="flex gap-2">
+                    <button 
+                      onClick={() => setIsEditing(false)}
+                      className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-all"
+                    >
+                      <X size={16} /> Cancel
+                    </button>
+                    <button 
+                      onClick={handleUpdate}
+                      disabled={loading}
+                      className="px-8 py-3 bg-white text-[#ff385c] rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-all shadow-xl disabled:opacity-50"
+                    >
+                      {loading ? <div className="w-4 h-4 border-2 border-[#ff385c] border-t-transparent animate-spin rounded-full" /> : <Save size={16} />} 
+                      Save Changes
+                    </button>
+                 </div>
+               )}
+            </div>
+         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <section className="space-y-6">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] ml-2">Member Statistics</h3>
-           <div className="grid grid-cols-2 gap-4">
-              <StatCard label="Trips Taken" value="12" icon={History} />
-              <StatCard label="Places Saved" value="48" icon={Star} />
-           </div>
-        </section>
+      <div className="max-w-5xl mx-auto px-6 mt-24 grid grid-cols-1 lg:grid-cols-12 gap-12">
+         {/* Left Side: Details */}
+         <div className="lg:col-span-8 space-y-10">
+            {error && <div className="p-4 bg-red-50 text-red-500 rounded-2xl border border-red-100 text-sm font-bold">{error}</div>}
 
-        <section className="space-y-6">
-           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] ml-2">Quick Actions</h3>
-           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] divide-y divide-[var(--border-color)] overflow-hidden">
-              <ActionItem icon={SettingsIcon} label="Account Settings" onClick={() => navigate('/settings')} />
-              <ActionItem icon={ShieldCheck} label="Security Privacy" onClick={() => {}} />
-              <ActionItem icon={LogOut} label="Emergency Logout" red onClick={logout} />
-           </div>
-        </section>
+            <section className="bg-white rounded-[2.5rem] p-10 border border-[#ebebeb] shadow-sm space-y-8">
+               <h3 className="text-2xl font-black text-[#222222]">Personal Information</h3>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Full Name</label>
+                     <div className="relative">
+                        <User className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
+                        <input 
+                           type="text" 
+                           readOnly={!isEditing}
+                           value={formData.name}
+                           onChange={(e) => setFormData({...formData, name: e.target.value})}
+                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                        />
+                     </div>
+                  </div>
+                  <div className="space-y-3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Email Address</label>
+                     <div className="relative">
+                        <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
+                        <input 
+                           type="email" 
+                           readOnly
+                           value={user.email}
+                           className="w-full bg-[#f7f7f7] border-2 border-transparent rounded-2xl pl-14 pr-6 py-4 font-bold text-[#b0b0b0] cursor-not-allowed"
+                        />
+                     </div>
+                  </div>
+                  <div className="space-y-3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Mobile Number</label>
+                     <div className="relative">
+                        <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
+                        <input 
+                           type="text" 
+                           readOnly={!isEditing}
+                           value={formData.mobile}
+                           onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                        />
+                     </div>
+                  </div>
+                  <div className="space-y-3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Location</label>
+                     <div className="relative">
+                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
+                        <input 
+                           type="text" 
+                           readOnly={!isEditing}
+                           value={formData.location}
+                           onChange={(e) => setFormData({...formData, location: e.target.value})}
+                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                        />
+                     </div>
+                  </div>
+               </div>
+            </section>
+
+            {user.role === 'guide' && (
+              <section className="bg-white rounded-[2.5rem] p-10 border border-[#ebebeb] shadow-sm space-y-8">
+                 <h3 className="text-2xl font-black text-[#222222]">Guide Expertise</h3>
+                 <div className="space-y-8">
+                    <div className="space-y-3">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Professional Bio</label>
+                       <textarea 
+                          readOnly={!isEditing}
+                          value={formData.bio}
+                          onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                          rows={4}
+                          className={`w-full bg-[#f7f7f7] border-2 rounded-3xl p-6 font-bold text-[#222222] transition-all outline-none resize-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                          placeholder="Tell us about your guiding experience..."
+                       />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Languages (Comma separated)</label>
+                          <div className="relative">
+                             <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
+                             <input 
+                                type="text" 
+                                readOnly={!isEditing}
+                                value={formData.languages}
+                                onChange={(e) => setFormData({...formData, languages: e.target.value})}
+                                className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                             />
+                          </div>
+                       </div>
+                       <div className="space-y-3">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Hourly Rate (₹)</label>
+                          <div className="relative">
+                             <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
+                             <input 
+                                type="number" 
+                                readOnly={!isEditing}
+                                value={formData.pricePerHour}
+                                onChange={(e) => setFormData({...formData, pricePerHour: e.target.value})}
+                                className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                             />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </section>
+            )}
+         </div>
+
+         {/* Right Side: Stats & Security */}
+         <div className="lg:col-span-4 space-y-10">
+            <div className="bg-[#222222] rounded-[2.5rem] p-10 text-white shadow-xl relative overflow-hidden">
+               <Award className="absolute -right-6 -bottom-6 w-32 h-32 text-white/5 rotate-12" />
+               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff385c] mb-6">Account Trust</h4>
+               <div className="space-y-6 relative z-10">
+                  <div className="flex items-center justify-between">
+                     <span className="text-sm font-medium text-white/60">Profile Strength</span>
+                     <span className="text-sm font-black">92%</span>
+                  </div>
+                  <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                     <div className="w-[92%] h-full bg-[#ff385c]" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                     <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                        <p className="text-2xl font-black italic">12</p>
+                        <p className="text-[9px] font-black uppercase text-white/40 tracking-widest mt-1">Trips</p>
+                     </div>
+                     <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                        <p className="text-2xl font-black italic">4.9</p>
+                        <p className="text-[9px] font-black uppercase text-white/40 tracking-widest mt-1">Rating</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-[2.5rem] p-2 border border-[#ebebeb] shadow-sm divide-y divide-[#f7f7f7]">
+               <button className="w-full p-6 flex items-center justify-between group hover:bg-[#f7f7f7] transition-all rounded-[2rem]">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center">
+                        <SettingsIcon size={18} />
+                     </div>
+                     <span className="text-sm font-bold text-[#222222]">Preferences</span>
+                  </div>
+                  <ChevronRight size={16} className="text-[#717171]" />
+               </button>
+               <button className="w-full p-6 flex items-center justify-between group hover:bg-[#f7f7f7] transition-all rounded-[2rem]">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center">
+                        <ShieldCheck size={18} />
+                     </div>
+                     <span className="text-sm font-bold text-[#222222]">Security</span>
+                  </div>
+                  <ChevronRight size={16} className="text-[#717171]" />
+               </button>
+               <button onClick={logout} className="w-full p-6 flex items-center justify-between group hover:bg-red-50 transition-all rounded-[2rem]">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
+                        <LogOut size={18} />
+                     </div>
+                     <span className="text-sm font-bold text-red-500">Sign Out</span>
+                  </div>
+                  <ChevronRight size={16} className="text-red-200" />
+               </button>
+            </div>
+         </div>
       </div>
     </div>
   );
 };
-
-const InfoChip = ({ icon: Icon, label }) => (
-  <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5 flex items-center gap-2 text-[10px] font-black uppercase text-[var(--text-secondary)] tracking-widest">
-     <Icon size={12} className="text-[var(--accent)]" /> {label}
-  </div>
-);
-
-const StatCard = ({ label, value, icon: Icon }) => (
-  <div className="bg-[var(--bg-card)] border border-[var(--border-color)] p-8 rounded-[var(--radius-lg)] flex flex-col items-center text-center space-y-4 hover:border-[var(--border-hover)] transition-all">
-     <div className="w-12 h-12 rounded-2xl bg-[var(--accent-bg)] flex items-center justify-center text-[var(--accent)]">
-        <Icon size={24} />
-     </div>
-     <div>
-        <p className="text-3xl font-black text-[var(--text-primary)] italic font-serif leading-none">{value}</p>
-        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] mt-2">{label}</p>
-     </div>
-  </div>
-);
-
-const ActionItem = ({ icon: Icon, label, onClick, red }) => (
-  <button 
-    onClick={onClick}
-    className="w-full p-6 flex items-center justify-between group hover:bg-white/5 transition-all"
-  >
-     <div className="flex items-center gap-4">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${red ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-[var(--text-secondary)]'} transition-colors`}>
-           <Icon size={18} />
-        </div>
-        <span className={`text-sm font-bold ${red ? 'text-red-500' : 'text-white'} tracking-tight`}>{label}</span>
-     </div>
-     <ArrowRight size={16} className="text-[var(--text-secondary)] group-hover:text-white transition-all group-hover:translate-x-1" />
-  </button>
-);
-
-const ArrowRight = ({ size, className }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M5 12h14M12 5l7 7-7 7" />
-  </svg>
-);
 
 export default Profile;
