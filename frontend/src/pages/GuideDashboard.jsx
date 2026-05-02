@@ -41,8 +41,8 @@ const GuideDashboard = () => {
   const [otpInput, setOtpInput] = useState('');
   const [tripTimer, setTripTimer] = useState(0);
   const [countdown, setCountdown] = useState(30);
-  const [selectedAreas, setSelectedAreas] = useState(['Puri', 'Bhubaneswar']);
-  const [selectedLangs, setSelectedLangs] = useState(['Hindi', 'English']);
+  const [places, setPlaces] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState('Puri');
   const [showGoLiveConfig, setShowGoLiveConfig] = useState(false);
 
   // Optimized Stats Calculation
@@ -53,7 +53,7 @@ const GuideDashboard = () => {
     return {
       totalEarnings: earnings,
       pendingBookings: pendingCount,
-      rating: guideData?.rating || 5.0,
+      rating: guideData?.rating ? Number(guideData.rating).toFixed(1) : 5.0,
       totalTrips: completed.length
     };
   }, [bookings, guideData]);
@@ -131,6 +131,19 @@ const GuideDashboard = () => {
     return () => clearInterval(timer);
   }, [incomingBooking, countdown]);
 
+  const fetchPlaces = async () => {
+    try {
+      const { data } = await api.get('/places');
+      setPlaces(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlaces();
+  }, []);
+
   const fetchDashboardData = async (force = false) => {
     // If we already have data and it's not a forced refresh, don't show skeleton again
     if (bookings.length > 0 && guideData && !force) {
@@ -155,6 +168,15 @@ const GuideDashboard = () => {
       
       const current = bData?.find(b => ['accepted', 'ongoing'].includes(b.status));
       setActiveBooking(current || null);
+
+      // Proactive check: If no active booking but there's a 'searching' booking, show it!
+      if (!current && !incomingBooking) {
+        const pending = bData?.find(b => b.status === 'searching');
+        if (pending && isLive) {
+          setIncomingBooking(pending);
+          setCountdown(60);
+        }
+      }
     } catch (error) {
       console.error('Error fetching guide data:', error);
     } finally {
@@ -209,7 +231,7 @@ const GuideDashboard = () => {
     try {
       const { data } = await api.put('/guides/live', { 
         isLive: !isLive,
-        location: !isLive ? (selectedAreas?.[0] || 'Odisha') : ''
+        location: !isLive ? (selectedLocation || 'Odisha') : ''
       });
       setIsLive(data.isLive);
     } catch (error) {
@@ -305,7 +327,7 @@ const GuideDashboard = () => {
          {[
             { label: 'Total Earnings', value: `₹${stats.totalEarnings}`, icon: <DollarSign />, color: 'emerald' },
             { label: 'Pending Requests', value: stats.pendingBookings, icon: <Activity />, color: 'amber' },
-            { label: 'Overall Rating', value: stats.rating, icon: <Star />, color: 'blue' },
+            { label: 'Overall Rating', value: Number(stats.rating).toFixed(1), icon: <Star />, color: 'blue' },
             { label: 'Total Trips', value: stats.totalTrips, icon: <Award />, color: 'rose' }
          ].map((s, i) => (
             <motion.div 
@@ -342,7 +364,22 @@ const GuideDashboard = () => {
                      </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
+                     {!isLive && (
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-2">Your Current Location</label>
+                           <select 
+                              value={selectedLocation}
+                              onChange={(e) => setSelectedLocation(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-xs font-bold text-white focus:ring-2 focus:ring-white/20 transition-all outline-none"
+                           >
+                              {places.map(p => (
+                                 <option key={p._id} value={p.name} className="bg-slate-900 text-white">{p.name}</option>
+                              ))}
+                              {places.length === 0 && <option disabled>No locations found</option>}
+                           </select>
+                        </div>
+                     )}
                      <button 
                         onClick={toggleLive}
                         className={`w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all shadow-2xl ${isLive ? 'bg-white text-emerald-500' : 'bg-emerald-500 text-white'}`}

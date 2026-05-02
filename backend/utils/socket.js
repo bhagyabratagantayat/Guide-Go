@@ -4,7 +4,13 @@ const User = require('../models/User');
 const initSocket = (server) => {
   const io = socketio(server, {
     cors: {
-      origin: ["http://localhost:5173", "https://guide-go.vercel.app", "https://guidego.vercel.app"],
+      origin: [
+        "http://localhost:5173", 
+        "https://guide-go.vercel.app", 
+        "https://guidego.vercel.app",
+        "https://guide-goo.web.app",
+        "https://guide-goo.firebaseapp.com"
+      ],
       methods: ["GET", "POST"],
       credentials: true
     }
