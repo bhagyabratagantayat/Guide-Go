@@ -211,7 +211,7 @@ const BookGuidePage = () => {
                                  className="group cursor-pointer bg-white rounded-[2rem] overflow-hidden border border-[#eeeeee] hover:shadow-2xl hover:border-[#ff385c]/30 transition-all duration-500"
                               >
                                  <div className="relative h-56 overflow-hidden">
-                                    <img src={place.image || 'https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80'} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" alt="" />
+                                    <img src={place.image || (place.images && place.images[0]) || 'https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80'} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" alt="" />
                                     <div className="absolute top-4 left-4">
                                        <span className="px-3 py-1.5 bg-white/95 backdrop-blur rounded-full text-[10px] font-black text-[#222222] flex items-center gap-1.5 shadow-lg">
                                           <ZapIcon size={12} className="text-[#ff385c] fill-current" /> ONLINE NOW

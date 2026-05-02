@@ -307,7 +307,7 @@ const Home = () => {
               >
                 <div className="relative aspect-[4/5] rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden mb-5 lg:mb-6 shadow-xl shadow-black/5">
                   <img 
-                    src={place.image || `https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80`} 
+                    src={place.image || (place.images && place.images[0]) || `https://images.unsplash.com/photo-1540390769625-2fc3f8b1d50c?w=600&q=80`} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" 
                     alt={place.name} 
                   />
