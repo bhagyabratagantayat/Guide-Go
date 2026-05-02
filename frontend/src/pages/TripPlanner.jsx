@@ -65,7 +65,7 @@ const TripPlannerPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-10 max-w-7xl mx-auto space-y-12 bg-[#f7f7f7] min-h-screen rounded-[2rem] border border-[#ebebeb] relative overflow-hidden">
+    <div className="p-4 md:p-10 max-w-7xl mx-auto space-y-8 md:space-y-12 bg-[#f7f7f7] min-h-screen md:rounded-[2rem] border border-[#ebebeb] relative overflow-hidden">
       <Helmet><title>AI Trip Architect | GuideGo</title></Helmet>
 
       {/* Decorative Glows */}

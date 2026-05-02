@@ -59,12 +59,14 @@ const GuideDashboard = () => {
   }, [bookings, guideData]);
 
   useEffect(() => {
-    fetchDashboardData();
-    const socket = getSocket();
-    if (socket && user?._id) {
-      socket.emit('join', { userId: user._id });
+    if (user && user.role === 'guide') {
+      fetchDashboardData();
+      const socket = getSocket();
+      if (socket && user._id) {
+        socket.emit('join', { userId: user._id });
+      }
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -129,19 +131,29 @@ const GuideDashboard = () => {
     return () => clearInterval(timer);
   }, [incomingBooking, countdown]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (force = false) => {
+    // If we already have data and it's not a forced refresh, don't show skeleton again
+    if (bookings.length > 0 && guideData && !force) {
+      setLoading(false);
+    }
+
     try {
+      console.log('Fetching guide dashboard data...');
       const [{ data: bData }, { data: gData }] = await Promise.all([
         api.get('/bookings/guide'),
         api.get('/guides/profile')
       ]);
-      setBookings(bData);
-      setGuideData(gData);
-      setIsLive(gData.isLive);
-      setGuideStatus(gData.status);
-      setPackages(gData.packages || []);
       
-      const current = bData.find(b => ['accepted', 'ongoing'].includes(b.status));
+      setBookings(bData || []);
+      setGuideData(gData);
+      
+      if (gData) {
+        setIsLive(gData.isLive || false);
+        setGuideStatus(gData.status || 'pending');
+        setPackages(gData.packages || []);
+      }
+      
+      const current = bData?.find(b => ['accepted', 'ongoing'].includes(b.status));
       setActiveBooking(current || null);
     } catch (error) {
       console.error('Error fetching guide data:', error);

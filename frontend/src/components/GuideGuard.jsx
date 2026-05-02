@@ -13,6 +13,23 @@ export default function GuideGuard({ children }) {
     let mounted = true;
     
     const checkStatus = async () => {
+      // OPTIMIZATION: If user state already has this info, use it immediately to avoid "buffering"
+      if (user && user.kycStatus && user.profileComplete !== undefined) {
+        if (user.kycStatus !== 'approved') {
+          navigate('/guide/verify-identity');
+          setLoading(false);
+          return;
+        } else if (!user.profileComplete) {
+          navigate('/guide/setup');
+          setLoading(false);
+          return;
+        } else {
+          setOk(true);
+          setLoading(false);
+          // We still do a background check to keep it synced, but we don't block the UI
+        }
+      }
+
       try {
         const { data } = await api.get('/kyc/status');
         if (!mounted) return;
@@ -33,8 +50,9 @@ export default function GuideGuard({ children }) {
         }
       } catch (error) {
         if (!mounted) return;
-        // User probably not logged in or session expired
-        navigate('/login');
+        console.error('Guard Check Failed:', error);
+        // Don't redirect to login if we have a user, just stay on loading or handle error
+        if (!user) navigate('/login');
       } finally {
         if (mounted) setLoading(false);
       }

@@ -12,6 +12,8 @@ const {
   changePassword,
   testEmail,
   googleSync,
+  updateSettings,
+  deleteAccount,
   refreshToken,
   logoutUser
 } = require('../controllers/authController');
@@ -41,5 +43,7 @@ router.post('/logout', logoutUser);
 router.get('/profile', authenticateUser, getProfile);
 router.put('/profile', authenticateUser, updateProfile);
 router.put('/change-password', authenticateUser, changePassword);
+router.put('/settings', authenticateUser, updateSettings);
+router.delete('/account', authenticateUser, deleteAccount);
 
 module.exports = router;

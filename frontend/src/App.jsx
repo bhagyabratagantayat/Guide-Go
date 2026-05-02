@@ -76,7 +76,7 @@ function AppContent() {
   const location = useLocation();
   const { tripStatus } = useBooking();
 
-  const isTripLive = tripStatus === TRIP_STATUS.ONGOING;
+  const isTripLive = tripStatus === TRIP_STATUS.ONGOING && (location.pathname.includes('/book-guide') || location.pathname === '/guide');
 
   useEffect(() => {
     if (user) {
@@ -100,21 +100,19 @@ function AppContent() {
 
       <div className="flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
         {/* Mobile Header */}
-        {!isTripLive && (
-          <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[var(--bg-sidebar)] border-b border-[var(--border)] flex items-center justify-between px-6 z-[900]">
-            <div className="flex items-center gap-3">
-               <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-[var(--text-secondary)]">
-                  <Menu size={24} />
-               </button>
-               <span className="text-xl font-black italic tracking-tighter">GuideGo</span>
+        <header className={`${isTripLive ? 'hidden' : 'flex'} lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-[#f7f7f7] items-center justify-between px-6 z-[900]`}>
+          <div className="flex items-center gap-4">
+             <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-[#222222] hover:bg-[#f7f7f7] rounded-full transition-all">
+                <Menu size={24} />
+             </button>
+             <span className="text-xl font-black italic tracking-tighter text-[#ff385c]">GuideGo</span>
+          </div>
+          {user && (
+            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#ff385c]/10 shadow-sm">
+               <img src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.name}&background=ff385c&color=fff`} className="w-full h-full object-cover" />
             </div>
-            {user && (
-              <div className="w-8 h-8 rounded-lg overflow-hidden border border-[var(--border)]">
-                 <img src={user.profilePicture || 'https://i.pravatar.cc/100'} className="w-full h-full object-cover" />
-              </div>
-            )}
-          </header>
-        )}
+          )}
+        </header>
 
         {/* Sidebar - Fixed Left */}
         {!isTripLive && <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} className="w-[260px] flex-shrink-0" />}
@@ -128,7 +126,7 @@ function AppContent() {
         )}
 
         {/* Main Content Area */}
-        <main className={`flex-1 ${!isTripLive ? 'lg:ml-[260px]' : ''} ml-0 min-h-screen ${!isTripLive ? 'pt-16 lg:pt-0' : ''} overflow-y-auto`}>
+        <main className={`flex-1 ${!isTripLive ? 'lg:ml-[260px]' : ''} ml-0 min-h-screen ${!isTripLive ? 'pt-16 lg:pt-0' : 'pt-0'} overflow-y-auto`}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               {/* Public Routes */}

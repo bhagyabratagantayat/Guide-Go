@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, role }) => {
+const ProtectedRoute = ({ children, requiredRole }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children, role }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (role && user.role !== role) {
+  if (requiredRole && user.role !== requiredRole) {
     // Redirect to their default dashboard if role doesn't match
     const dashboard = user.role === 'admin' ? '/admin' : user.role === 'guide' ? '/guide' : '/user';
     return <Navigate to={dashboard} replace />;

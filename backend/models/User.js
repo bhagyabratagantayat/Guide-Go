@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
   loginAttempts: { type: Number, default: 0 },
   lockUntil: { type: Date },
   refreshToken: { type: String },
+  settings: {
+    pushNotifications: { type: Boolean, default: true },
+    emailUpdates: { type: Boolean, default: true },
+    audioNarration: { type: Boolean, default: false }
+  },
 });
 
 userSchema.pre('save', async function () {

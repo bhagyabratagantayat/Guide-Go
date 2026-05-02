@@ -678,6 +678,33 @@ const changePassword = asyncHandler(async (req, res, next) => {
   res.json({ success: true, message: 'Password updated successfully' });
 });
 
+const updateSettings = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return next(new ErrorResponse('User not found', 404));
+
+  user.settings = { ...user.settings, ...req.body };
+  await user.save({ validateBeforeSave: false });
+
+  res.json({ success: true, settings: user.settings });
+});
+
+const deleteAccount = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return next(new ErrorResponse('User not found', 404));
+
+  // If user is a guide, delete guide profile too
+  if (user.role === 'guide') {
+    await Guide.findOneAndDelete({ userId: user._id });
+  }
+
+  await User.findByIdAndDelete(user._id);
+  
+  res.cookie('accessToken', '', { maxAge: 1 });
+  res.cookie('refreshToken', '', { maxAge: 1 });
+
+  res.json({ success: true, message: 'Account deleted successfully' });
+});
+
 module.exports = { 
   registerUser, 
   loginUser, 
@@ -692,5 +719,7 @@ module.exports = {
   updateProfile,
   changePassword,
   testEmail,
-  googleSync
+  googleSync,
+  updateSettings,
+  deleteAccount
 };

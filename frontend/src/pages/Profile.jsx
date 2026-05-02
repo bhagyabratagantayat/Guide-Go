@@ -94,82 +94,84 @@ const Profile = () => {
       <Helmet><title>{user.name} | GuideGo Profile</title></Helmet>
 
       {/* Header / Cover Area */}
-      <div className="h-64 bg-gradient-to-r from-[#ff385c] to-[#e31c5f] relative">
+      <div className="h-48 md:h-64 bg-gradient-to-r from-[#ff385c] to-[#e31c5f] relative">
          <div className="absolute inset-0 bg-black/10" />
          <div className="max-w-5xl mx-auto h-full px-6 relative">
-            <div className="absolute -bottom-16 left-6 flex flex-col md:flex-row items-end gap-6">
-               <div className="relative group">
-                  <div className="w-40 h-40 rounded-[2.5rem] bg-white p-1.5 shadow-2xl overflow-hidden border-4 border-white">
-                     <div className="w-full h-full rounded-[2rem] overflow-hidden bg-[#f7f7f7] flex items-center justify-center">
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 w-full md:w-auto px-6 md:px-0">
+               <div className="relative group shrink-0">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] md:rounded-[2.5rem] bg-white p-1 md:p-1.5 shadow-2xl overflow-hidden border-4 border-white">
+                     <div className="w-full h-full rounded-[1.8rem] md:rounded-[2rem] overflow-hidden bg-[#f7f7f7] flex items-center justify-center">
                         {formData.profilePicture || user.profilePicture ? (
                            <img src={formData.profilePicture || user.profilePicture} className="w-full h-full object-cover" alt="Profile" />
                         ) : (
-                           <span className="text-6xl font-black text-[#ff385c]">{user.name.charAt(0)}</span>
+                           <span className="text-5xl md:text-6xl font-black text-[#ff385c]">{user.name.charAt(0)}</span>
                         )}
                      </div>
                   </div>
                   {isEditing && (
-                    <label className="absolute bottom-2 right-2 p-3 bg-white rounded-2xl text-[#222222] shadow-xl hover:scale-110 transition-transform cursor-pointer border border-[#ebebeb]">
-                       <Camera size={20} />
+                    <label className="absolute bottom-1 right-1 p-2 md:p-3 bg-white rounded-xl md:rounded-2xl text-[#222222] shadow-xl hover:scale-110 transition-transform cursor-pointer border border-[#ebebeb]">
+                       <Camera size={18} />
                        <input type="file" hidden onChange={handleImageChange} accept="image/*" />
                     </label>
                   )}
                </div>
                
-               <div className="pb-4 text-center md:text-left">
-                  <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-md">{user.name}</h1>
-                  <div className="flex items-center gap-2 mt-2">
-                     <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20">
+               <div className="pb-0 md:pb-4 text-center md:text-left">
+                  <h1 className="text-3xl md:text-4xl font-black text-white md:text-[#222222] lg:text-white tracking-tight drop-shadow-sm md:drop-shadow-none lg:drop-shadow-md">
+                    {user.name}
+                  </h1>
+                  <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
+                     <span className="px-3 py-1 bg-white/20 md:bg-[#ff385c]/10 lg:bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest text-white md:text-[#ff385c] lg:text-white border border-white/20 md:border-[#ff385c]/20 lg:border-white/20">
                         {user.role}
                      </span>
-                     <span className="flex items-center gap-1 text-[10px] font-bold text-white/80">
-                        <CheckCircle2 size={12} className="text-green-400" /> Verified Member
+                     <span className="flex items-center gap-1 text-[9px] font-bold text-white/80 md:text-[#717171] lg:text-white/80">
+                        <CheckCircle2 size={12} className="text-green-400" /> Verified
                      </span>
                   </div>
                </div>
             </div>
-
-            <div className="absolute bottom-4 right-6 flex gap-3">
+ 
+            <div className="absolute top-4 right-6 flex gap-2 md:top-auto md:bottom-4">
                {!isEditing ? (
                  <button 
                    onClick={() => setIsEditing(true)}
-                   className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-all shadow-lg"
+                   className="p-3 md:px-6 md:py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-all shadow-lg"
                  >
-                   <Edit3 size={16} /> Edit Profile
+                   <Edit3 size={16} /> <span className="hidden md:inline">Edit Profile</span>
                  </button>
                ) : (
                  <div className="flex gap-2">
                     <button 
                       onClick={() => setIsEditing(false)}
-                      className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-all"
+                      className="p-3 md:px-6 md:py-3 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-all"
                     >
-                      <X size={16} /> Cancel
+                      <X size={16} /> <span className="hidden md:inline">Cancel</span>
                     </button>
                     <button 
                       onClick={handleUpdate}
                       disabled={loading}
-                      className="px-8 py-3 bg-white text-[#ff385c] rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-all shadow-xl disabled:opacity-50"
+                      className="px-6 py-3 md:px-8 bg-white text-[#ff385c] rounded-full font-bold text-sm flex items-center gap-2 hover:scale-105 transition-all shadow-xl disabled:opacity-50"
                     >
                       {loading ? <div className="w-4 h-4 border-2 border-[#ff385c] border-t-transparent animate-spin rounded-full" /> : <Save size={16} />} 
-                      Save Changes
+                      <span className="hidden md:inline">Save Changes</span>
                     </button>
                  </div>
                )}
             </div>
          </div>
       </div>
-
-      <div className="max-w-5xl mx-auto px-6 mt-24 grid grid-cols-1 lg:grid-cols-12 gap-12">
+ 
+      <div className="max-w-5xl mx-auto px-6 mt-32 md:mt-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
          {/* Left Side: Details */}
          <div className="lg:col-span-8 space-y-10">
             {error && <div className="p-4 bg-red-50 text-red-500 rounded-2xl border border-red-100 text-sm font-bold">{error}</div>}
 
-            <section className="bg-white rounded-[2.5rem] p-10 border border-[#ebebeb] shadow-sm space-y-8">
-               <h3 className="text-2xl font-black text-[#222222]">Personal Information</h3>
+            <section className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-[#ebebeb] shadow-sm space-y-8">
+               <h3 className="text-xl md:text-2xl font-black text-[#222222]">Personal Information</h3>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   <div className="space-y-3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Full Name</label>
+                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Full Name</label>
                      <div className="relative">
                         <User className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
                         <input 
@@ -177,24 +179,24 @@ const Profile = () => {
                            readOnly={!isEditing}
                            value={formData.name}
                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-3.5 md:py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
                         />
                      </div>
                   </div>
                   <div className="space-y-3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Email Address</label>
+                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Email Address</label>
                      <div className="relative">
                         <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
                         <input 
                            type="email" 
                            readOnly
                            value={user.email}
-                           className="w-full bg-[#f7f7f7] border-2 border-transparent rounded-2xl pl-14 pr-6 py-4 font-bold text-[#b0b0b0] cursor-not-allowed"
+                           className="w-full bg-[#f7f7f7] border-2 border-transparent rounded-2xl pl-14 pr-6 py-3.5 md:py-4 font-bold text-[#b0b0b0] cursor-not-allowed"
                         />
                      </div>
                   </div>
                   <div className="space-y-3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Mobile Number</label>
+                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Mobile Number</label>
                      <div className="relative">
                         <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
                         <input 
@@ -202,12 +204,12 @@ const Profile = () => {
                            readOnly={!isEditing}
                            value={formData.mobile}
                            onChange={(e) => setFormData({...formData, mobile: e.target.value})}
-                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-3.5 md:py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
                         />
                      </div>
                   </div>
                   <div className="space-y-3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Location</label>
+                     <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Location</label>
                      <div className="relative">
                         <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
                         <input 
@@ -215,7 +217,7 @@ const Profile = () => {
                            readOnly={!isEditing}
                            value={formData.location}
                            onChange={(e) => setFormData({...formData, location: e.target.value})}
-                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                           className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-3.5 md:py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
                         />
                      </div>
                   </div>
@@ -223,23 +225,23 @@ const Profile = () => {
             </section>
 
             {user.role === 'guide' && (
-              <section className="bg-white rounded-[2.5rem] p-10 border border-[#ebebeb] shadow-sm space-y-8">
-                 <h3 className="text-2xl font-black text-[#222222]">Guide Expertise</h3>
-                 <div className="space-y-8">
+              <section className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-[#ebebeb] shadow-sm space-y-8">
+                 <h3 className="text-xl md:text-2xl font-black text-[#222222]">Guide Expertise</h3>
+                 <div className="space-y-6 md:space-y-8">
                     <div className="space-y-3">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Professional Bio</label>
+                       <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Professional Bio</label>
                        <textarea 
                           readOnly={!isEditing}
                           value={formData.bio}
                           onChange={(e) => setFormData({...formData, bio: e.target.value})}
                           rows={4}
-                          className={`w-full bg-[#f7f7f7] border-2 rounded-3xl p-6 font-bold text-[#222222] transition-all outline-none resize-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                          className={`w-full bg-[#f7f7f7] border-2 rounded-3xl p-5 md:p-6 font-bold text-[#222222] transition-all outline-none resize-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
                           placeholder="Tell us about your guiding experience..."
                        />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                        <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Languages (Comma separated)</label>
+                          <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Languages</label>
                           <div className="relative">
                              <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
                              <input 
@@ -247,12 +249,12 @@ const Profile = () => {
                                 readOnly={!isEditing}
                                 value={formData.languages}
                                 onChange={(e) => setFormData({...formData, languages: e.target.value})}
-                                className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                                className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-3.5 md:py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
                              />
                           </div>
                        </div>
                        <div className="space-y-3">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Hourly Rate (₹)</label>
+                          <label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#717171] ml-2">Hourly Rate (₹)</label>
                           <div className="relative">
                              <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-[#b0b0b0]" size={18} />
                              <input 
@@ -260,7 +262,7 @@ const Profile = () => {
                                 readOnly={!isEditing}
                                 value={formData.pricePerHour}
                                 onChange={(e) => setFormData({...formData, pricePerHour: e.target.value})}
-                                className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
+                                className={`w-full bg-[#f7f7f7] border-2 rounded-2xl pl-14 pr-6 py-3.5 md:py-4 font-bold text-[#222222] transition-all outline-none ${isEditing ? 'border-[#ff385c]/20 focus:border-[#ff385c]' : 'border-transparent cursor-default'}`}
                              />
                           </div>
                        </div>
@@ -271,13 +273,13 @@ const Profile = () => {
          </div>
 
          {/* Right Side: Stats & Security */}
-         <div className="lg:col-span-4 space-y-10">
-            <div className="bg-[#222222] rounded-[2.5rem] p-10 text-white shadow-xl relative overflow-hidden">
+          <div className="lg:col-span-4 space-y-8 lg:space-y-10">
+            <div className="bg-[#222222] rounded-[2.5rem] p-8 md:p-10 text-white shadow-xl relative overflow-hidden">
                <Award className="absolute -right-6 -bottom-6 w-32 h-32 text-white/5 rotate-12" />
-               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff385c] mb-6">Account Trust</h4>
+               <h4 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-[#ff385c] mb-6">Account Trust</h4>
                <div className="space-y-6 relative z-10">
                   <div className="flex items-center justify-between">
-                     <span className="text-sm font-medium text-white/60">Profile Strength</span>
+                     <span className="text-xs md:text-sm font-medium text-white/60">Profile Strength</span>
                      <span className="text-sm font-black">92%</span>
                   </div>
                   <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
@@ -285,39 +287,39 @@ const Profile = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4 pt-4">
                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                        <p className="text-2xl font-black italic">12</p>
-                        <p className="text-[9px] font-black uppercase text-white/40 tracking-widest mt-1">Trips</p>
+                        <p className="text-xl md:text-2xl font-black italic">12</p>
+                        <p className="text-[8px] md:text-[9px] font-black uppercase text-white/40 tracking-widest mt-1">Trips</p>
                      </div>
                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                        <p className="text-2xl font-black italic">4.9</p>
-                        <p className="text-[9px] font-black uppercase text-white/40 tracking-widest mt-1">Rating</p>
+                        <p className="text-xl md:text-2xl font-black italic">4.9</p>
+                        <p className="text-[8px] md:text-[9px] font-black uppercase text-white/40 tracking-widest mt-1">Rating</p>
                      </div>
                   </div>
                </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] p-2 border border-[#ebebeb] shadow-sm divide-y divide-[#f7f7f7]">
-               <button className="w-full p-6 flex items-center justify-between group hover:bg-[#f7f7f7] transition-all rounded-[2rem]">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-2 border border-[#ebebeb] shadow-sm divide-y divide-[#f7f7f7]">
+               <button className="w-full p-5 md:p-6 flex items-center justify-between group hover:bg-[#f7f7f7] transition-all rounded-[1.5rem] md:rounded-[2rem]">
                   <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center">
+                     <div className="w-9 h-9 md:w-10 md:h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center">
                         <SettingsIcon size={18} />
                      </div>
                      <span className="text-sm font-bold text-[#222222]">Preferences</span>
                   </div>
                   <ChevronRight size={16} className="text-[#717171]" />
                </button>
-               <button className="w-full p-6 flex items-center justify-between group hover:bg-[#f7f7f7] transition-all rounded-[2rem]">
+               <button className="w-full p-5 md:p-6 flex items-center justify-between group hover:bg-[#f7f7f7] transition-all rounded-[1.5rem] md:rounded-[2rem]">
                   <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center">
+                     <div className="w-9 h-9 md:w-10 md:h-10 bg-[#f7f7f7] text-[#222222] rounded-xl flex items-center justify-center">
                         <ShieldCheck size={18} />
                      </div>
                      <span className="text-sm font-bold text-[#222222]">Security</span>
                   </div>
                   <ChevronRight size={16} className="text-[#717171]" />
                </button>
-               <button onClick={logout} className="w-full p-6 flex items-center justify-between group hover:bg-red-50 transition-all rounded-[2rem]">
+               <button onClick={logout} className="w-full p-5 md:p-6 flex items-center justify-between group hover:bg-red-50 transition-all rounded-[1.5rem] md:rounded-[2rem]">
                   <div className="flex items-center gap-4">
-                     <div className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
+                     <div className="w-9 h-9 md:w-10 md:h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center">
                         <LogOut size={18} />
                      </div>
                      <span className="text-sm font-bold text-red-500">Sign Out</span>

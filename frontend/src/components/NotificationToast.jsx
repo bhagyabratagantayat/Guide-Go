@@ -23,7 +23,7 @@ const NotificationToast = ({ notification, onClose }) => {
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-[9999] max-w-sm w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transform transition-all duration-500 ease-out ${visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-95'}`}>
+    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:bottom-8 z-[9999] max-w-sm w-full bg-white/95 backdrop-blur-md rounded-[2rem] shadow-2xl border border-[#ebebeb] overflow-hidden transform transition-all duration-500 ease-out ${visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-95 pointer-events-none'}`}>
       <div className="p-5 flex items-start space-x-4">
         <div className="flex-shrink-0 p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl">
           {getIcon()}

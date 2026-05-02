@@ -10,24 +10,27 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       const userData = JSON.parse(localStorage.getItem('gg_user'));
+      
       if (userData) {
+        // OPTIMIZATION: Set user immediately from local storage so the app doesn't "buffer"
+        setUser(userData);
+        setLoading(false);
+        
         try {
-          // If we have local user data, try to sync with server
+          // Sync with server in the background
           const { data } = await api.get('/auth/profile');
-          setUser({ ...userData, ...data });
+          const syncedUser = { ...userData, ...data };
+          localStorage.setItem('gg_user', JSON.stringify(syncedUser));
+          setUser(syncedUser);
         } catch (error) {
-          // Only clear if it's a definitive auth failure (401/403)
           if (error.response?.status === 401 || error.response?.status === 403) {
-            console.warn('Session expired or invalid, logging out...');
             localStorage.removeItem('gg_user');
             setUser(null);
-          } else {
-            // Server might be down or network issue, keep local state for now
-            setUser(userData);
           }
         }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     };
     checkAuth();
   }, []);

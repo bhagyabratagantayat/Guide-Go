@@ -23,13 +23,59 @@ export const BookingProvider = ({ children }) => {
   const timerRef = useRef(null);
   const socketRef = useRef(null);
 
+  // --- Session Restoration Logic ---
+  const restoreSession = React.useCallback(async () => {
+    try {
+      const userString = localStorage.getItem('gg_user');
+      const user = userString ? JSON.parse(userString) : null;
+      
+      // If no user, we can't restore a session, so just stop the loading state
+      if (!user) {
+        setIsRestoring(false);
+        return;
+      }
+
+      const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
+      const { data } = await api.get(endpoint);
+      
+      if (data && data.length > 0) {
+        const latest = data[0];
+        if (['searching', 'accepted', 'ongoing', 'completed'].includes(latest.status)) {
+          setBookingData(latest);
+          if (latest.status === 'searching') {
+            setTripStatus(TRIP_STATUS.SEARCHING);
+          } else if (latest.status === 'accepted') {
+            setTripStatus(TRIP_STATUS.MATCHED);
+            setMatchedGuide(latest.guideId);
+            setOtp(latest.otp);
+          } else if (latest.status === 'ongoing') {
+            setTripStatus(TRIP_STATUS.ONGOING);
+            setMatchedGuide(latest.guideId);
+            startTimer(latest.startedAt);
+          } else if (latest.status === 'completed') {
+            if (!latest.review?.rating) {
+              setTripStatus(TRIP_STATUS.COMPLETED);
+              stopTimer();
+            } else {
+              setTripStatus(TRIP_STATUS.IDLE);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Session restoration failed:', error);
+    } finally {
+      setIsRestoring(false);
+    }
+  }, []);
+
   // --- Socket Initialization ---
   useEffect(() => {
     const userString = localStorage.getItem('gg_user');
     const user = userString ? JSON.parse(userString) : null;
     
     if (user && !socketRef.current) {
-      const socket = getSocket(); // This now uses our optimized socket.js
+      const socket = getSocket();
       socketRef.current = socket;
 
       socket.on('booking_accepted', (data) => {
@@ -46,7 +92,6 @@ export const BookingProvider = ({ children }) => {
       socket.on('trip_ended', () => {
         setTripStatus(TRIP_STATUS.COMPLETED);
         stopTimer();
-        // Force a sync to get the ended booking details
         restoreSession();
       });
 
@@ -63,59 +108,14 @@ export const BookingProvider = ({ children }) => {
         socketRef.current.off('booking_cancelled');
       }
     };
-  }, []);
+  }, [restoreSession]);
 
-  // Sync with Backend on Mount (Session Recovery)
+  // Initial Restore & Interval Sync
   useEffect(() => {
-    const restoreSession = async () => {
-      // With HttpOnly cookies, we don't check for local token. 
-      // The API call itself will tell us if we are authorized.
-
-      try {
-        const userString = localStorage.getItem('gg_user');
-        const user = userString ? JSON.parse(userString) : null;
-        if (!user) return;
-
-        const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
-        const { data } = await api.get(endpoint);
-        if (data && data.length > 0) {
-          // Find the most recent active booking
-          const latest = data[0];
-          if (['searching', 'accepted', 'ongoing', 'completed'].includes(latest.status)) {
-            setBookingData(latest);
-            if (latest.status === 'searching') {
-              setTripStatus(TRIP_STATUS.SEARCHING);
-            } else if (latest.status === 'accepted') {
-              setTripStatus(TRIP_STATUS.MATCHED);
-              setMatchedGuide(latest.guideId);
-              setOtp(latest.otp);
-            } else if (latest.status === 'ongoing') {
-              setTripStatus(TRIP_STATUS.ONGOING);
-              setMatchedGuide(latest.guideId);
-              startTimer(latest.startedAt);
-            } else if (latest.status === 'completed') {
-              // Only show review screen if not already reviewed
-              if (!latest.review?.rating) {
-                setTripStatus(TRIP_STATUS.COMPLETED);
-                stopTimer();
-              } else {
-                setTripStatus(TRIP_STATUS.IDLE);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Session restoration failed:', error);
-      } finally {
-        setIsRestoring(false);
-      }
-    };
     restoreSession();
-
-    // Background sync every 5 seconds to catch missed socket events
     const syncInterval = setInterval(restoreSession, 5000);
     return () => clearInterval(syncInterval);
-  }, []);
+  }, [restoreSession]);
 
   const startTimer = (startTime) => {
     if (timerRef.current) clearInterval(timerRef.current);

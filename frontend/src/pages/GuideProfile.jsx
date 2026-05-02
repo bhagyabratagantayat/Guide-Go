@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 import { 
   Star, Languages, DollarSign, Calendar, MapPin, 
   ChevronLeft, ShieldCheck, Clock, CheckCircle2, 
@@ -34,7 +34,7 @@ const GuideProfile = () => {
   const [showPaymentSelection, setShowPaymentSelection] = useState(false);
 
   const proceedToPaymentSelection = () => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const userInfo = JSON.parse(localStorage.getItem('gg_user'));
     if (!userInfo) return navigate('/login');
     if (!date) return alert('Please select a date');
     setShowPaymentSelection(true);
@@ -44,15 +44,12 @@ const GuideProfile = () => {
     if (!paymentMethod) return alert('Please select a payment method');
     setBookingLoading(true);
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      const { data: booking } = await axios.post('/api/bookings', {
+      const { data: booking } = await api.post('/bookings', {
         guideId: guide.userId._id,
         location: 'Puri, Odisha', 
         bookingTime: new Date(date).toISOString(),
         price: guide.pricePerHour * duration,
         paymentMethod: paymentMethod
-      }, {
-        headers: { Authorization: `Bearer ${userInfo?.token}` }
       });
       setBookedBooking(booking);
       setBookingSuccess(true);
@@ -80,7 +77,7 @@ const GuideProfile = () => {
   useEffect(() => {
     const fetchGuide = async () => {
       try {
-        const { data } = await axios.get(`/api/guides`);
+        const { data } = await api.get('/guides');
         const found = data.find(g => g._id === id || g.userId?._id === id);
         setGuide(found);
       } catch (error) {
@@ -96,7 +93,7 @@ const GuideProfile = () => {
     const fetchReviews = async () => {
       try {
         if (guide?.userId?._id) {
-          const { data } = await axios.get(`/api/reviews/guide/${guide.userId._id}`);
+          const { data } = await api.get(`/reviews/guide/${guide.userId._id}`);
           setReviews(data);
         }
       } catch (error) {

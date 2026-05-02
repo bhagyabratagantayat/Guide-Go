@@ -56,6 +56,15 @@ const Sidebar = ({ isOpen, onClose }) => {
     ] : [
       { path: '/guide/verify-identity', label: 'Verify Identity', icon: ShieldCheck, isPrimary: true },
     ]},
+    { section: 'EXPLORE', items: [
+      { path: '/', label: 'Home Page', icon: Home },
+      { path: '/book-guide', label: 'Book Guide', icon: Compass },
+    ]},
+    { section: 'TRAVEL TOOLS', items: [
+      { path: '/weather', label: 'Weather', icon: Cloud },
+      { path: '/hotels', label: 'Hotels', icon: Hotel },
+      { path: '/restaurants', label: 'Restaurants', icon: Utensils },
+    ]},
     { section: 'ACCOUNT', items: [
       { path: '/profile', label: 'Profile', icon: User },
       { path: '/settings', label: 'Settings', icon: Settings },

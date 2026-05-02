@@ -90,62 +90,62 @@ const AIChat = () => {
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] bg-white rounded-[2.5rem] border border-[#dddddd] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] relative overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-2rem)] bg-white md:rounded-[2.5rem] border-x border-b md:border border-[#dddddd] shadow-none md:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] relative overflow-hidden">
       <Helmet><title>AI Assistant | GuideGo</title></Helmet>
-
+ 
       {/* Header */}
-      <div className="p-8 border-b border-[#dddddd] bg-white/90 backdrop-blur-xl flex items-center gap-6">
-        <div className="w-16 h-16 bg-[#ff385c] rounded-2xl flex items-center justify-center text-white shadow-xl shadow-rose-500/20">
-          <Bot size={32} />
+      <div className="p-4 md:p-8 border-b border-[#dddddd] bg-white/90 backdrop-blur-xl flex items-center gap-4 md:gap-6">
+        <div className="w-12 h-12 md:w-16 md:h-16 bg-[#ff385c] rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl shadow-rose-500/20">
+          <Bot size={24} className="md:w-8 md:h-8" />
         </div>
         <div>
-          <h1 className="text-2xl font-black italic text-[#222222] tracking-tight">GuideGo AI</h1>
-          <p className="text-[10px] font-black uppercase text-[#717171] tracking-[0.3em]">Smart Local Engine • Active</p>
+          <h1 className="text-xl md:text-2xl font-black italic text-[#222222] tracking-tight">GuideGo AI</h1>
+          <p className="text-[9px] md:text-[10px] font-black uppercase text-[#717171] tracking-[0.3em]">Smart Local Engine • Active</p>
         </div>
       </div>
-
+ 
       {/* Chat Area */}
-      <div className="flex-grow overflow-y-auto p-8 space-y-10 custom-scrollbar">
+      <div className="flex-grow overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-10 custom-scrollbar">
          <div className="max-w-4xl mx-auto w-full">
             <AnimatePresence>
                {messages.map((msg, i) => (
                  <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                   <div className={`p-8 rounded-[2.5rem] max-w-[85%] shadow-lg ${msg.role === 'user' ? 'bg-[#ff385c] text-white font-bold rounded-tr-none shadow-rose-500/20' : 'bg-[#f7f7f7] border border-[#dddddd] text-[#222222] rounded-tl-none'}`}>
-                      <div className={`flex items-center gap-2 mb-3 text-[9px] font-black uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-[#717171]'}`}>
-                         {msg.role === 'user' ? <User size={12}/> : <Bot size={12}/>} {msg.role === 'user' ? 'Traveler' : 'Assistant'}
+                   <div className={`p-5 md:p-8 rounded-[1.8rem] md:rounded-[2.5rem] max-w-[90%] md:max-w-[85%] shadow-md md:shadow-lg ${msg.role === 'user' ? 'bg-[#ff385c] text-white font-bold rounded-tr-none shadow-rose-500/10' : 'bg-[#f7f7f7] border border-[#dddddd] text-[#222222] rounded-tl-none'}`}>
+                      <div className={`flex items-center gap-2 mb-2 md:mb-3 text-[8px] md:text-[9px] font-black uppercase tracking-widest ${msg.role === 'user' ? 'text-white/70' : 'text-[#717171]'}`}>
+                         {msg.role === 'user' ? <User size={10}/> : <Bot size={10}/>} {msg.role === 'user' ? 'Traveler' : 'Assistant'}
                       </div>
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                      {msg.role === 'user' && <div className="mt-3 flex justify-end text-white/50"><CheckCheck size={14}/></div>}
+                      <p className="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                      {msg.role === 'user' && <div className="mt-2 flex justify-end text-white/50"><CheckCheck size={12}/></div>}
                    </div>
                  </motion.div>
                ))}
             </AnimatePresence>
             {loading && (
               <div className="flex justify-start">
-                 <div className="bg-[#f7f7f7] px-8 py-6 rounded-[2.5rem] rounded-tl-none flex gap-2 border border-[#dddddd]">
-                    {[0,1,2].map(d => <motion.div key={d} animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1, delay: d*0.2 }} className="w-2 h-2 bg-[#ff385c] rounded-full" />)}
+                 <div className="bg-[#f7f7f7] px-6 py-4 md:px-8 md:py-6 rounded-2xl md:rounded-[2.5rem] rounded-tl-none flex gap-2 border border-[#dddddd]">
+                    {[0,1,2].map(d => <motion.div key={d} animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1, delay: d*0.2 }} className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#ff385c] rounded-full" />)}
                  </div>
               </div>
             )}
             <div ref={messagesEndRef} />
          </div>
       </div>
-
+ 
       {/* Input */}
-      <div className="p-8 bg-white border-t border-[#dddddd]">
-         <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+      <div className="p-4 md:p-8 bg-white border-t border-[#dddddd]">
+         <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                {suggestions.map((s, i) => (
-                 <button key={i} onClick={() => handleSubmit(null, s.text)} className="px-5 py-3 rounded-xl bg-white border border-[#dddddd] shadow-sm text-[10px] font-bold text-[#222222] uppercase tracking-widest hover:border-[#222222] hover:bg-[#f7f7f7] transition-all whitespace-nowrap flex items-center gap-2">
+                 <button key={i} onClick={() => handleSubmit(null, s.text)} className="px-4 py-2.5 rounded-xl bg-white border border-[#dddddd] shadow-sm text-[9px] md:text-[10px] font-bold text-[#222222] uppercase tracking-widest hover:border-[#222222] hover:bg-[#f7f7f7] transition-all whitespace-nowrap flex items-center gap-2">
                    {s.icon} {s.text}
                  </button>
                ))}
             </div>
-            <form onSubmit={handleSubmit} className="relative flex items-center bg-white border-2 border-[#dddddd] rounded-[2.5rem] p-2 pr-4 focus-within:border-[#222222] transition-all shadow-sm">
-               <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about Odisha tourism..." className="flex-grow bg-transparent border-none text-[#222222] px-6 py-4 font-bold placeholder:text-[#717171] outline-none" />
-               <button type="submit" className="w-14 h-14 rounded-2xl bg-[#ff385c] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-rose-500/20"><Send size={24} /></button>
+            <form onSubmit={handleSubmit} className="relative flex items-center bg-white border-2 border-[#dddddd] rounded-[1.5rem] md:rounded-[2.5rem] p-1.5 md:p-2 pr-3 md:pr-4 focus-within:border-[#222222] transition-all shadow-sm">
+               <input type="text" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about Odisha tourism..." className="flex-grow bg-transparent border-none text-[#222222] px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-bold placeholder:text-[#717171] outline-none" />
+               <button type="submit" className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-[#ff385c] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-rose-500/20"><Send size={20} className="md:w-6 md:h-6" /></button>
             </form>
-            <p className="text-[8px] text-center font-black text-[#717171] uppercase tracking-[0.5em]">Powered by GuideGo Intelligence • design by pilu</p>
+            <p className="text-[7px] md:text-[8px] text-center font-black text-[#717171] uppercase tracking-[0.4em] md:tracking-[0.5em]">Powered by GuideGo Intelligence</p>
          </div>
       </div>
     </div>
