@@ -9,6 +9,7 @@ const {
   resetPassword,
   getProfile,
   updateProfile,
+  changePassword,
   testEmail,
   googleSync,
   refreshToken,
@@ -39,5 +40,6 @@ router.post('/refresh-token', refreshToken);
 router.post('/logout', logoutUser);
 router.get('/profile', authenticateUser, getProfile);
 router.put('/profile', authenticateUser, updateProfile);
+router.put('/change-password', authenticateUser, changePassword);
 
 module.exports = router;

@@ -648,6 +648,22 @@ const updateProfile = asyncHandler(async (req, res, next) => {
   }
 });
 
+const changePassword = asyncHandler(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id).select('+password');
+
+  // Check current password
+  if (!(await user.comparePassword(currentPassword))) {
+    return next(new ErrorResponse('Invalid current password', 401));
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  res.json({ success: true, message: 'Password updated successfully' });
+});
+
 module.exports = { 
   registerUser, 
   loginUser, 
@@ -660,6 +676,7 @@ module.exports = {
   resetPassword,
   getProfile,
   updateProfile,
+  changePassword,
   testEmail,
   googleSync
 };
