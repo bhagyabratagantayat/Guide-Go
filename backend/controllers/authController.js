@@ -534,65 +534,79 @@ const resendOTP = asyncHandler(async (req, res, next) => {
 });
 
 const googleSync = asyncHandler(async (req, res, next) => {
-  const { supabaseId, email, name, avatar, provider } = req.body;
-  const normalizedEmail = email.trim().toLowerCase();
+  try {
+    const { supabaseId, email, name, avatar, provider, role } = req.body;
+    const normalizedEmail = email.trim().toLowerCase();
 
-  let user = await User.findOne({ email: normalizedEmail });
+    console.log(`[GoogleSync] Attempting sync for ${normalizedEmail} with role: ${role || 'user'}`);
 
-  if (!user) {
-    // Create new user if not found
-    user = await User.create({
-      name,
-      email: normalizedEmail,
-      password: supabaseId, // Will be hashed by pre-save hook
-      role: req.body.role || 'user',
-      mobile: '0000000000', // Default for social login
-      provider,
-      supabaseId,
-      avatar,
-      isVerified: true
-    });
-    logger.info(`New Google user created: ${user.email}`);
-  } else {
-    // Update existing user if needed
-    let updated = false;
-    if (!user.supabaseId) {
-      user.supabaseId = supabaseId;
-      updated = true;
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      // Create new user if not found
+      user = await User.create({
+        name,
+        email: normalizedEmail,
+        password: supabaseId, // Fallback password
+        role: role || 'user',
+        mobile: '0000000000',
+        provider: provider || 'google',
+        supabaseId,
+        avatar,
+        isVerified: true
+      });
+      console.log(`[GoogleSync] New user created: ${user.email} as ${user.role}`);
+    } else {
+      // Sync IDs if user exists but was created via email/pass
+      let updated = false;
+      if (!user.supabaseId) {
+        user.supabaseId = supabaseId;
+        updated = true;
+      }
+      if (!user.avatar && avatar) {
+        user.avatar = avatar;
+        updated = true;
+      }
+      // Note: We don't force change the role if they already exist
+      if (updated) await user.save({ validateBeforeSave: false });
+      
+      console.log(`[GoogleSync] Existing user synced: ${user.email}`);
     }
-    if (!user.avatar && avatar) {
-      user.avatar = avatar;
-      updated = true;
-    }
-    if (updated) await user.save({ validateBeforeSave: false });
-    
-    // 🛠️ AUTO DATA REPAIR for Social Login
+
+    // 🛠️ AUTO DATA REPAIR for Social Login (Ensure mobile and location exist)
     let dataRepaired = false;
     if (!user.mobile || user.mobile === '0000000000') {
-      user.mobile = '98' + Math.floor(10000000 + Math.random() * 90000000);
+      user.mobile = '9' + Math.floor(Math.random() * 900000000 + 100000000);
       dataRepaired = true;
     }
     if (!user.location || typeof user.location !== 'string') {
-      user.location = 'Bhubaneswar, Odisha';
+      user.location = 'Odisha, India';
       dataRepaired = true;
     }
     if (dataRepaired) await user.save({ validateBeforeSave: false });
 
-    logger.info(`Existing user synced with Google: ${user.email} ${dataRepaired ? '(Data Repaired)' : ''}`);
+    // Set cookies
+    const { accessToken, refreshToken } = setTokenCookies(res, user);
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        mobile: user.mobile,
+        location: user.location,
+        avatar: user.avatar || user.profilePicture,
+        token: accessToken
+      }
+    });
+  } catch (error) {
+    console.error('[GoogleSync Error]:', error);
+    return next(new ErrorResponse('Google synchronization failed', 500));
   }
-
-  // Set cookies for Google user
-  const refreshToken = setTokenCookies(res, user);
-  user.refreshToken = refreshToken;
-  await user.save({ validateBeforeSave: false });
-
-  res.json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    avatar: user.avatar || user.profilePicture,
-  });
 });
 
 

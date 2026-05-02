@@ -25,8 +25,7 @@ export default function AuthCallbackPage() {
         });
         
         // Store JWT from your backend (same as normal login)
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        localStorage.setItem('gg_user', JSON.stringify(res.data.user));
         
         // Redirect based on role
         const role = res.data.user.role;
@@ -41,17 +40,14 @@ export default function AuthCallbackPage() {
   }, [navigate]);
 
   return (
-    <div style={{
-      display:'flex',
-      height:'100vh',
-      alignItems:'center',
-      justifyContent:'center',
-      background:'var(--bg-base)',
-      color:'var(--text-primary)'
-    }}>
-      <div className="flex flex-col items-center gap-6">
-        <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
-        <p className="text-[12px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Reawakening Session...</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#f7f7f7] dark:bg-[#0f172a] p-10">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-[#ff385c]/10 rounded-full" />
+        <div className="w-16 h-16 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin absolute top-0" />
+      </div>
+      <div className="mt-8 text-center">
+        <h2 className="text-xl font-black italic tracking-tighter text-[#222222] dark:text-white mb-2">Authenticating</h2>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff385c] animate-pulse">Establishing Secure Session</p>
       </div>
     </div>
   );
