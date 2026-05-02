@@ -70,6 +70,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       { path: '/admin/guides', label: 'Manage Guides', icon: Compass },
       { path: '/admin/kyc', label: 'KYC Dossiers', icon: ShieldCheck },
       { path: '/admin/bookings', label: 'All Bookings', icon: Calendar },
+      { path: '/admin/audio-guides', label: 'Manage Audio Guides', icon: Headphones },
     ]},
     { section: 'ACCOUNT', items: [
       { path: '/profile', label: 'Admin Profile', icon: User },

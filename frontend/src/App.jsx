@@ -51,6 +51,8 @@ import AdminGuides from './pages/admin/AdminGuides';
 import AdminPlaces from './pages/admin/AdminPlaces';
 import AdminBookings from './pages/admin/AdminBookings';
 import AdminKycPage from './pages/AdminKycPage';
+import AdminAudioGuides from './pages/admin/AdminAudioGuides';
+
 
 // Guide Pages
 import Earnings from './pages/guide/Earnings';
@@ -178,6 +180,8 @@ function AppContent() {
                 <Route path="bookings" element={<PageWrapper><AdminBookings /></PageWrapper>} />
                 <Route path="reports" element={<PageWrapper><AdminReports /></PageWrapper>} />
                 <Route path="kyc" element={<PageWrapper><AdminKycPage /></PageWrapper>} />
+                <Route path="audio-guides" element={<PageWrapper><AdminAudioGuides /></PageWrapper>} />
+
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

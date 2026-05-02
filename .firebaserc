@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "guidego-540e4"
-  }
+    "default": "guide-goo"
+  },
+  "targets": {},
+  "etags": {}
 }
