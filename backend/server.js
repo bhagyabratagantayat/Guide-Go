@@ -27,9 +27,11 @@ app.use(cors({
       'http://127.0.0.1:5173',
       'https://guide-go.vercel.app',
       'https://guidego.vercel.app',
+      'https://guide-goo.web.app',
+      'https://guide-goo.firebaseapp.com'
     ].filter(Boolean);
     // Allow requests with no origin (curl, Postman)
-    if (!origin || allowed.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    if (!origin || allowed.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('.web.app') || origin.includes('.firebaseapp.com')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
