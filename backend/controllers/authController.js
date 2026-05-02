@@ -544,7 +544,7 @@ const googleSync = asyncHandler(async (req, res, next) => {
       name,
       email: normalizedEmail,
       password: supabaseId, // Will be hashed by pre-save hook
-      role: 'user',
+      role: req.body.role || 'user',
       mobile: '0000000000', // Default for social login
       provider,
       supabaseId,

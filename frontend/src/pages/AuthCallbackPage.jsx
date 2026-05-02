@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
-import axios from 'axios';
+import api from '../utils/api';
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -11,15 +11,17 @@ export default function AuthCallbackPage() {
       if (!session) { navigate('/login'); return; }
 
       const { user } = session;
+      const desiredRole = localStorage.getItem('gg_auth_role') || 'user';
       
       // Sync Supabase user with your MongoDB backend
       try {
-        const res = await axios.post('/api/auth/google-sync', {
+        const res = await api.post('/auth/google-sync', {
           supabaseId: user.id,
           email: user.email,
           name: user.user_metadata?.full_name || user.email.split('@')[0],
           avatar: user.user_metadata?.avatar_url || '',
-          provider: 'google'
+          provider: 'google',
+          role: desiredRole
         });
         
         // Store JWT from your backend (same as normal login)

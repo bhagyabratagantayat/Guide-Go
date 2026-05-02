@@ -18,6 +18,7 @@ const GoogleIcon = () => (
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [authRole, setAuthRole] = useState('user');
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,6 +43,9 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    // Store the desired role in localStorage so we can retrieve it after the redirect
+    localStorage.setItem('gg_auth_role', authRole);
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -132,12 +136,30 @@ const Login = () => {
           <div className="flex-1 h-[1px] bg-[var(--border-color)]" />
         </div>
 
-        <button 
-          onClick={handleGoogleLogin} 
-          className="w-full py-4 bg-[var(--bg-card-hover)] border border-[var(--border-color)] rounded-[var(--radius-md)] text-[var(--text-primary)] text-[12px] font-bold flex items-center justify-center gap-3 hover:bg-[var(--bg-base)] transition-all"
-        >
-          <GoogleIcon /> Continue with Google
-        </button>
+        <div className="flex flex-col gap-3">
+          <div className="flex bg-[var(--bg-card-hover)] p-1 rounded-2xl border border-[var(--border-color)]">
+            <button 
+              type="button"
+              onClick={() => setAuthRole('user')}
+              className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${authRole === 'user' ? 'bg-[#ff385c] text-white shadow-lg' : 'text-[var(--text-muted)]'}`}
+            >
+              As Traveler
+            </button>
+            <button 
+              type="button"
+              onClick={() => setAuthRole('guide')}
+              className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${authRole === 'guide' ? 'bg-[#ff385c] text-white shadow-lg' : 'text-[var(--text-muted)]'}`}
+            >
+              As Guide
+            </button>
+          </div>
+          <button 
+            onClick={handleGoogleLogin} 
+            className="w-full py-4 bg-[var(--bg-card-hover)] border border-[var(--border-color)] rounded-[var(--radius-md)] text-[var(--text-primary)] text-[12px] font-bold flex items-center justify-center gap-3 hover:bg-[var(--bg-base)] transition-all active:scale-[0.98]"
+          >
+            <GoogleIcon /> Login with Google
+          </button>
+        </div>
 
         <div className="mt-10 pt-8 border-t border-[var(--border-color)]">
            <div className="grid grid-cols-1 gap-2">
