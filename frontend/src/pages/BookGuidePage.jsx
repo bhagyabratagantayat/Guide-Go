@@ -683,114 +683,117 @@ const BookGuidePage = () => {
             </motion.div>
           )}
 
-          {/* 5. TRIP ONGOING (PREMIUM MAP-BASED DASHBOARD) */}
+          {/* 5. TRIP ONGOING (PREMIUM CLEAN DASHBOARD) */}
           {screen === 'trip-ongoing' && (
-            <motion.div key="ongoing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-6xl h-[800px] relative overflow-hidden lg:rounded-[3rem] shadow-2xl border border-[#dddddd] bg-white">
-               {/* 1. BACKGROUND MAP */}
-               <div className="absolute inset-0 z-0">
-                  <MapContainer center={[bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false}>
-                     <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
-                     <Marker position={[bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245]} icon={L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div style="background-color: #222222; width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; display: flex; items-center; justify-center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);"><div style="width: 10px; height: 10px; background: white; border-radius: 50%;"></div></div>`,
-                        iconSize: [40, 40],
-                        iconAnchor: [20, 20]
-                     })} />
-                  </MapContainer>
-               </div>
+            <motion.div key="ongoing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-6xl">
+               <ScreenWrapper title="Active Adventure" hideHeader maxWidth="max-w-none">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                     
+                     {/* --- LEFT COL: GUIDE INFO --- */}
+                     <div className="bg-[#222222] p-8 rounded-[2.5rem] text-white shadow-2xl flex flex-col justify-between space-y-8">
+                        <div className="flex flex-col items-center text-center space-y-5">
+                           <div className="relative">
+                              <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white/10 p-1">
+                                 <img 
+                                    src={matchedGuide?.profilePicture || 'https://ui-avatars.com/api/?name=' + matchedGuide?.name} 
+                                    className="w-full h-full object-cover rounded-full" 
+                                 />
+                              </div>
+                              <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#222222]" />
+                           </div>
+                           <div className="space-y-1">
+                              <h3 className="text-2xl font-black italic">{matchedGuide?.name}</h3>
+                              <div className="flex items-center justify-center gap-2 text-amber-500 font-black text-xs">
+                                 <Star size={14} fill="currentColor" /> {matchedGuide?.rating || '5.0'} • Superguide
+                              </div>
+                           </div>
+                        </div>
 
-               {/* 2. TOP OVERLAY: LIVE STATUS */}
-               <div className="absolute top-6 left-6 right-6 z-20 flex flex-col md:flex-row justify-between items-start gap-4">
-                  <div className="bg-[#222222] text-white p-6 rounded-[2rem] shadow-2xl border border-white/10 backdrop-blur-md flex items-center gap-6">
-                     <div className="relative">
-                        <svg className="w-20 h-20 -rotate-90">
-                           <circle cx="40" cy="40" r="36" className="stroke-white/10 stroke-[4]" fill="transparent" />
-                           <motion.circle 
-                              cx="40" cy="40" r="36" 
-                              className="stroke-[#ff385c] stroke-[4]" 
-                              fill="transparent" 
-                              strokeDasharray="226"
-                              initial={{ strokeDashoffset: 226 }}
-                              animate={{ strokeDashoffset: 226 - (226 * (tripTimer % 60) / 60) }}
-                              transition={{ duration: 1 }}
-                           />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                           <span className="text-xl font-black font-mono">{formatTime(tripTimer)}</span>
+                        <div className="grid grid-cols-2 gap-3">
+                           <a href={`tel:${matchedGuide?.mobile}`} className="flex items-center justify-center gap-3 p-5 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
+                              <Phone size={18} />
+                              <span className="text-[9px] font-black uppercase">Call</span>
+                           </a>
+                           <button onClick={() => navigate(`/chat/${bookingData?._id}`)} className="flex items-center justify-center gap-3 p-5 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
+                              <MessageSquare size={18} />
+                              <span className="text-[9px] font-black uppercase">Chat</span>
+                           </button>
                         </div>
                      </div>
-                     <div>
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Live Session Cost</p>
-                        <p className="text-4xl font-black text-emerald-400 italic leading-none">₹{calculateLiveCost(tripTimer, formData.price, formData.plan)}</p>
-                     </div>
-                  </div>
 
-                  <div className="flex gap-3">
-                     <button className="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-[#eeeeee] flex items-center gap-3 hover:bg-white transition-all">
-                        <Share2 size={18} className="text-[#222222]" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Share Trip</span>
-                     </button>
-                     <button onClick={() => setShowReportModal(true)} className="bg-rose-500 text-white px-8 py-4 rounded-2xl shadow-xl shadow-rose-500/30 flex items-center gap-3 hover:bg-rose-600 transition-all">
-                        <ShieldAlert size={18} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">SOS</span>
-                     </button>
-                  </div>
-               </div>
-
-               {/* 3. SIDE OVERLAY: GUIDE DETAILS (Modern Floating Panel) */}
-               <div className="absolute left-6 bottom-6 z-20 w-full max-w-sm">
-                  <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-[#eeeeee]">
-                     <div className="flex items-center gap-5 mb-8">
+                     {/* --- MIDDLE COL: LIVE TIMER & COST --- */}
+                     <div className="bg-white p-10 rounded-[2.5rem] border border-[#eeeeee] flex flex-col items-center text-center space-y-10 justify-center shadow-xl">
                         <div className="relative">
-                           <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden shadow-inner border-2 border-white">
-                              <img src={matchedGuide?.profilePicture || 'https://ui-avatars.com/api/?name=' + matchedGuide?.name} className="w-full h-full object-cover" />
+                           <svg className="w-48 h-48 -rotate-90">
+                              <circle cx="96" cy="96" r="88" className="stroke-[#f7f7f7] stroke-[8]" fill="transparent" />
+                              <motion.circle 
+                                 cx="96" cy="96" r="88" 
+                                 className="stroke-[#ff385c] stroke-[8]" 
+                                 fill="transparent" 
+                                 strokeDasharray="553"
+                                 initial={{ strokeDashoffset: 553 }}
+                                 animate={{ strokeDashoffset: 553 - (553 * (tripTimer % 60) / 60) }}
+                                 transition={{ duration: 1 }}
+                              />
+                           </svg>
+                           <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <Timer size={24} className="text-[#ff385c] mb-2" />
+                              <span className="text-4xl font-black text-[#222222] font-mono tracking-tighter leading-none">{formatTime(tripTimer)}</span>
+                              <span className="text-[9px] font-black text-[#717171] uppercase tracking-[0.2em] mt-2">Live Session</span>
                            </div>
-                           <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-4 h-4 rounded-full border-4 border-white" />
                         </div>
-                        <div>
-                           <h3 className="text-xl font-black text-[#222222] tracking-tighter italic">{matchedGuide?.name}</h3>
-                           <div className="flex items-center gap-2">
-                             <div className="flex items-center gap-0.5 text-amber-500">
-                               <Star size={10} fill="currentColor" />
-                               <span className="text-[10px] font-black text-[#222222] ml-0.5">{matchedGuide?.rating || '5.0'}</span>
-                             </div>
-                             <span className="text-[10px] font-black text-[#ff385c] uppercase tracking-[0.2em] ml-2">Exploring {formData.location}</span>
-                           </div>
-                        </div>
-                     </div>
 
-                     <div className="grid grid-cols-2 gap-3 mb-6">
-                        <a href={`tel:${matchedGuide?.mobile}`} className="flex items-center justify-center gap-3 p-5 bg-[#f7f7f7] rounded-2xl text-[#222222] font-black text-[10px] uppercase tracking-widest hover:bg-[#222222] hover:text-white transition-all shadow-sm">
-                           <Phone size={14} /> Call
-                        </a>
+                        <div className="w-full bg-[#f7f7f7] p-8 rounded-[2rem] space-y-1 border border-[#eeeeee]">
+                           <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest mb-1">Estimated Cost</p>
+                           <p className="text-5xl font-black text-emerald-500 italic">₹{calculateLiveCost(tripTimer, formData.price, formData.plan)}</p>
+                        </div>
+
                         <button 
-                           onClick={() => navigate(`/chat/${bookingData?._id}`)}
-                           className="flex items-center justify-center gap-3 p-5 bg-[#f7f7f7] rounded-2xl text-[#222222] font-black text-[10px] uppercase tracking-widest hover:bg-[#ff385c] hover:text-white transition-all shadow-sm"
+                           onClick={handleEndTrip}
+                           className="w-full py-6 bg-[#222222] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all"
                         >
-                           <MessageSquare size={14} /> Chat
+                           End Trip & Pay
                         </button>
                      </div>
 
-                     <button 
-                        onClick={handleEndTrip}
-                        className="w-full py-6 bg-[#222222] text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all"
-                     >
-                        End Trip & Pay
-                     </button>
-                  </div>
-               </div>
+                     {/* --- RIGHT COL: STATS & SOS --- */}
+                     <div className="bg-[#f7f7f7] p-8 rounded-[2.5rem] border border-[#eeeeee] flex flex-col justify-between space-y-8">
+                        <div className="space-y-6">
+                           <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                                 <h4 className="text-[10px] font-black text-[#ff385c] uppercase tracking-widest">Ongoing Trip</h4>
+                              </div>
+                              <h2 className="text-3xl font-black text-[#222222] italic leading-tight">{formData.location}</h2>
+                           </div>
 
-               {/* 4. RIGHT OVERLAY: TRIP STATS */}
-               <div className="absolute right-6 bottom-6 z-20 hidden md:block">
-                  <div className="bg-white/90 backdrop-blur-md rounded-[2rem] p-6 border border-white shadow-xl space-y-4">
-                     <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
-                        <MapPin size={12} className="text-[#ff385c]" /> Current Zone: {formData.location}
-                     </div>
-                     <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
-                        <Zap size={12} className="text-amber-500" /> Plan: {formData.plan}
+                           <div className="bg-white p-6 rounded-2xl border border-[#eeeeee] space-y-4 shadow-sm">
+                              <div className="flex justify-between items-center text-[10px] font-bold text-[#717171] uppercase tracking-widest">
+                                 <span>Plan</span>
+                                 <span className="text-[#222222] font-black">{formData.plan}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px] font-bold text-[#717171] uppercase tracking-widest">
+                                 <span>Language</span>
+                                 <span className="text-[#222222] font-black">{formData.language}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px] font-bold text-[#717171] uppercase tracking-widest">
+                                 <span>Total Limit</span>
+                                 <span className="text-rose-500 font-black">₹{formData.price}</span>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="space-y-3">
+                           <button onClick={handleShareTrip} className="w-full py-4 bg-white rounded-2xl text-[10px] font-black uppercase tracking-widest text-[#222222] border border-[#dddddd] flex items-center justify-center gap-3">
+                              <Share2 size={16} /> Share Trip
+                           </button>
+                           <button onClick={() => setShowReportModal(true)} className="w-full py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 flex items-center justify-center gap-3 hover:bg-rose-600 transition-all">
+                              <ShieldAlert size={16} /> EMERGENCY SOS
+                           </button>
+                        </div>
                      </div>
                   </div>
-               </div>
+               </ScreenWrapper>
             </motion.div>
           )}
 
