@@ -142,9 +142,9 @@ const endBooking = asyncHandler(async (req, res, next) => {
 
 const getUserBookings = asyncHandler(async (req, res, next) => {
   const bookings = await Booking.find({ userId: req.user._id })
-    .populate('guideId', 'name email phone profilePicture')
+    .populate('guideId', 'name email mobile profilePicture rating')
     .sort('-createdAt');
-  res.json(bookings);
+  res.json({ success: true, data: bookings });
 });
 
 const getGuideBookings = asyncHandler(async (req, res) => {

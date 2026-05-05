@@ -19,9 +19,11 @@ const Bookings = () => {
   const fetchBookings = async () => {
     try {
       const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
+      console.log(`fetching from: ${endpoint} for role: ${user.role}`);
       const res = await api.get(endpoint);
-      // Handle both {success: true, data: []} and direct []
+      console.log('Bookings raw response:', res.data);
       const fetchedData = res.data?.data || res.data;
+      console.log('Bookings parsed data:', fetchedData);
       setBookings(Array.isArray(fetchedData) ? fetchedData : []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
