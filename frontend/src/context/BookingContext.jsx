@@ -92,31 +92,39 @@ export const BookingProvider = ({ children }) => {
       if (socket.connected) joinRoom();
       socket.on('connect', joinRoom);
 
-      const onAccepted = (data) => {
+      socket.on('booking_accepted', (data) => {
         console.log('Booking accepted received:', data);
         setBookingData(data.booking);
         setMatchedGuide(data.guide);
         setOtp(data.otp || data.booking?.otp);
         setTripStatus(TRIP_STATUS.MATCHED);
-      };
+        localStorage.setItem('activeBookingId', data.booking?._id);
+      });
 
-      socket.on('booking_accepted', onAccepted);
       socket.on('trip_started', (data) => {
+        console.log('TRIP_STARTED EVENT RECEIVED:', data);
         setTripStatus(TRIP_STATUS.ONGOING);
+        if (data.bookingId) localStorage.setItem('activeBookingId', data.bookingId);
         startTimer(data.startedAt || new Date());
       });
+
       socket.on('trip_ended', () => {
+        console.log('TRIP_ENDED EVENT RECEIVED');
         setTripStatus(TRIP_STATUS.COMPLETED);
         stopTimer();
+        localStorage.removeItem('activeBookingId');
         restoreSession();
       });
+
       socket.on('booking_cancelled', () => {
+        console.log('BOOKING_CANCELLED EVENT RECEIVED');
+        localStorage.removeItem('activeBookingId');
         resetBooking();
       });
 
       return () => {
         socket.off('connect', joinRoom);
-        socket.off('booking_accepted', onAccepted);
+        socket.off('booking_accepted');
         socket.off('trip_started');
         socket.off('trip_ended');
         socket.off('booking_cancelled');

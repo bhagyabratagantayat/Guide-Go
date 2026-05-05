@@ -94,29 +94,16 @@ const BookGuidePage = () => {
   }, []);
 
   useEffect(() => {
-    console.log('BookGuidePage: tripStatus changed to:', tripStatus);
-    if (tripStatus === TRIP_STATUS.SEARCHING) {
-      setScreen('searching');
-      setSearchTimer(30);
-      setSearchFailed(false);
+    console.log('BookGuidePage: tripStatus Sync ->', tripStatus);
+    if (tripStatus === TRIP_STATUS.SEARCHING) setScreen('searching');
+    else if (tripStatus === TRIP_STATUS.MATCHED) setScreen('call-connect');
+    else if (tripStatus === TRIP_STATUS.ONGOING) {
+      console.log('Transitioning to trip-ongoing screen...');
+      setScreen('trip-ongoing');
     }
-    else if (tripStatus === TRIP_STATUS.MATCHED) {
-      console.log('Transitioning to call-connect screen...');
-      setScreen('call-connect');
-      setSearchTimer(30);
-      setSearchFailed(false);
-    }
-    else if (tripStatus === TRIP_STATUS.ONGOING) setScreen('trip-ongoing');
-    else if (tripStatus === TRIP_STATUS.COMPLETED) {
-       if (bookingData?.review?.rating) {
-          setIsSuccess(true);
-       }
-       setScreen('end-trip');
-    }
-    else if (tripStatus === TRIP_STATUS.IDLE && screen !== 'booking-form') {
-      setScreen('select-location');
-    }
-  }, [tripStatus]);
+    else if (tripStatus === TRIP_STATUS.COMPLETED) setScreen('end-trip');
+    else if (tripStatus === TRIP_STATUS.IDLE && !isRestoring) setScreen('select-location');
+  }, [tripStatus, isRestoring]);
 
   const location = useLocation();
   useEffect(() => {
