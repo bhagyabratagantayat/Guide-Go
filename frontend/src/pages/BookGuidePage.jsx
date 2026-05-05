@@ -257,6 +257,24 @@ const BookGuidePage = () => {
     const guide = matchedGuide || {};
     const userPos = [bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245];
     const guidePos = [bookingData?.guideLat || userPos[0] + 0.005, bookingData?.guideLng || userPos[1] + 0.005];
+    const [routeCoords, setRouteCoords] = useState([userPos, guidePos]);
+
+    // Fetch actual road route from OSRM
+    useEffect(() => {
+      const getRoute = async () => {
+        try {
+          const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${userPos[1]},${userPos[0]};${guidePos[1]},${guidePos[0]}?overview=full&geometries=geojson`);
+          const data = await response.json();
+          if (data.routes && data.routes[0]) {
+             const coords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+             setRouteCoords(coords);
+          }
+        } catch (err) {
+          console.error('Routing error:', err);
+        }
+      };
+      getRoute();
+    }, [bookingData?.guideLat, bookingData?.guideLng]);
 
     // Custom Icons
     const userIcon = L.divIcon({
@@ -274,90 +292,73 @@ const BookGuidePage = () => {
     });
 
     return (
-       <div className="flex flex-col h-full relative min-h-[600px]">
-          {/* MAP CONTAINER - Full Height Background */}
-          <div className="absolute inset-0 z-0 lg:rounded-[2.5rem] overflow-hidden">
+       <div className="space-y-6">
+          <div className="h-96 md:h-[500px] w-full rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl relative">
              <MapContainer center={userPos} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false}>
                 <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
-                <Marker position={userPos} icon={userIcon}>
-                   <Popup>Your Location</Popup>
-                </Marker>
-                <Marker position={guidePos} icon={guideIcon}>
-                   <Popup>{guide.name} is arriving</Popup>
-                </Marker>
-                <Polyline positions={[userPos, guidePos]} color="#ff385c" weight={5} opacity={0.6} lineCap="round" />
+                <Marker position={userPos} icon={userIcon} />
+                <Marker position={guidePos} icon={guideIcon} />
+                <Polyline positions={routeCoords} color="#ff385c" weight={6} opacity={0.8} lineCap="round" />
              </MapContainer>
-          </div>
-
-          {/* TOP OVERLAY - Status */}
-          <div className="absolute top-6 left-6 right-6 z-10 flex justify-center">
-             <div className="bg-[#222222] text-white px-8 py-3 rounded-full flex items-center gap-3 shadow-2xl border border-white/10 backdrop-blur-md">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{guide.name} is on the way</span>
+             
+             {/* Floating Badge */}
+             <div className="absolute top-6 left-1/2 -translate-x-1/2 z-10">
+                <div className="bg-[#222222] text-white px-8 py-3 rounded-full flex items-center gap-3 shadow-2xl backdrop-blur-md border border-white/10 whitespace-nowrap">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">{guide.name} is on the way</span>
+                </div>
              </div>
           </div>
 
-          {/* BOTTOM OVERLAY - Premium Info Card */}
-          <div className="absolute bottom-6 left-6 right-6 z-10 space-y-4">
-             <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#eeeeee]">
-                <div className="flex items-center justify-between mb-8">
-                   <div className="flex items-center gap-5">
-                      <div className="relative">
-                        <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden shadow-inner border-2 border-white">
-                           <img src={guide.profilePicture || 'https://ui-avatars.com/api/?name=' + guide.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-4 h-4 rounded-full border-4 border-white" />
-                      </div>
-                      <div>
-                         <h3 className="text-xl font-black text-[#222222] tracking-tighter italic">{guide.name}</h3>
-                         <div className="flex items-center gap-2">
-                           <div className="flex items-center gap-0.5 text-amber-500">
-                             <Star size={10} fill="currentColor" />
-                             <span className="text-[10px] font-black text-[#222222] ml-0.5">{guide.rating || '5.0'}</span>
-                           </div>
-                           <span className="text-[10px] font-bold text-slate-300">•</span>
-                           <span className="text-[10px] font-black text-[#ff385c] uppercase tracking-widest">Superguide</span>
-                         </div>
-                      </div>
-                   </div>
-                   
-                   <div className="flex gap-3">
-                      <a href={`tel:${guide.phone || guide.mobile}`} className="p-4 bg-[#f7f7f7] hover:bg-[#222222] hover:text-white rounded-2xl transition-all shadow-sm">
-                         <Phone size={18} />
-                      </a>
-                      <button 
-                         onClick={() => navigate(`/chat/${bookingData?._id}`)}
-                         className="p-4 bg-[#f7f7f7] hover:bg-[#ff385c] hover:text-white rounded-2xl transition-all shadow-sm"
-                      >
-                         <MessageSquare size={18} />
-                      </button>
-                   </div>
+          <div className="bg-white rounded-[3rem] p-8 shadow-2xl border border-[#eeeeee]">
+             <div className="flex items-center gap-6 mb-8">
+                <div className="w-20 h-20 rounded-3xl bg-slate-100 overflow-hidden shadow-inner border-2 border-white">
+                   <img src={guide.profilePicture || 'https://ui-avatars.com/api/?name=' + guide.name} className="w-full h-full object-cover" />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="bg-[#f7f7f7] p-6 rounded-3xl border border-[#eeeeee] flex flex-col items-center justify-center text-center">
-                      <p className="text-[8px] font-black text-[#717171] uppercase tracking-[0.3em] mb-1">Secure Handshake OTP</p>
-                      <p className="text-4xl font-black text-[#222222] tracking-[0.2em] font-mono leading-none">{otp}</p>
-                   </div>
-                   <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 flex items-center gap-4">
-                      <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                         <ShieldCheck size={24} />
-                      </div>
-                      <div className="space-y-0.5">
-                         <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Safety Verified</p>
-                         <p className="text-[9px] font-bold text-emerald-800 italic">Background checked & Verified</p>
+                <div className="flex-1">
+                   <div className="flex items-center justify-between">
+                      <h3 className="text-2xl font-black text-[#222222] tracking-tighter italic uppercase">{guide.name}</h3>
+                      <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full text-amber-600 font-black text-[10px]">
+                         <Star size={12} fill="currentColor" /> {guide.rating || '5.0'}
                       </div>
                    </div>
+                   <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest mt-1">Certified Pro Guide</p>
+                   <a href={`tel:${guide.phone || guide.mobile}`} className="inline-flex items-center gap-2 mt-3 text-[#ff385c] font-black text-xs uppercase tracking-tighter hover:underline">
+                      <Phone size={14} /> {guide.phone || guide.mobile || '+91 98765 43210'}
+                   </a>
                 </div>
+                <div className="flex gap-2">
+                   <a href={`tel:${guide.phone || guide.mobile}`} className="p-4 bg-[#f7f7f7] rounded-2xl text-[#222222] hover:bg-[#ff385c] hover:text-white transition-all shadow-sm">
+                      <Phone size={18} />
+                   </a>
+                   <button onClick={() => navigate(`/chat/${bookingData?._id}`)} className="p-4 bg-[#f7f7f7] rounded-2xl text-[#222222] hover:bg-[#ff385c] hover:text-white transition-all shadow-sm">
+                      <MessageSquare size={18} />
+                   </button>
+                </div>
+             </div>
 
-                <button 
-                  onClick={() => cancelBooking()}
-                  className="w-full mt-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-all"
-                >
-                  Cancel Booking Request
-                </button>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#f7f7f7] p-8 rounded-[2rem] border border-[#eeeeee] flex flex-col items-center">
+                   <p className="text-[8px] font-black text-[#717171] uppercase tracking-[0.3em] mb-2">Secure Handshake OTP</p>
+                   <p className="text-4xl font-black text-[#222222] tracking-[0.3em] font-mono">{otp}</p>
+                   <p className="text-[9px] font-bold text-slate-400 mt-2">Share this with your guide</p>
+                </div>
+                <div className="bg-emerald-50/50 p-8 rounded-[2rem] border border-emerald-100 flex flex-col items-center justify-center text-center">
+                   <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/20">
+                      <ShieldCheck size={24} />
+                   </div>
+                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Safety Verified</p>
+                   <p className="text-[9px] font-bold text-emerald-800 italic mt-1">Background checked & Verified Session</p>
+                </div>
              </div>
           </div>
+
+          <button 
+             onClick={() => cancelBooking()}
+             className="w-full py-5 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 rounded-3xl transition-all"
+          >
+             Cancel Booking
+          </button>
        </div>
     );
   };
@@ -689,7 +690,7 @@ const BookGuidePage = () => {
           {/* 4. MATCHED SCREEN (NEW MAP VIEW) */}
           {screen === 'call-connect' && (
             <motion.div key="matched" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-6xl">
-               <ScreenWrapper title="Guide Found!" hideHeader maxWidth="max-w-none" noPadding>
+               <ScreenWrapper title="Guide Found!" hideHeader maxWidth="max-w-none">
                   <MatchedView />
                </ScreenWrapper>
             </motion.div>
