@@ -807,24 +807,26 @@ const BookGuidePage = () => {
             <motion.div key="end" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-6xl">
                <ScreenWrapper title="Trip Summary" hideHeader maxWidth="max-w-none">
                   {isSuccess ? (
-                     <div className="flex flex-col items-center justify-center py-32 space-y-8">
+                     <div className="flex flex-col items-center justify-center py-32 space-y-10">
                         <motion.div 
                            initial={{ scale: 0, rotate: -180 }} 
                            animate={{ scale: 1, rotate: 0 }} 
-                           className="w-32 h-32 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-white"
+                           transition={{ type: 'spring', damping: 10 }}
+                           className="w-40 h-40 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-[0_20px_60px_rgba(16,185,129,0.4)] border-8 border-emerald-100"
                         >
-                           <CheckCircle size={64} strokeWidth={3} />
+                           <CheckCircle size={80} strokeWidth={3} />
                         </motion.div>
-                        <div className="text-center space-y-3">
-                           <h2 className="text-4xl font-black text-[#222222] italic">Review Already Saved!</h2>
-                           <p className="text-sm font-bold text-[#717171] uppercase tracking-[0.2em]">Thank you for traveling with GuideGo.</p>
+                        <div className="text-center space-y-4">
+                           <h2 className="text-5xl font-black text-[#222222] italic leading-tight">Adventure Finalized!</h2>
+                           <p className="text-lg font-bold text-emerald-600 uppercase tracking-[0.2em] animate-pulse">Payment & Review Successful</p>
+                           <p className="text-sm font-medium text-[#717171] max-w-sm mx-auto">Thank you for traveling with us. Your contribution helps our guide community grow!</p>
                         </div>
-                        <button 
-                           onClick={() => { resetBooking(); navigate('/'); }}
-                           className="px-10 py-4 bg-[#222222] text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl"
-                        >
-                           Back to Home
-                        </button>
+                        <div className="pt-8 text-center">
+                           <div className="flex items-center justify-center gap-3 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+                              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                              Redirecting to Home in 3s...
+                           </div>
+                        </div>
                      </div>
                   ) : (
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-10">
