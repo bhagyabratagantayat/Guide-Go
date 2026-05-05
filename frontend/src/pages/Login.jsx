@@ -64,11 +64,7 @@ const Login = () => {
       else navigate(from, { replace: true });
     } catch (error) {
       console.error('Demo Login Error:', error);
-      if (!error.response) {
-        alert('Server is waking up (Render Free Tier). Please wait 30 seconds and try again!');
-      } else {
-        alert('Demo login failed: ' + (error.response.data?.message || 'Please try again.'));
-      }
+      alert('Connection Error: ' + (error.response?.data?.message || 'Server is unreachable. Make sure your local backend is running on port 3000.'));
     }
   };
 

@@ -11,8 +11,20 @@ import {
   Clock3, Globe, Zap as ZapIcon, Share2, Info,
   Flag, Heart, ShieldAlert
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import api from '../utils/api';
+import { getSocket } from '../utils/socket';
 import { useBooking, TRIP_STATUS } from '../context/BookingContext';
+
+// Fix Leaflet icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setScreen, maxWidth = "max-w-md" }) => (
   <div className={`${maxWidth} mx-auto w-full min-h-[calc(100vh-40px)] my-5 flex flex-col bg-white overflow-hidden relative shadow-2xl lg:rounded-[2.5rem] border border-[#dddddd]`}>
@@ -82,8 +94,16 @@ const BookGuidePage = () => {
   }, []);
 
   useEffect(() => {
-    if (tripStatus === TRIP_STATUS.SEARCHING) setScreen('searching');
-    else if (tripStatus === TRIP_STATUS.MATCHED) setScreen('call-connect');
+    if (tripStatus === TRIP_STATUS.SEARCHING) {
+      setScreen('searching');
+      setSearchTimer(30);
+      setSearchFailed(false);
+    }
+    else if (tripStatus === TRIP_STATUS.MATCHED) {
+      setScreen('call-connect');
+      setSearchTimer(30);
+      setSearchFailed(false);
+    }
     else if (tripStatus === TRIP_STATUS.ONGOING) setScreen('trip-ongoing');
     else if (tripStatus === TRIP_STATUS.COMPLETED) {
        if (bookingData?.review?.rating) {
@@ -92,7 +112,7 @@ const BookGuidePage = () => {
        setScreen('end-trip');
     }
     else if (tripStatus === TRIP_STATUS.IDLE && screen !== 'booking-form') setScreen('select-location');
-  }, [tripStatus, screen]);
+  }, [tripStatus]);
 
   const location = useLocation();
   useEffect(() => {
@@ -109,15 +129,85 @@ const BookGuidePage = () => {
     }
   }, [location.state]);
 
+  const [searchTimer, setSearchTimer] = useState(30);
+  const [searchFailed, setSearchFailed] = useState(false);
+  const [searchStats, setSearchStats] = useState({
+    active: 0,
+    rejected: 0,
+    timeout: 0
+  });
+
+  // Socket listeners for real-time stats
+  useEffect(() => {
+    const socket = getSocket();
+    
+    socket.on('booking_stats_initial', (data) => {
+      setSearchStats(prev => ({ ...prev, active: data.activeCount }));
+    });
+
+    socket.on('guide_rejected_booking', () => {
+      setSearchStats(prev => ({ ...prev, rejected: prev.rejected + 1 }));
+    });
+
+    socket.on('guide_timeout_booking', () => {
+      setSearchStats(prev => ({ ...prev, timeout: prev.timeout + 1 }));
+    });
+
+    return () => {
+      socket.off('booking_stats_initial');
+      socket.off('guide_rejected_booking');
+      socket.off('guide_timeout_booking');
+    };
+  }, []);
+
+  // Timer logic for searching
+  useEffect(() => {
+    let interval;
+    if (screen === 'searching' && searchTimer > 0) {
+      interval = setInterval(() => {
+        setSearchTimer(prev => prev - 1);
+      }, 1000);
+    } else if (searchTimer === 0 && screen === 'searching') {
+      setSearchFailed(true);
+    }
+    return () => clearInterval(interval);
+  }, [screen, searchTimer]);
+
   const handleFindGuide = async () => {
     try {
-      await startSearching(formData);
+      setSearchTimer(30);
+      setSearchFailed(false);
+      setSearchStats({ active: 0, rejected: 0, timeout: 0 }); 
       setScreen('searching');
+      setTripStatus(TRIP_STATUS.SEARCHING);
+      
+      // Capture Real Coordinates
+      let coords = { lat: null, lng: null };
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+      } catch (geoErr) {
+        console.warn('Location capture failed, proceeding without coords:', geoErr);
+      }
+
+      await startSearching({ 
+        ...formData, 
+        userLat: coords.lat, 
+        userLng: coords.lng 
+      });
     } catch (err) {
+      setScreen('booking-form');
+      setTripStatus(TRIP_STATUS.IDLE);
       const errorMsg = err.response?.data?.message || err.message || 'Unknown error occurred';
       alert(`Failed to start search: ${errorMsg}`);
       console.error('Search Start Error:', err);
     }
+  };
+
+  const handleRetrySearch = () => {
+    handleFindGuide();
   };
 
   const handleEndTrip = async () => {
@@ -157,6 +247,78 @@ const BookGuidePage = () => {
   const handleShareTrip = () => {
      const text = `I'm on a trip with GuideGo! Track my location and session in ${formData.location}.`;
      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const MatchedView = () => {
+    const guide = matchedGuide || {};
+    const userPos = [bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245];
+    const guidePos = [bookingData?.guideLat || userPos[0] + 0.005, bookingData?.guideLng || userPos[1] + 0.005];
+
+    return (
+       <div className="space-y-6">
+          <div className="h-64 md:h-80 w-full rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl z-10">
+             <MapContainer center={userPos} zoom={14} style={{ height: '100%', width: '100%' }}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Marker position={userPos}>
+                   <Popup>You are here</Popup>
+                </Marker>
+                <Marker position={guidePos}>
+                   <Popup>{guide.name} is here</Popup>
+                </Marker>
+                <Polyline positions={[userPos, guidePos]} color="#ff385c" dashArray="10, 10" />
+             </MapContainer>
+          </div>
+
+          <div className="bg-white rounded-[3rem] p-8 shadow-xl border border-[#eeeeee]">
+             <div className="flex items-center gap-6 mb-8">
+                <div className="w-20 h-20 rounded-3xl bg-slate-100 overflow-hidden shadow-inner">
+                   {guide.profilePicture ? (
+                      <img src={guide.profilePicture} className="w-full h-full object-cover" />
+                   ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-black text-slate-300">
+                         {guide.name?.charAt(0)}
+                      </div>
+                   )}
+                </div>
+                <div className="flex-1">
+                   <div className="flex items-center justify-between">
+                      <h3 className="text-2xl font-black text-[#222222] tracking-tighter italic font-serif uppercase">{guide.name}</h3>
+                      <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full text-amber-600 font-black text-[10px]">
+                         <Star size={12} fill="currentColor" /> {guide.rating || '5.0'}
+                      </div>
+                   </div>
+                   <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest mt-1">Certified Pro Guide</p>
+                   <a href={`tel:${guide.phone}`} className="inline-flex items-center gap-2 mt-3 text-[#ff385c] font-black text-xs uppercase tracking-tighter hover:underline">
+                      <Phone size={14} /> {guide.phone || '+91 98765 43210'}
+                   </a>
+                </div>
+             </div>
+
+             <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                   <p className="text-[8px] font-black text-[#717171] uppercase tracking-[0.2em] mb-2">Safe Handshake</p>
+                   <div className="flex flex-col items-center">
+                      <p className="text-3xl font-black text-[#222222] tracking-[0.3em] font-mono">{otp}</p>
+                      <p className="text-[9px] font-bold text-slate-400 mt-1">Share this OTP with guide</p>
+                   </div>
+                </div>
+                <div className="bg-[#ff385c]/5 p-6 rounded-[2rem] border border-[#ff385c]/10 flex flex-col items-center justify-center text-center">
+                   <div className="w-10 h-10 bg-[#ff385c] text-white rounded-full flex items-center justify-center mb-2 animate-bounce">
+                      <ShieldCheck size={20} />
+                   </div>
+                   <p className="text-[10px] font-black text-[#ff385c] uppercase">Secure Session</p>
+                </div>
+             </div>
+          </div>
+
+          <button 
+             onClick={() => cancelBooking()}
+             className="w-full py-5 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 rounded-3xl transition-all"
+          >
+             Cancel Booking
+          </button>
+       </div>
+    );
   };
 
   return (
@@ -346,38 +508,82 @@ const BookGuidePage = () => {
                      <div className="flex flex-col items-center text-center space-y-10">
                         <div className="relative">
                            {/* Pulsing rings */}
-                           <motion.div 
-                              animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0, 0.1] }}
-                              transition={{ duration: 3, repeat: Infinity }}
-                              className="absolute inset-0 bg-[#ff385c] rounded-full"
-                           />
-                           <motion.div 
-                              animate={{ scale: [1, 2, 1], opacity: [0.05, 0, 0.05] }}
-                              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-                              className="absolute inset-0 bg-[#ff385c] rounded-full"
-                           />
+                           {!searchFailed && (
+                             <>
+                               <motion.div 
+                                  animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0, 0.1] }}
+                                  transition={{ duration: 3, repeat: Infinity }}
+                                  className="absolute inset-0 bg-[#ff385c] rounded-full"
+                               />
+                               <motion.div 
+                                  animate={{ scale: [1, 2, 1], opacity: [0.05, 0, 0.05] }}
+                                  transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                                  className="absolute inset-0 bg-[#ff385c] rounded-full"
+                               />
+                             </>
+                           )}
                            
-                           <div className="relative w-48 h-48 bg-white rounded-full flex items-center justify-center border-8 border-[#f7f7f7] shadow-2xl">
-                              <div className="absolute inset-0 border-[6px] border-[#ff385c] border-t-transparent rounded-full animate-spin" />
-                              <Search size={48} className="text-[#ff385c]" />
+                           <div className={`relative w-48 h-48 bg-white rounded-full flex items-center justify-center border-8 border-[#f7f7f7] shadow-2xl ${searchFailed ? 'border-rose-100' : ''}`}>
+                              {!searchFailed && <div className="absolute inset-0 border-[6px] border-[#ff385c] border-t-transparent rounded-full animate-spin" />}
+                              {searchFailed ? (
+                                <ShieldAlert size={48} className="text-rose-500" />
+                              ) : (
+                                <Search size={48} className="text-[#ff385c]" />
+                              )}
                            </div>
+                           
+                           {/* Countdown Badge */}
+                           {!searchFailed && (
+                             <div className="absolute -top-4 -right-4 w-16 h-16 bg-[#222222] text-white rounded-full flex flex-col items-center justify-center border-4 border-white shadow-xl">
+                               <span className="text-xs font-black leading-none">{searchTimer}</span>
+                               <span className="text-[6px] font-black uppercase">Sec</span>
+                             </div>
+                           )}
                         </div>
                         
                         <div className="space-y-4">
-                           <h2 className="text-4xl font-black text-[#222222] italic leading-tight">Finding Experts...</h2>
-                           <p className="text-sm font-bold text-[#717171] uppercase tracking-[0.3em]">Scanning {formData.location}</p>
+                           {searchFailed ? (
+                             <>
+                               <h2 className="text-4xl font-black text-[#222222] italic leading-tight">No Guides Found</h2>
+                               <p className="text-sm font-medium text-[#717171] max-w-xs mx-auto">All guides are currently busy or unavailable. Please try again in a few minutes.</p>
+                             </>
+                           ) : (
+                             <>
+                               <h2 className="text-4xl font-black text-[#222222] italic leading-tight">Finding Experts...</h2>
+                               <p className="text-sm font-bold text-[#717171] uppercase tracking-[0.3em]">Scanning {formData.location}</p>
+                             </>
+                           )}
                         </div>
 
-                        <button 
-                           onClick={cancelBooking}
-                           className="px-12 py-5 bg-white border-2 border-rose-100 text-rose-500 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-rose-50 hover:border-rose-200 transition-all shadow-lg shadow-rose-500/5"
-                        >
-                           Cancel Search
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          {searchFailed ? (
+                            <>
+                              <button 
+                                 onClick={handleRetrySearch}
+                                 className="px-12 py-5 bg-[#222222] text-white rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl flex items-center gap-2"
+                              >
+                                 <ZapIcon size={14} /> Try Again
+                              </button>
+                              <button 
+                                 onClick={cancelBooking}
+                                 className="px-12 py-5 bg-white border-2 border-[#dddddd] text-[#717171] rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-[#f7f7f7] transition-all"
+                              >
+                                 Go Back
+                              </button>
+                            </>
+                          ) : (
+                            <button 
+                               onClick={cancelBooking}
+                               className="px-12 py-5 bg-white border-2 border-rose-100 text-rose-500 rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-rose-50 hover:border-rose-200 transition-all shadow-lg shadow-rose-500/5"
+                            >
+                               Cancel Search
+                            </button>
+                          )}
+                        </div>
                      </div>
 
                      {/* Right: Live Stats Simulation */}
-                     <div className="bg-[#f7f7f7] p-10 rounded-[3rem] border border-[#eeeeee] space-y-10">
+                     <div className={`bg-[#f7f7f7] p-10 rounded-[3rem] border border-[#eeeeee] space-y-10 transition-opacity duration-500 ${searchFailed ? 'opacity-50 grayscale' : 'opacity-100'}`}>
                         <div className="space-y-2">
                            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff385c]">Live Scan Stats</h3>
                            <p className="text-sm font-medium text-[#717171]">We are notifying all top-rated guides in your area.</p>
@@ -395,7 +601,7 @@ const BookGuidePage = () => {
                                     <p className="text-sm font-bold text-[#222222]">Guides Nearby</p>
                                  </div>
                               </div>
-                              <p className="text-2xl font-black text-emerald-500">12</p>
+                              <p className="text-2xl font-black text-emerald-500">{searchStats.active}</p>
                            </motion.div>
 
                            {/* Rejected */}
@@ -409,7 +615,7 @@ const BookGuidePage = () => {
                                     <p className="text-sm font-bold text-[#222222]">Busy with trips</p>
                                  </div>
                               </div>
-                              <SearchStatsCounter type="rejected" />
+                              <p className="text-2xl font-black text-rose-500">{searchStats.rejected}</p>
                            </motion.div>
 
                            {/* No Response */}
@@ -423,13 +629,15 @@ const BookGuidePage = () => {
                                     <p className="text-sm font-bold text-[#222222]">Inactive or Timeout</p>
                                  </div>
                               </div>
-                              <SearchStatsCounter type="timeout" />
+                              <p className="text-2xl font-black text-amber-500">{searchStats.timeout}</p>
                            </motion.div>
                         </div>
 
                         <div className="pt-6 border-t border-[#dddddd] flex items-center gap-4">
-                           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                           <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Awaiting acceptance...</p>
+                           <div className={`w-2 h-2 rounded-full ${searchFailed ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'}`} />
+                           <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest">
+                             {searchFailed ? 'Search Terminated' : 'Awaiting acceptance...'}
+                           </p>
                         </div>
                      </div>
                   </div>
@@ -437,37 +645,11 @@ const BookGuidePage = () => {
             </motion.div>
           )}
 
-          {/* 4. MATCHED SCREEN (CALL CONNECT) */}
-          {screen === 'call-connect' && matchedGuide && (
-            <motion.div key="matched" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-md">
-               <ScreenWrapper title="Guide Found!" hideHeader>
-                  <div className="flex flex-col items-center text-center space-y-8">
-                     <div className="relative">
-                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#ff385c] shadow-2xl">
-                           <img src={matchedGuide.profilePicture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80'} className="w-full h-full object-cover" alt="" />
-                        </div>
-                        <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full border-4 border-white">
-                           <ShieldCheck size={20} />
-                        </div>
-                     </div>
-                     <div className="space-y-2">
-                        <h2 className="text-2xl font-black text-[#222222] italic">{matchedGuide.name}</h2>
-                        <div className="flex items-center justify-center gap-1.5 text-amber-500">
-                           <Star size={16} fill="currentColor" />
-                           <span className="text-sm font-black text-[#222222]">4.9 (120 reviews)</span>
-                        </div>
-                     </div>
-                     <div className="w-full bg-[#f7f7f7] p-6 rounded-[2rem] border border-[#eeeeee] flex flex-col items-center space-y-2">
-                        <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Share this OTP with guide</span>
-                        <p className="text-5xl font-black tracking-[0.4em] text-[#222222] py-2">{otp}</p>
-                     </div>
-                     <a 
-                        href={`tel:${matchedGuide.mobile}`}
-                        className="w-full py-6 bg-emerald-500 text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 active:scale-95 transition-all"
-                     >
-                        <Phone size={20} /> Call Guide
-                     </a>
-                  </div>
+          {/* 4. MATCHED SCREEN (NEW MAP VIEW) */}
+          {screen === 'call-connect' && (
+            <motion.div key="matched" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-6xl">
+               <ScreenWrapper title="Guide Found!" hideHeader maxWidth="max-w-none">
+                  <MatchedView />
                </ScreenWrapper>
             </motion.div>
           )}
@@ -750,10 +932,12 @@ const BookGuidePage = () => {
   );
 };
 
-const SearchStatsCounter = ({ type }) => {
+const SearchStatsCounter = ({ type, isPaused }) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    if (isPaused) return;
+    
     const interval = setInterval(() => {
       setCount(prev => {
         if (prev >= 5) return prev; // Limit for simulation
@@ -764,7 +948,7 @@ const SearchStatsCounter = ({ type }) => {
       });
     }, 3000);
     return () => clearInterval(interval);
-  }, [type]);
+  }, [type, isPaused]);
 
   return <p className={`text-2xl font-black ${type === 'rejected' ? 'text-rose-500' : 'text-amber-500'}`}>{count}</p>;
 };

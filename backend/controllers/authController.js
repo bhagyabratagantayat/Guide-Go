@@ -19,7 +19,7 @@ const generateAccessToken = (id, role) => {
 };
 
 const generateRefreshToken = (id, role) => {
-  return jwt.sign({ id, role }, config.refreshTokenSecret, { expiresIn: '7d' }); // Longer lived
+  return jwt.sign({ id, role }, config.refreshTokenSecret, { expiresIn: '30d' }); // 30 days persistence
 };
 
 const setTokenCookies = (res, user) => {
@@ -30,9 +30,9 @@ const setTokenCookies = (res, user) => {
   
   const cookieOptions = {
     httpOnly: true,
-    secure: isProd, // Force secure in production
-    sameSite: isProd ? 'none' : 'lax', // Must be 'none' for cross-site (Vercel -> Render)
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   };
 
   res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });

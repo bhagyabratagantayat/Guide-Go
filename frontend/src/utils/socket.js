@@ -4,9 +4,12 @@ let socket;
 
 export const connectSocket = (userId, role, guideId) => {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const defaultURL = isLocal ? 'http://localhost:3000' : 'https://guide-go-backend.onrender.com';
+    
+    socket = io(import.meta.env.VITE_SOCKET_URL || defaultURL, {
       transports: ['websocket'],
-      withCredentials: true, // Crucial for cookies
+      withCredentials: true,
       auth: {
         userId,
         role,

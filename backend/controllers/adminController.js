@@ -9,26 +9,32 @@ const asyncHandler = require('../middleware/asyncHandler');
 // @route   GET /api/admin/stats
 // @access  Private/Admin
 const getDashboardStats = asyncHandler(async (req, res, next) => {
-  const totalUsers = await User.countDocuments();
-  const totalGuides = await Guide.countDocuments();
-  const pendingGuides = await Guide.countDocuments({ status: 'pending' });
-  const totalBookings = await Booking.countDocuments();
-  const totalPlaces = await Place.countDocuments();
-
-  // Calculate total revenue
-  const revenue = await Booking.aggregate([
-    { $match: { status: 'confirmed' } },
-    { $group: { _id: null, total: { $sum: '$price' } } }
+  const [
+    totalUsers,
+    totalGuides,
+    pendingGuides,
+    totalBookings,
+    totalPlaces,
+    revenue,
+    recentBookings
+  ] = await Promise.all([
+    User.countDocuments(),
+    Guide.countDocuments(),
+    Guide.countDocuments({ status: 'pending' }),
+    Booking.countDocuments(),
+    Place.countDocuments(),
+    Booking.aggregate([
+      { $match: { status: 'confirmed' } },
+      { $group: { _id: null, total: { $sum: '$price' } } }
+    ]),
+    Booking.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('userId', 'name')
+      .populate('guideId', 'name')
   ]);
 
   const totalRevenue = revenue.length > 0 ? revenue[0].total : 0;
-
-  // Recent bookings
-  const recentBookings = await Booking.find()
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .populate('userId', 'name')
-    .populate('guideId', 'name');
 
   res.json({
     success: true,

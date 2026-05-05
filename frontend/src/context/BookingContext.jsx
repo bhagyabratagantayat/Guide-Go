@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { getSocket } from '../utils/socket';
+import { useAuth } from './AuthContext';
 
 const BookingContext = createContext();
 
@@ -13,6 +14,7 @@ export const TRIP_STATUS = {
 };
 
 export const BookingProvider = ({ children }) => {
+  const { user } = useAuth();
   const [tripStatus, setTripStatus] = useState(TRIP_STATUS.IDLE);
   const [bookingData, setBookingData] = useState(null);
   const [matchedGuide, setMatchedGuide] = useState(null);
@@ -24,19 +26,26 @@ export const BookingProvider = ({ children }) => {
   const socketRef = useRef(null);
 
   // --- Session Restoration Logic ---
-  const restoreSession = React.useCallback(async () => {
+  const restoreSession = React.useCallback(async (silent = false) => {
+    if (!silent) setIsRestoring(true);
     try {
-      const userString = localStorage.getItem('gg_user');
-      const user = userString ? JSON.parse(userString) : null;
-      
-      // If no user, we can't restore a session, so just stop the loading state
+      // If no user, we can't restore a session
       if (!user) {
         setIsRestoring(false);
         return;
       }
 
       const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
-      const { data } = await api.get(endpoint);
+      
+      // Add a 5-second timeout to the API call
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Restoration Timeout')), 5000)
+      );
+
+      const { data } = await Promise.race([
+        api.get(endpoint),
+        timeoutPromise
+      ]);
       
       if (data && data.length > 0) {
         const latest = data[0];
@@ -71,49 +80,48 @@ export const BookingProvider = ({ children }) => {
 
   // --- Socket Initialization ---
   useEffect(() => {
-    const userString = localStorage.getItem('gg_user');
-    const user = userString ? JSON.parse(userString) : null;
-    
-    if (user && !socketRef.current) {
+    if (user) {
       const socket = getSocket();
       socketRef.current = socket;
 
-      socket.on('booking_accepted', (data) => {
-        setMatchedGuide(data.guide);
-        setOtp(data.otp);
-        setTripStatus(TRIP_STATUS.MATCHED);
-      });
+      // Join room every time the effect runs to ensure we are in the right room
+      socket.emit('join', { userId: user._id });
 
+      const onAccepted = (data) => {
+        console.log('Booking accepted received:', data);
+        setBookingData(data.booking);
+        setMatchedGuide(data.guide);
+        setOtp(data.otp || data.booking?.otp);
+        setTripStatus(TRIP_STATUS.MATCHED);
+      };
+
+      socket.on('booking_accepted', onAccepted);
       socket.on('trip_started', (data) => {
         setTripStatus(TRIP_STATUS.ONGOING);
         startTimer(data.startedAt || new Date());
       });
-
       socket.on('trip_ended', () => {
         setTripStatus(TRIP_STATUS.COMPLETED);
         stopTimer();
         restoreSession();
       });
-
       socket.on('booking_cancelled', () => {
         resetBooking();
       });
-    }
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off('booking_accepted');
-        socketRef.current.off('trip_started');
-        socketRef.current.off('trip_ended');
-        socketRef.current.off('booking_cancelled');
-      }
-    };
-  }, [restoreSession]);
+      return () => {
+        socket.off('booking_accepted', onAccepted);
+        socket.off('trip_started');
+        socket.off('trip_ended');
+        socket.off('booking_cancelled');
+      };
+    }
+  }, [user]);
 
   // Initial Restore & Interval Sync
   useEffect(() => {
     restoreSession();
-    const syncInterval = setInterval(restoreSession, 5000);
+    const syncInterval = setInterval(() => restoreSession(true), 15000);
     return () => clearInterval(syncInterval);
   }, [restoreSession]);
 
@@ -148,10 +156,19 @@ export const BookingProvider = ({ children }) => {
   };
 
   const cancelBooking = async () => {
-    if (!bookingData?._id) return;
-    try {
-      await api.put(`/bookings/${bookingData._id}/status`, { status: 'cancelled' });
+    // If we don't even have a booking ID yet (still creating), just reset the UI
+    if (!bookingData?._id) {
       resetBooking();
+      return;
+    }
+
+    try {
+      // Optimistically reset UI
+      const idToCancel = bookingData._id;
+      resetBooking();
+      
+      // Notify backend
+      await api.put(`/bookings/${idToCancel}/status`, { status: 'cancelled' });
     } catch (error) {
       console.error('Cancellation failed:', error);
     }

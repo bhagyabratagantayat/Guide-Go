@@ -27,7 +27,6 @@ const authenticateUser = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse('Not authorized - user no longer exists', 401, 'UNAUTHORIZED'));
     }
     
-    console.log("AUTH SUCCESS: User", req.user.email);
     return next();
   } catch (error) {
     console.error('Auth Middleware Token Error:', error.message);
@@ -40,7 +39,13 @@ const authenticateUser = asyncHandler(async (req, res, next) => {
 
 const authorizeRole = (...roles) => {
   return (req, res, next) => {
+    // Admin always has access to admin routes
+    if (req.user && req.user.role === 'admin') {
+      return next();
+    }
+
     if (!req.user || !roles.includes(req.user.role)) {
+      console.error(`[AUTH] Role Blocked: ${req.user ? req.user.role : 'None'} tried to access ${req.originalUrl}`);
       return next(new ErrorResponse(`Role ${req.user ? req.user.role : 'unauthorized'} is not authorized to access this route`, 403, 'FORBIDDEN'));
     }
     next();

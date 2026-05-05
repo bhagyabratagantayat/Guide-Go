@@ -9,30 +9,53 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const userData = JSON.parse(localStorage.getItem('gg_user'));
-      
-      if (userData) {
-        // OPTIMIZATION: Set user immediately from local storage so the app doesn't "buffer"
-        setUser(userData);
+      const localUserString = localStorage.getItem('gg_user');
+      if (!localUserString) {
         setLoading(false);
+        return;
+      }
+
+      const userData = JSON.parse(localUserString);
+      setUser(userData);
+      setLoading(false);
+      
+      try {
+        const { data } = await api.get('/auth/profile');
+        const syncedUser = { ...userData, ...data };
         
-        try {
-          // Sync with server in the background
-          const { data } = await api.get('/auth/profile');
-          const syncedUser = { ...userData, ...data };
+        // Only update if data is different from local storage to prevent flicker
+        if (JSON.stringify(syncedUser) !== localUserString) {
           localStorage.setItem('gg_user', JSON.stringify(syncedUser));
           setUser(syncedUser);
-        } catch (error) {
-          if (error.response?.status === 401 || error.response?.status === 403) {
-            localStorage.removeItem('gg_user');
-            setUser(null);
-          }
         }
-      } else {
-        setLoading(false);
+      } catch (error) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem('gg_user');
+          setUser(null);
+        }
       }
     };
+    
     checkAuth();
+
+    // ── TAB SYNCHRONIZATION ──
+    const syncTabs = (event) => {
+      if (event.key === 'gg_user') {
+        if (!event.newValue) {
+          setUser(null);
+        } else {
+          const newUser = JSON.parse(event.newValue);
+          // Only update if the new value is actually different from current state
+          const currentUserString = localStorage.getItem('gg_user');
+          if (event.newValue !== currentUserString) {
+            setUser(newUser);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('storage', syncTabs);
+    return () => window.removeEventListener('storage', syncTabs);
   }, []);
 
   useEffect(() => {

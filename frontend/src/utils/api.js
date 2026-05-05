@@ -1,9 +1,17 @@
 import axios from 'axios';
 
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// In development, we use Vite's proxy (/api) to avoid CORS/Unreachable issues.
+// In production, we use the full Render URL.
+const defaultBaseURL = isLocal ? '/api' : 'https://guide-go-backend.onrender.com/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://guide-go-backend.onrender.com/api',
-  withCredentials: true // Crucial for HttpOnly cookies
+  baseURL: import.meta.env.VITE_API_URL || defaultBaseURL,
+  withCredentials: true 
 });
+
+console.log(`🔌 API Connected to: ${api.defaults.baseURL}`);
 
 // REQUEST INTERCEPTOR: Inject token from localStorage into Headers
 api.interceptors.request.use((config) => {
@@ -33,7 +41,7 @@ api.interceptors.response.use(
         await api.post('/auth/refresh-token');
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, clear user and redirect
+        // Refresh failed, clear user and redirect silently
         localStorage.removeItem('gg_user');
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
@@ -57,6 +65,12 @@ api.interceptors.response.use(
     console.group(`🚨 API ERROR: [${error.config?.method?.toUpperCase()}] ${error.config?.url}`);
     console.error('Status:', error.response?.status);
     console.error('Message:', error.response?.data?.message || error.message);
+    
+    // Show alert for debugging (only in local dev)
+    if (isLocal && error.response?.status !== 401 && error.response?.status !== 403) {
+      console.error(`API Error (${error.config?.url}):`, error.response?.status);
+    }
+    
     console.groupEnd();
 
     return Promise.reject(error);

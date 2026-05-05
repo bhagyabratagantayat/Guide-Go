@@ -13,35 +13,24 @@ import {
   LogOut
 } from 'lucide-react';
 
+import { useAdmin } from '../../context/AdminContext';
+import TableSkeleton from '../../components/TableSkeleton';
+
 const AdminBookings = () => {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { bookings, loadStates } = useAdmin();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const { data } = await api.get('/admin/bookings');
-        setBookings(data.data);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBookings();
-  }, []);
-
   const filteredBookings = bookings.filter(b => 
-    b.userId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.guideId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.location.toLowerCase().includes(searchTerm.toLowerCase())
+    b.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.guideId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-full">
-      <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+  if (loadStates.bookings) return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+       <div className="h-14 w-full max-w-md bg-slate-100 rounded-3xl animate-pulse"></div>
+       <TableSkeleton rows={8} cols={5} />
     </div>
   );
 

@@ -19,19 +19,25 @@ const server = http.createServer(app);
 let io; // Will be initialized after DB connection
 
 // ── CORS ──────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'https://guide-go.vercel.app',
+  'https://guidego.vercel.app',
+  'https://guide-goo.web.app',
+  'https://guide-goo.firebaseapp.com'
+];
+
 app.use(cors({
   origin: function(origin, callback) {
-    const allowed = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:5173',
-      'https://guide-go.vercel.app',
-      'https://guidego.vercel.app',
-      'https://guide-goo.web.app',
-      'https://guide-goo.firebaseapp.com'
-    ].filter(Boolean);
-    // Allow requests with no origin (curl, Postman)
-    if (!origin || allowed.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('.web.app') || origin.includes('.firebaseapp.com')) {
+    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.includes(origin) || 
+                     origin.includes('localhost') || 
+                     origin.includes('127.0.0.1') || 
+                     origin.endsWith('.web.app') || 
+                     origin.endsWith('.firebaseapp.com');
+    if (isAllowed) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -50,39 +56,41 @@ app.use(helmet({
 // Compress responses
 app.use(compression());
 
-// Limit requests from same API
+// Limit requests from same API (Skip for local development)
+const isDev = process.env.NODE_ENV === 'development';
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 2000, 
+  max: isDev ? 100000 : 2000, 
   message: 'Too many requests from this IP'
 });
 app.use('/api', limiter);
 
-// Strict rate limiting for Auth routes
+// Strict rate limiting for Auth routes (Skip for local development)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50, // Limit to 50 requests per 15 mins
-  message: 'Too many authentication attempts, please try again later'
+  max: isDev ? 100000 : 100,
+  message: 'Too many authentication attempts'
 });
 app.use('/api/auth', authLimiter);
 
 // Data sanitization against XSS
 app.use(xss());
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 app.use(requestLogger);
 
 // Attach Socket.IO to req
 app.use((req, res, next) => {
-  req.io = io;
+  req.io = io || null;
   next();
 });
 
 // Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: "GuideGo API Running" });
+  res.json({ status: "GuideGo API Running", timestamp: new Date() });
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -109,27 +117,30 @@ app.use(errorHandler);
 
 const startServer = async () => {
   try {
-    await connectDB();
-    io = initSocket(server);
+    try {
+      await connectDB();
+    } catch (dbError) {
+      logger.error(`⚠️ MongoDB Connection Delayed/Failed: ${dbError.message}`);
+      // We continue starting the server so frontend doesn't get ECONNREFUSED
+    }
 
+    io = initSocket(server);
     const PORT = config.port;
 
-    // Handle port cleanup on Windows to prevent EADDRINUSE
-    if (process.platform === 'win32') {
+    // Handle port cleanup ONLY in development
+    if (process.env.NODE_ENV === 'development' && process.platform === 'win32') {
       const { execSync } = require('child_process');
       try {
         const stdout = execSync(`netstat -ano | findstr :${PORT} | findstr LISTENING`).toString();
         const pid = stdout.split('\n')[0].trim().split(/\s+/).pop();
         if (pid && pid !== process.pid.toString()) {
-          logger.info(`Killing existing process on port ${PORT} (PID: ${pid})`);
+          logger.info(`Cleaning up port ${PORT}`);
           execSync(`taskkill /F /PID ${pid}`);
         }
-      } catch (e) {
-        // Port not in use, ignore
-      }
+      } catch (e) { /* Safe to ignore */ }
     }
 
-    server.listen(PORT, () => logger.info(`Server running in ${config.env} mode on port ${PORT}`));
+    server.listen(PORT, () => logger.info(`🚀 Server running on port ${PORT} (DB Status may be pending)`));
   } catch (error) {
     logger.error(`Critical Failure: ${error.message}`);
     process.exit(1);

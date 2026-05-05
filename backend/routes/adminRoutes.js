@@ -40,9 +40,16 @@ router.put('/kyc/:guideId/approve', asyncHandler(async (req, res, next) => {
   if (!guide) return next(new ErrorResponse('Guide record not found', 404));
   
   guide.kycStatus = 'approved';
+  guide.status = 'approved'; // Sync main status
+  
   if (guide.kycData) guide.kycData.reviewedAt = Date.now();
   await guide.save();
-  res.status(200).json({ success: true });
+
+  // Also ensure User role is updated to 'guide'
+  const User = require('../models/User');
+  await User.findByIdAndUpdate(guide.userId, { role: 'guide' });
+
+  res.status(200).json({ success: true, message: 'KYC and Guide status approved' });
 }));
 
 router.put('/kyc/:guideId/reject', asyncHandler(async (req, res, next) => {

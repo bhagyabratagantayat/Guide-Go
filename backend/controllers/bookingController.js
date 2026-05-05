@@ -7,7 +7,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 // @desc    Create a booking (starts in 'searching' state)
 // @route   POST /api/bookings
 const createBooking = asyncHandler(async (req, res, next) => {
-  const { location, plan, language, price, bookingTime } = req.body;
+  const { location, plan, language, price, bookingTime, userLat, userLng } = req.body;
 
   const booking = await Booking.create({
     userId: req.user._id,
@@ -16,14 +16,24 @@ const createBooking = asyncHandler(async (req, res, next) => {
     language,
     price,
     bookingTime: bookingTime || Date.now(),
-    status: 'searching'
+    status: 'searching',
+    userLat,
+    userLng
   });
 
   // Broadcast to all approved guides
   if (req.io) {
+    // Count active guides
+    const activeCount = await Guide.countDocuments({ isLive: true });
+    
     req.io.emit('new_booking_broadcast', {
       message: 'New tour request nearby!',
       booking
+    });
+
+    // Notify the specific user about active guides
+    req.io.to(req.user._id.toString()).emit('booking_stats_initial', {
+      activeCount
     });
   }
 
@@ -58,7 +68,13 @@ const acceptBooking = asyncHandler(async (req, res, next) => {
   if (req.io) {
     req.io.to(booking.userId.toString()).emit('booking_accepted', {
       bookingId: booking._id,
-      guide: guideInfo,
+      booking: booking, // Full booking for coordinates
+      guide: {
+        name: guideInfo.name,
+        phone: guideInfo.phone || guideInfo.mobile,
+        rating: guideInfo.rating || 5.0,
+        profilePicture: guideInfo.profilePicture
+      },
       otp: otp
     });
   }
@@ -128,11 +144,11 @@ const getUserBookings = asyncHandler(async (req, res, next) => {
   res.json(bookings);
 });
 
-const getGuideBookings = asyncHandler(async (req, res, next) => {
+const getGuideBookings = asyncHandler(async (req, res) => {
   const bookings = await Booking.find({ guideId: req.user._id })
-    .populate('userId', 'name email phone profilePicture')
+    .populate('userId', 'name mobile profilePicture')
     .sort('-createdAt');
-  res.json(bookings);
+  res.json({ success: true, data: bookings });
 });
 
 const updateBookingStatus = asyncHandler(async (req, res, next) => {

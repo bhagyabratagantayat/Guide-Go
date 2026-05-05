@@ -9,73 +9,39 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { useAdmin } from '../../context/AdminContext';
+
 const AdminDashboard = () => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { stats: adminStats, recentBookings, loadStates, error } = useAdmin();
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const { data } = await api.get('/admin/stats');
-        if (data.success && data.data) {
-          setData(data.data);
-          setError(null);
-        } else {
-          setError('Failed to load statistics');
-        }
-      } catch (error) {
-        console.error('Error fetching admin stats:', error);
-        setError(error.response?.data?.message || 'Error connecting to server');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-[60vh]">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-primary-100 rounded-full"></div>
-        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin absolute top-0"></div>
+  if (loadStates.stats) return (
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <div className="flex justify-between items-end">
+        <div className="space-y-3">
+          <div className="h-12 w-64 bg-slate-100 rounded-2xl animate-pulse"></div>
+          <div className="h-4 w-48 bg-slate-50 rounded-lg animate-pulse"></div>
+        </div>
       </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="flex flex-col items-center justify-center h-[60vh] space-y-6">
-      <div className="w-20 h-20 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center shadow-soft">
-         <Clock className="w-10 h-10" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {[1,2,3,4].map(i => (
+          <div key={i} className="h-44 bg-white border border-slate-100 rounded-[2.5rem] animate-pulse"></div>
+        ))}
       </div>
-      <div className="text-center space-y-3">
-         <h3 className="text-3xl font-black text-slate-900 tracking-tighter italic font-serif leading-none">Connection Error</h3>
-         <p className="subtitle max-w-xs mx-auto italic opacity-60">The data feed has been interrupted. Checking system status.</p>
-         <div className="p-4 bg-red-50/50 rounded-2xl border border-red-100 text-red-600 font-bold text-[10px] uppercase tracking-widest">{error}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 h-[500px] bg-white border border-slate-100 rounded-[4rem] animate-pulse"></div>
+        <div className="space-y-8">
+          <div className="h-64 bg-slate-900 rounded-[3rem] animate-pulse"></div>
+          <div className="h-80 bg-white border border-slate-100 rounded-[4rem] animate-pulse"></div>
+        </div>
       </div>
-      <button 
-        onClick={() => window.location.reload()}
-        className="btn-primary px-8 py-3"
-      >
-        RETRY CONNECTION
-      </button>
-    </div>
-  );
-
-  if (!data || !data.stats) return (
-    <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-      <div className="w-20 h-20 bg-slate-100 text-slate-400 rounded-[2rem] flex items-center justify-center mb-6">
-         <BookOpen className="w-10 h-10" />
-      </div>
-      <p className="text-slate-400 font-black uppercase tracking-[0.5em] text-[10px] italic">Fetching Data...</p>
     </div>
   );
 
   const stats = [
-    { label: 'Platform Revenue', value: `₹${(data.stats.totalRevenue || 0).toLocaleString()}`, icon: <DollarSign className="w-6 h-6" />, color: 'primary', trend: '+14.2%', desc: 'Current Month' },
-    { label: 'Active Explorers', value: data.stats.totalUsers || 0, icon: <Users className="w-6 h-6" />, color: 'secondary', trend: '+5.8%', desc: 'Across India' },
-    { label: 'Verified Guides', value: data.stats.totalGuides || 0, icon: <UserCheck className="w-6 h-6" />, color: 'primary', trend: '+2.4%', desc: 'Overall' },
-    { label: 'Guide Approvals', value: data.stats.pendingGuides || 0, icon: <ShieldCheck className="w-6 h-6" />, color: 'secondary', trend: 'Action Required', desc: 'Pending Review', path: '/admin/guides' },
+    { label: 'Platform Revenue', value: `₹${(adminStats?.totalRevenue || 0).toLocaleString()}`, icon: <DollarSign className="w-6 h-6" />, color: 'primary', trend: '+14.2%', desc: 'Current Month' },
+    { label: 'Active Explorers', value: adminStats?.totalUsers || 0, icon: <Users className="w-6 h-6" />, color: 'secondary', trend: '+5.8%', desc: 'Across India' },
+    { label: 'Verified Guides', value: adminStats?.totalGuides || 0, icon: <UserCheck className="w-6 h-6" />, color: 'primary', trend: '+2.4%', desc: 'Overall' },
+    { label: 'Guide Approvals', value: adminStats?.pendingGuides || 0, icon: <ShieldCheck className="w-6 h-6" />, color: 'secondary', trend: 'Action Required', desc: 'Pending Review', path: '/admin/guides' },
   ];
 
   const container = {
@@ -186,7 +152,7 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {data.recentBookings.map((booking) => (
+                {recentBookings?.map((booking) => (
                   <tr key={booking._id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-6 font-bold text-slate-800">
                        <div className="flex items-center space-x-3">

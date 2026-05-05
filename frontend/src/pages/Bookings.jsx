@@ -19,8 +19,10 @@ const Bookings = () => {
   const fetchBookings = async () => {
     try {
       const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
-      const { data } = await api.get(endpoint);
-      setBookings(data);
+      const res = await api.get(endpoint);
+      // Handle both {success: true, data: []} and direct []
+      const fetchedData = res.data?.data || res.data;
+      setBookings(Array.isArray(fetchedData) ? fetchedData : []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {

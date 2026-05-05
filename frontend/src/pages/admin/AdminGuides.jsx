@@ -10,36 +10,30 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
+import { useAdmin } from '../../context/AdminContext';
+
 const AdminGuides = () => {
-  const [guides, setGuides] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { guides, loadStates, refreshData } = useAdmin();
+  const [loading, setLoading] = useState(false); // Controlled by context now
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedDossier, setSelectedDossier] = useState(null);
   const [showImageModal, setShowImageModal] = useState(null);
 
-  const fetchGuides = async () => {
-    try {
-      const { data } = await api.get('/admin/guides');
-      setGuides(data.data);
-    } catch (error) {
-      toast.error('Failed to load guide dossiers');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchGuides();
-  }, []);
+  // useEffect with fetch removed, handled by context
 
   const handleStatus = async (id, status) => {
+    if (!window.confirm(`Are you sure you want to ${status.toUpperCase()} this guide?`)) return;
+    
+    setLoading(true);
     try {
       await api.put(`/admin/guides/${id}/status`, { status });
       toast.success(`Guide ${status} successfully`);
-      fetchGuides();
+      await refreshData(); // Await the refresh
     } catch (error) {
       toast.error('Failed to update status');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,7 +42,7 @@ const AdminGuides = () => {
     try {
       await api.put(`/admin/guides/${id}/moderate`, { action });
       toast.success(`Guide ${action}ed successfully`);
-      fetchGuides();
+      refreshData();
     } catch (error) {
       toast.error('Moderation failed');
     }
@@ -59,7 +53,7 @@ const AdminGuides = () => {
     try {
       await api.delete(`/admin/guides/${id}`);
       toast.success('Guide profile removed from system');
-      fetchGuides();
+      refreshData();
     } catch (error) {
       toast.error('Failed to delete guide');
     }
@@ -72,11 +66,16 @@ const AdminGuides = () => {
     return matchesSearch && matchesFilter;
   });
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-[60vh]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Loading Intelligence...</p>
+  if (loadStates.guides) return (
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <div className="h-16 w-80 bg-slate-100 rounded-2xl animate-pulse"></div>
+        <div className="h-16 w-96 bg-slate-100 rounded-2xl animate-pulse"></div>
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        {[1,2,3,4].map(i => (
+          <div key={i} className="h-96 bg-white border border-slate-100 rounded-[3.5rem] animate-pulse"></div>
+        ))}
       </div>
     </div>
   );
@@ -230,13 +229,15 @@ const AdminGuides = () => {
                         <>
                           <button 
                             onClick={() => handleStatus(guide._id, 'approved')}
-                            className="flex items-center gap-2 px-6 py-3 bg-primary-500 text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-600 transition-all shadow-xl shadow-primary-500/20"
+                            disabled={loading}
+                            className="flex items-center gap-2 px-6 py-3 bg-primary-500 text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-600 transition-all shadow-xl shadow-primary-500/20 disabled:opacity-50"
                           >
-                            <CheckCircle size={14} /> Approve
+                            <CheckCircle size={14} /> {loading ? 'Processing...' : 'Approve'}
                           </button>
                           <button 
                             onClick={() => handleStatus(guide._id, 'rejected')}
-                            className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 text-red-500 border border-red-50 dark:border-red-900/20 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50"
+                            disabled={loading}
+                            className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 text-red-500 border border-red-50 dark:border-red-900/20 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 disabled:opacity-50"
                           >
                             <UserX size={14} /> Reject
                           </button>
@@ -365,10 +366,32 @@ const AdminGuides = () => {
                 </div>
               </div>
 
-              <div className="mt-12 flex justify-center">
+              <div className="mt-12 flex flex-wrap justify-center gap-4">
+                {selectedDossier.status === 'pending' && (
+                  <>
+                    <button 
+                      onClick={() => {
+                        handleStatus(selectedDossier._id, 'approved');
+                        setSelectedDossier(null);
+                      }}
+                      className="px-10 py-5 bg-primary-500 text-slate-900 rounded-3xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-600 transition-all shadow-xl active:scale-95"
+                    >
+                      Approve Guide
+                    </button>
+                    <button 
+                      onClick={() => {
+                        handleStatus(selectedDossier._id, 'rejected');
+                        setSelectedDossier(null);
+                      }}
+                      className="px-10 py-5 bg-red-100 text-red-600 rounded-3xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all shadow-xl active:scale-95"
+                    >
+                      Reject KYC
+                    </button>
+                  </>
+                )}
                 <button 
                   onClick={() => setSelectedDossier(null)}
-                  className="px-14 py-5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-3xl font-black text-[10px] uppercase tracking-[0.4em] hover:bg-red-600 hover:text-white transition-all shadow-2xl active:scale-95"
+                  className="px-10 py-5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-3xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all shadow-2xl active:scale-95"
                 >
                   Close Dossier
                 </button>

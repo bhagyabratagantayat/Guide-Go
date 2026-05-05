@@ -14,7 +14,7 @@ if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
 
 const config = {
   env: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT, 10) || 5000,
+  port: parseInt(process.env.PORT, 10) || 3000,
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
   refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET || 'guidego_refresh_secret_key_2026',

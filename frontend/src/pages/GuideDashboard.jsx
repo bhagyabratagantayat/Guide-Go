@@ -145,38 +145,51 @@ const GuideDashboard = () => {
   }, []);
 
   const fetchDashboardData = async (force = false) => {
-    // If we already have data and it's not a forced refresh, don't show skeleton again
-    if (bookings.length > 0 && guideData && !force) {
-      setLoading(false);
-    }
+    if (!force) setLoading(true);
 
     try {
       console.log('Fetching guide dashboard data...');
-      const [{ data: bData }, { data: gData }] = await Promise.all([
-        api.get('/bookings/guide'),
-        api.get('/guides/profile')
-      ]);
       
-      setBookings(bData || []);
-      setGuideData(gData);
-      
-      if (gData) {
-        setIsLive(gData.isLive || false);
-        setGuideStatus(gData.status || 'pending');
-        setPackages(gData.packages || []);
-      }
-      
-      const current = bData?.find(b => ['accepted', 'ongoing'].includes(b.status));
-      setActiveBooking(current || null);
+      // Independent fetchers to avoid blocking
+      const fetchBookings = async () => {
+        try {
+          const res = await api.get('/bookings/guide');
+          // Handle both {data: []} and direct []
+          const data = res.data?.data || res.data;
+          setBookings(Array.isArray(data) ? data : []);
+        } catch (err) { console.error('Bookings fetch failed'); }
+      };
 
-      // Proactive check: If no active booking but there's a 'searching' booking, show it!
-      if (!current && !incomingBooking) {
-        const pending = bData?.find(b => b.status === 'searching');
-        if (pending && isLive) {
-          setIncomingBooking(pending);
-          setCountdown(60);
+      const fetchProfile = async () => {
+        try {
+          const res = await api.get('/guides/profile');
+          const data = res.data?.data || res.data;
+          if (data) {
+            setGuideData(data);
+            setIsLive(data.isLive || false);
+            setGuideStatus(data.status || 'pending');
+            setPackages(data.packages || []);
+          }
+        } catch (err) { console.error('Profile fetch failed'); }
+      };
+
+      await Promise.allSettled([fetchBookings(), fetchProfile()]);
+
+      // Check for active/searching bookings
+      setBookings(prev => {
+        const current = prev?.find(b => ['accepted', 'ongoing'].includes(b.status));
+        setActiveBooking(current || null);
+        
+        if (!current && isLive) {
+          const pending = prev?.find(b => b.status === 'searching');
+          if (pending) {
+            setIncomingBooking(pending);
+            setCountdown(60);
+          }
         }
-      }
+        return prev;
+      });
+
     } catch (error) {
       console.error('Error fetching guide data:', error);
     } finally {
@@ -278,45 +291,72 @@ const GuideDashboard = () => {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
-
-      {/* 2. ACTIVE SESSION HEADER */}
+      </AnimatePresence>      {/* 2. ACTIVE SESSION HEADER (OVERHAULED) */}
       <AnimatePresence>
         {activeBooking && (
-          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[#0f172a] rounded-[3rem] p-8 lg:p-12 shadow-2xl border border-white/5 flex flex-col lg:flex-row items-center justify-between gap-10 mb-12">
-             <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
-                   <Activity size={32} className="text-emerald-500 animate-pulse" />
+          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[#0f172a] rounded-[3rem] p-10 shadow-2xl border border-white/5 space-y-10 mb-12">
+             <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
+                <div className="flex items-center gap-6">
+                   <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center border border-white/10 relative">
+                      <User size={32} className="text-emerald-500" />
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#0f172a] animate-pulse" />
+                   </div>
+                   <div>
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+                         Live Tour Request
+                      </span>
+                      <h2 className="text-3xl font-black text-white italic tracking-tighter mt-1">{activeBooking.userId?.name || 'Traveler'}</h2>
+                      <div className="flex items-center gap-4 mt-2">
+                         <a href={`tel:${activeBooking.userId?.mobile}`} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+                            <Phone size={14} /> <span className="text-[10px] font-bold uppercase">{activeBooking.userId?.mobile || 'No Mobile'}</span>
+                         </a>
+                         <button 
+                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${activeBooking.userLat},${activeBooking.userLng}`, '_blank')}
+                            className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+                         >
+                            <Navigation size={14} /> <span className="text-[10px] font-bold uppercase">View User Location</span>
+                         </button>
+                      </div>
+                   </div>
                 </div>
-                <div>
-                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> Live Session
-                   </span>
-                   <h2 className="text-3xl font-black text-white italic tracking-tighter mt-1">Tour in {activeBooking.location}</h2>
+
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                   {activeBooking.status === 'accepted' ? (
+                      <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 flex items-center gap-8 shadow-inner">
+                         <div className="space-y-1">
+                            <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Enter OTP</p>
+                            <input 
+                               type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
+                               placeholder="0000" className="bg-transparent border-none text-4xl font-black text-white p-0 focus:ring-0 w-32 tracking-[0.3em] font-mono" 
+                            />
+                         </div>
+                         <button onClick={handleVerifyOtp} className="px-10 py-5 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">Start Trip</button>
+                      </div>
+                   ) : (
+                      <div className="flex items-center gap-10">
+                         <div className="text-center space-y-1">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Elapsed Time</p>
+                            <p className="text-4xl font-black text-white font-mono tracking-widest">{Math.floor(tripTimer / 60)}:{Math.floor(tripTimer % 60).toString().padStart(2, '0')}</p>
+                         </div>
+                         <button onClick={handleEndTrip} className="px-12 py-5 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95">Complete Trip</button>
+                      </div>
+                   )}
                 </div>
              </div>
 
-             <div className="flex flex-col md:flex-row items-center gap-6">
-                {activeBooking.status === 'accepted' ? (
-                   <div className="bg-white/5 p-6 rounded-[2rem] border border-white/10 flex items-center gap-6">
-                      <div className="space-y-1">
-                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Enter Trip OTP</p>
-                         <input 
-                            type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
-                            placeholder="0000" className="bg-transparent border-none text-2xl font-black text-white p-0 focus:ring-0 w-24 tracking-[0.2em]" 
-                         />
-                      </div>
-                      <button onClick={handleVerifyOtp} className="px-8 py-3 bg-white text-[#0f172a] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all">Start Trip</button>
-                   </div>
-                ) : (
-                   <div className="flex items-center gap-10">
-                      <div className="text-center space-y-1">
-                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Elapsed Time</p>
-                         <p className="text-3xl font-black text-white font-mono">{Math.floor(tripTimer / 60)}:{Math.floor(tripTimer % 60).toString().padStart(2, '0')}</p>
-                      </div>
-                      <button onClick={handleEndTrip} className="px-10 py-4 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all">Complete Trip</button>
-                   </div>
-                )}
+             <div className="pt-8 border-t border-white/5 flex flex-wrap gap-4">
+                <div className="px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+                   <p className="text-[8px] font-bold text-white/40 uppercase">Destination</p>
+                   <p className="text-xs font-black text-white">{activeBooking.location}</p>
+                </div>
+                <div className="px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+                   <p className="text-[8px] font-bold text-white/40 uppercase">Plan</p>
+                   <p className="text-xs font-black text-white">{activeBooking.plan}</p>
+                </div>
+                <div className="px-6 py-3 bg-white/5 rounded-2xl border border-white/5">
+                   <p className="text-[8px] font-bold text-white/40 uppercase">Language</p>
+                   <p className="text-xs font-black text-white">{activeBooking.language}</p>
+                </div>
              </div>
           </motion.div>
         )}
