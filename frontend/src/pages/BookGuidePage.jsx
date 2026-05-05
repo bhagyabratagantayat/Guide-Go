@@ -26,7 +26,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setScreen, maxWidth = "max-w-md" }) => (
+const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setScreen, maxWidth = "max-w-md", noPadding = false }) => (
   <div className={`${maxWidth} mx-auto w-full min-h-[calc(100vh-40px)] my-5 flex flex-col bg-white overflow-hidden relative shadow-2xl lg:rounded-[2.5rem] border border-[#dddddd]`}>
     {!hideHeader && (
       <div className="flex items-center justify-between p-6 bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-[#f7f7f7]">
@@ -37,7 +37,7 @@ const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setS
         <button className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#717171]"><MoreVertical size={20}/></button>
       </div>
     )}
-    <div className="flex-1 p-6 flex flex-col">{children}</div>
+    <div className={`flex-1 ${noPadding ? 'p-0' : 'p-6'} flex flex-col`}>{children}</div>
   </div>
 );
 
@@ -258,69 +258,106 @@ const BookGuidePage = () => {
     const userPos = [bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245];
     const guidePos = [bookingData?.guideLat || userPos[0] + 0.005, bookingData?.guideLng || userPos[1] + 0.005];
 
+    // Custom Icons
+    const userIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div style="background-color: #222222; width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; display: flex; items-center; justify-center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);"><div style="width: 10px; height: 10px; background: white; border-radius: 50%;"></div></div>`,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+
+    const guideIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div style="background-color: #ff385c; width: 45px; height: 45px; border-radius: 50%; border: 4px solid white; display: flex; items-center; justify-center; box-shadow: 0 10px 20px rgba(255,56,92,0.4);"><img src="${guide.profilePicture || 'https://ui-avatars.com/api/?name=' + guide.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" /></div>`,
+      iconSize: [45, 45],
+      iconAnchor: [22, 22]
+    });
+
     return (
-       <div className="space-y-6">
-          <div className="h-64 md:h-80 w-full rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl z-10">
-             <MapContainer center={userPos} zoom={14} style={{ height: '100%', width: '100%' }}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={userPos}>
-                   <Popup>You are here</Popup>
+       <div className="flex flex-col h-full relative min-h-[600px]">
+          {/* MAP CONTAINER - Full Height Background */}
+          <div className="absolute inset-0 z-0 lg:rounded-[2.5rem] overflow-hidden">
+             <MapContainer center={userPos} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+                <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+                <Marker position={userPos} icon={userIcon}>
+                   <Popup>Your Location</Popup>
                 </Marker>
-                <Marker position={guidePos}>
-                   <Popup>{guide.name} is here</Popup>
+                <Marker position={guidePos} icon={guideIcon}>
+                   <Popup>{guide.name} is arriving</Popup>
                 </Marker>
-                <Polyline positions={[userPos, guidePos]} color="#ff385c" dashArray="10, 10" />
+                <Polyline positions={[userPos, guidePos]} color="#ff385c" weight={5} opacity={0.6} lineCap="round" />
              </MapContainer>
           </div>
 
-          <div className="bg-white rounded-[3rem] p-8 shadow-xl border border-[#eeeeee]">
-             <div className="flex items-center gap-6 mb-8">
-                <div className="w-20 h-20 rounded-3xl bg-slate-100 overflow-hidden shadow-inner">
-                   {guide.profilePicture ? (
-                      <img src={guide.profilePicture} className="w-full h-full object-cover" />
-                   ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-black text-slate-300">
-                         {guide.name?.charAt(0)}
-                      </div>
-                   )}
-                </div>
-                <div className="flex-1">
-                   <div className="flex items-center justify-between">
-                      <h3 className="text-2xl font-black text-[#222222] tracking-tighter italic font-serif uppercase">{guide.name}</h3>
-                      <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full text-amber-600 font-black text-[10px]">
-                         <Star size={12} fill="currentColor" /> {guide.rating || '5.0'}
-                      </div>
-                   </div>
-                   <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest mt-1">Certified Pro Guide</p>
-                   <a href={`tel:${guide.phone}`} className="inline-flex items-center gap-2 mt-3 text-[#ff385c] font-black text-xs uppercase tracking-tighter hover:underline">
-                      <Phone size={14} /> {guide.phone || '+91 98765 43210'}
-                   </a>
-                </div>
-             </div>
-
-             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                   <p className="text-[8px] font-black text-[#717171] uppercase tracking-[0.2em] mb-2">Safe Handshake</p>
-                   <div className="flex flex-col items-center">
-                      <p className="text-3xl font-black text-[#222222] tracking-[0.3em] font-mono">{otp}</p>
-                      <p className="text-[9px] font-bold text-slate-400 mt-1">Share this OTP with guide</p>
-                   </div>
-                </div>
-                <div className="bg-[#ff385c]/5 p-6 rounded-[2rem] border border-[#ff385c]/10 flex flex-col items-center justify-center text-center">
-                   <div className="w-10 h-10 bg-[#ff385c] text-white rounded-full flex items-center justify-center mb-2 animate-bounce">
-                      <ShieldCheck size={20} />
-                   </div>
-                   <p className="text-[10px] font-black text-[#ff385c] uppercase">Secure Session</p>
-                </div>
+          {/* TOP OVERLAY - Status */}
+          <div className="absolute top-6 left-6 right-6 z-10 flex justify-center">
+             <div className="bg-[#222222] text-white px-8 py-3 rounded-full flex items-center gap-3 shadow-2xl border border-white/10 backdrop-blur-md">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{guide.name} is on the way</span>
              </div>
           </div>
 
-          <button 
-             onClick={() => cancelBooking()}
-             className="w-full py-5 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 rounded-3xl transition-all"
-          >
-             Cancel Booking
-          </button>
+          {/* BOTTOM OVERLAY - Premium Info Card */}
+          <div className="absolute bottom-6 left-6 right-6 z-10 space-y-4">
+             <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#eeeeee]">
+                <div className="flex items-center justify-between mb-8">
+                   <div className="flex items-center gap-5">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden shadow-inner border-2 border-white">
+                           <img src={guide.profilePicture || 'https://ui-avatars.com/api/?name=' + guide.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-4 h-4 rounded-full border-4 border-white" />
+                      </div>
+                      <div>
+                         <h3 className="text-xl font-black text-[#222222] tracking-tighter italic">{guide.name}</h3>
+                         <div className="flex items-center gap-2">
+                           <div className="flex items-center gap-0.5 text-amber-500">
+                             <Star size={10} fill="currentColor" />
+                             <span className="text-[10px] font-black text-[#222222] ml-0.5">{guide.rating || '5.0'}</span>
+                           </div>
+                           <span className="text-[10px] font-bold text-slate-300">•</span>
+                           <span className="text-[10px] font-black text-[#ff385c] uppercase tracking-widest">Superguide</span>
+                         </div>
+                      </div>
+                   </div>
+                   
+                   <div className="flex gap-3">
+                      <a href={`tel:${guide.phone || guide.mobile}`} className="p-4 bg-[#f7f7f7] hover:bg-[#222222] hover:text-white rounded-2xl transition-all shadow-sm">
+                         <Phone size={18} />
+                      </a>
+                      <button 
+                         onClick={() => navigate(`/chat/${bookingData?._id}`)}
+                         className="p-4 bg-[#f7f7f7] hover:bg-[#ff385c] hover:text-white rounded-2xl transition-all shadow-sm"
+                      >
+                         <MessageSquare size={18} />
+                      </button>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="bg-[#f7f7f7] p-6 rounded-3xl border border-[#eeeeee] flex flex-col items-center justify-center text-center">
+                      <p className="text-[8px] font-black text-[#717171] uppercase tracking-[0.3em] mb-1">Secure Handshake OTP</p>
+                      <p className="text-4xl font-black text-[#222222] tracking-[0.2em] font-mono leading-none">{otp}</p>
+                   </div>
+                   <div className="bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 flex items-center gap-4">
+                      <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                         <ShieldCheck size={24} />
+                      </div>
+                      <div className="space-y-0.5">
+                         <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Safety Verified</p>
+                         <p className="text-[9px] font-bold text-emerald-800 italic">Background checked & Verified</p>
+                      </div>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={() => cancelBooking()}
+                  className="w-full mt-6 py-4 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-all"
+                >
+                  Cancel Booking Request
+                </button>
+             </div>
+          </div>
        </div>
     );
   };
@@ -652,156 +689,120 @@ const BookGuidePage = () => {
           {/* 4. MATCHED SCREEN (NEW MAP VIEW) */}
           {screen === 'call-connect' && (
             <motion.div key="matched" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-6xl">
-               <ScreenWrapper title="Guide Found!" hideHeader maxWidth="max-w-none">
+               <ScreenWrapper title="Guide Found!" hideHeader maxWidth="max-w-none" noPadding>
                   <MatchedView />
                </ScreenWrapper>
             </motion.div>
           )}
 
-          {/* 5. TRIP ONGOING (ADVANCED PRODUCT-LEVEL DASHBOARD) */}
+          {/* 5. TRIP ONGOING (PREMIUM MAP-BASED DASHBOARD) */}
           {screen === 'trip-ongoing' && (
-            <motion.div key="ongoing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-6xl">
-               <ScreenWrapper title="Active Adventure" hideHeader maxWidth="max-w-none">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
-                     
-                     {/* --- LEFT COL: GUIDE INFO & ACTIONS --- */}
-                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-[#222222] p-8 rounded-[2.5rem] text-white shadow-2xl space-y-8 h-full">
-                           <div className="flex flex-col items-center text-center space-y-4">
-                              <div className="relative">
-                                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/10 p-1">
-                                    <img 
-                                       src={matchedGuide?.profilePicture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80'} 
-                                       className="w-full h-full object-cover rounded-full" 
-                                       alt="" 
-                                    />
-                                 </div>
-                                 <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#222222]" />
-                              </div>
-                              <div className="space-y-1">
-                                 <h3 className="text-2xl font-black italic">{matchedGuide?.name || 'Arjun Das'}</h3>
-                                 <div className="flex items-center justify-center gap-1.5 text-amber-500">
-                                    <Star size={14} fill="currentColor" />
-                                    <span className="text-xs font-black text-white/60">4.9 • Superguide</span>
-                                 </div>
-                              </div>
-                           </div>
+            <motion.div key="ongoing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-6xl h-[800px] relative overflow-hidden lg:rounded-[3rem] shadow-2xl border border-[#dddddd] bg-white">
+               {/* 1. BACKGROUND MAP */}
+               <div className="absolute inset-0 z-0">
+                  <MapContainer center={[bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+                     <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+                     <Marker position={[bookingData?.userLat || 20.2961, bookingData?.userLng || 85.8245]} icon={L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background-color: #222222; width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; display: flex; items-center; justify-center; box-shadow: 0 10px 20px rgba(0,0,0,0.2);"><div style="width: 10px; height: 10px; background: white; border-radius: 50%;"></div></div>`,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 20]
+                     })} />
+                  </MapContainer>
+               </div>
 
-                           <div className="grid grid-cols-3 gap-3">
-                              <a href={`tel:${matchedGuide?.mobile}`} className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all">
-                                 <Phone size={20} />
-                                 <span className="text-[8px] font-black uppercase">Call</span>
-                              </a>
-                              <button 
-                                 onClick={() => navigate(`/chat/${bookingData?._id}`)}
-                                 className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all"
-                              >
-                                 <MessageSquare size={20} />
-                                 <span className="text-[8px] font-black uppercase">Chat</span>
-                              </button>
-                              <button onClick={handleShareTrip} className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all">
-                                 <Share2 size={20} />
-                                 <span className="text-[8px] font-black uppercase">Share</span>
-                              </button>
-                           </div>
-
-                           <div className="pt-6 border-t border-white/5 space-y-4">
-                              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40">
-                                 <span>Languages</span>
-                                 <span className="text-white">{matchedGuide?.languages?.join(', ') || 'English, Hindi, Odia'}</span>
-                              </div>
-                              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40">
-                                 <span>Experience</span>
-                                 <span className="text-white">5+ Years</span>
-                              </div>
-                           </div>
+               {/* 2. TOP OVERLAY: LIVE STATUS */}
+               <div className="absolute top-6 left-6 right-6 z-20 flex flex-col md:flex-row justify-between items-start gap-4">
+                  <div className="bg-[#222222] text-white p-6 rounded-[2rem] shadow-2xl border border-white/10 backdrop-blur-md flex items-center gap-6">
+                     <div className="relative">
+                        <svg className="w-20 h-20 -rotate-90">
+                           <circle cx="40" cy="40" r="36" className="stroke-white/10 stroke-[4]" fill="transparent" />
+                           <motion.circle 
+                              cx="40" cy="40" r="36" 
+                              className="stroke-[#ff385c] stroke-[4]" 
+                              fill="transparent" 
+                              strokeDasharray="226"
+                              initial={{ strokeDashoffset: 226 }}
+                              animate={{ strokeDashoffset: 226 - (226 * (tripTimer % 60) / 60) }}
+                              transition={{ duration: 1 }}
+                           />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                           <span className="text-xl font-black font-mono">{formatTime(tripTimer)}</span>
                         </div>
                      </div>
-
-                     {/* --- MIDDLE COL: LIVE TIMER & BILLING --- */}
-                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white p-10 rounded-[2.5rem] border border-[#eeeeee] flex flex-col items-center text-center space-y-10 justify-center h-full">
-                           <div className="relative">
-                              <svg className="w-48 h-48 -rotate-90">
-                                 <circle cx="96" cy="96" r="88" className="stroke-[#f7f7f7] stroke-[8]" fill="transparent" />
-                                 <motion.circle 
-                                    cx="96" cy="96" r="88" 
-                                    className="stroke-[#ff385c] stroke-[8]" 
-                                    fill="transparent" 
-                                    strokeDasharray="553"
-                                    initial={{ strokeDashoffset: 553 }}
-                                    animate={{ strokeDashoffset: 553 - (553 * (tripTimer % 60) / 60) }}
-                                    transition={{ duration: 1 }}
-                                 />
-                              </svg>
-                              <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1">
-                                 <Timer size={24} className="text-[#ff385c]" />
-                                 <span className="text-4xl font-black text-[#222222] font-mono tracking-tighter">{formatTime(tripTimer)}</span>
-                                 <span className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Live Trip Time</span>
-                              </div>
-                           </div>
-
-                           <div className="w-full bg-[#f7f7f7] p-8 rounded-[2rem] space-y-1 border border-[#eeeeee]">
-                              <p className="text-[10px] font-black text-[#717171] uppercase tracking-widest">Estimated Cost (Live)</p>
-                              <p className="text-5xl font-black text-emerald-500 italic">₹{calculateLiveCost(tripTimer, formData.price, formData.plan)}</p>
-                              <p className="text-[10px] font-bold text-[#717171] mt-2 italic">Based on {formData.plan} plan</p>
-                           </div>
-
-                           <button 
-                              onClick={handleEndTrip}
-                              className="w-full py-6 bg-[#222222] text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all"
-                           >
-                              End Trip & Pay
-                           </button>
-                        </div>
-                     </div>
-
-                     {/* --- RIGHT COL: TRIP INFO & SAFETY --- */}
-                     <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-[#f7f7f7] p-8 rounded-[2.5rem] border border-[#eeeeee] flex flex-col justify-between h-full">
-                           <div className="space-y-8">
-                              <div className="space-y-4">
-                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                    <h4 className="text-[10px] font-black text-[#ff385c] uppercase tracking-widest">Now Exploring</h4>
-                                 </div>
-                                 <h2 className="text-3xl font-black text-[#222222] italic leading-tight">{formData.location}</h2>
-                                 <div className="bg-white p-6 rounded-2xl border border-[#eeeeee] space-y-4">
-                                    <div className="flex justify-between items-center">
-                                       <span className="text-[10px] font-bold text-[#717171] uppercase">Package</span>
-                                       <span className="text-[10px] font-black text-[#222222]">{formData.plan} Adventure</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                       <span className="text-[10px] font-bold text-[#717171] uppercase">Language</span>
-                                       <span className="text-[10px] font-black text-[#222222]">{formData.language}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                       <span className="text-[10px] font-bold text-[#717171] uppercase">Total Limit</span>
-                                       <span className="text-[10px] font-black text-rose-500 font-mono">₹{formData.price}</span>
-                                    </div>
-                                 </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-3">
-                                 <button 
-                                    onClick={() => setShowReportModal(true)}
-                                    className="flex items-center justify-center gap-3 p-5 bg-white rounded-2xl text-rose-500 font-black text-[10px] uppercase tracking-widest border border-rose-50 hover:bg-rose-50 transition-all"
-                                 >
-                                    <Flag size={14} /> Report
-                                 </button>
-                                 <button className="flex items-center justify-center gap-3 p-5 bg-white rounded-2xl text-[#222222] font-black text-[10px] uppercase tracking-widest border border-[#dddddd] hover:bg-[#f7f7f7] transition-all">
-                                    <Info size={14} /> Details
-                                 </button>
-                              </div>
-                           </div>
-
-                           <button className="w-full py-5 bg-rose-500 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-500/20 flex items-center justify-center gap-3 hover:bg-rose-600 transition-all mt-10">
-                              <ShieldAlert size={16} /> EMERGENCY SOS (24/7)
-                           </button>
-                        </div>
+                     <div>
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">Live Session Cost</p>
+                        <p className="text-4xl font-black text-emerald-400 italic leading-none">₹{calculateLiveCost(tripTimer, formData.price, formData.plan)}</p>
                      </div>
                   </div>
-               </ScreenWrapper>
+
+                  <div className="flex gap-3">
+                     <button className="bg-white/90 backdrop-blur px-6 py-4 rounded-2xl shadow-xl border border-[#eeeeee] flex items-center gap-3 hover:bg-white transition-all">
+                        <Share2 size={18} className="text-[#222222]" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Share Trip</span>
+                     </button>
+                     <button onClick={() => setShowReportModal(true)} className="bg-rose-500 text-white px-8 py-4 rounded-2xl shadow-xl shadow-rose-500/30 flex items-center gap-3 hover:bg-rose-600 transition-all">
+                        <ShieldAlert size={18} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">SOS</span>
+                     </button>
+                  </div>
+               </div>
+
+               {/* 3. SIDE OVERLAY: GUIDE DETAILS (Modern Floating Panel) */}
+               <div className="absolute left-6 bottom-6 z-20 w-full max-w-sm">
+                  <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-[#eeeeee]">
+                     <div className="flex items-center gap-5 mb-8">
+                        <div className="relative">
+                           <div className="w-16 h-16 rounded-2xl bg-slate-100 overflow-hidden shadow-inner border-2 border-white">
+                              <img src={matchedGuide?.profilePicture || 'https://ui-avatars.com/api/?name=' + matchedGuide?.name} className="w-full h-full object-cover" />
+                           </div>
+                           <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-4 h-4 rounded-full border-4 border-white" />
+                        </div>
+                        <div>
+                           <h3 className="text-xl font-black text-[#222222] tracking-tighter italic">{matchedGuide?.name}</h3>
+                           <div className="flex items-center gap-2">
+                             <div className="flex items-center gap-0.5 text-amber-500">
+                               <Star size={10} fill="currentColor" />
+                               <span className="text-[10px] font-black text-[#222222] ml-0.5">{matchedGuide?.rating || '5.0'}</span>
+                             </div>
+                             <span className="text-[10px] font-black text-[#ff385c] uppercase tracking-[0.2em] ml-2">Exploring {formData.location}</span>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-2 gap-3 mb-6">
+                        <a href={`tel:${matchedGuide?.mobile}`} className="flex items-center justify-center gap-3 p-5 bg-[#f7f7f7] rounded-2xl text-[#222222] font-black text-[10px] uppercase tracking-widest hover:bg-[#222222] hover:text-white transition-all shadow-sm">
+                           <Phone size={14} /> Call
+                        </a>
+                        <button 
+                           onClick={() => navigate(`/chat/${bookingData?._id}`)}
+                           className="flex items-center justify-center gap-3 p-5 bg-[#f7f7f7] rounded-2xl text-[#222222] font-black text-[10px] uppercase tracking-widest hover:bg-[#ff385c] hover:text-white transition-all shadow-sm"
+                        >
+                           <MessageSquare size={14} /> Chat
+                        </button>
+                     </div>
+
+                     <button 
+                        onClick={handleEndTrip}
+                        className="w-full py-6 bg-[#222222] text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all"
+                     >
+                        End Trip & Pay
+                     </button>
+                  </div>
+               </div>
+
+               {/* 4. RIGHT OVERLAY: TRIP STATS */}
+               <div className="absolute right-6 bottom-6 z-20 hidden md:block">
+                  <div className="bg-white/90 backdrop-blur-md rounded-[2rem] p-6 border border-white shadow-xl space-y-4">
+                     <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        <MapPin size={12} className="text-[#ff385c]" /> Current Zone: {formData.location}
+                     </div>
+                     <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        <Zap size={12} className="text-amber-500" /> Plan: {formData.plan}
+                     </div>
+                  </div>
+               </div>
             </motion.div>
           )}
 

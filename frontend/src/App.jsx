@@ -87,7 +87,7 @@ function AppContent() {
     }
   }, [user, location.pathname, navigate]);
 
-  const isTripLive = tripStatus === TRIP_STATUS.ONGOING && (location.pathname.includes('/book-guide') || location.pathname === '/guide');
+  const isTripLive = (tripStatus === TRIP_STATUS.MATCHED || tripStatus === TRIP_STATUS.ONGOING) && (location.pathname.includes('/book-guide') || location.pathname === '/guide');
 
   useEffect(() => {
     if (user) {
