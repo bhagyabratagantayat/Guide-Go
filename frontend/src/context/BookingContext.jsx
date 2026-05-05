@@ -84,8 +84,13 @@ export const BookingProvider = ({ children }) => {
       const socket = getSocket();
       socketRef.current = socket;
 
-      // Join room every time the effect runs to ensure we are in the right room
-      socket.emit('join', { userId: user._id });
+      const joinRoom = () => {
+        socket.emit('join', { userId: user._id });
+        console.log('Socket join emitted for user:', user._id);
+      };
+
+      if (socket.connected) joinRoom();
+      socket.on('connect', joinRoom);
 
       const onAccepted = (data) => {
         console.log('Booking accepted received:', data);
@@ -110,6 +115,7 @@ export const BookingProvider = ({ children }) => {
       });
 
       return () => {
+        socket.off('connect', joinRoom);
         socket.off('booking_accepted', onAccepted);
         socket.off('trip_started');
         socket.off('trip_ended');

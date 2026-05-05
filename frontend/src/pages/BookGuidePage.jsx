@@ -94,12 +94,14 @@ const BookGuidePage = () => {
   }, []);
 
   useEffect(() => {
+    console.log('BookGuidePage: tripStatus changed to:', tripStatus);
     if (tripStatus === TRIP_STATUS.SEARCHING) {
       setScreen('searching');
       setSearchTimer(30);
       setSearchFailed(false);
     }
     else if (tripStatus === TRIP_STATUS.MATCHED) {
+      console.log('Transitioning to call-connect screen...');
       setScreen('call-connect');
       setSearchTimer(30);
       setSearchFailed(false);
@@ -111,7 +113,9 @@ const BookGuidePage = () => {
        }
        setScreen('end-trip');
     }
-    else if (tripStatus === TRIP_STATUS.IDLE && screen !== 'booking-form') setScreen('select-location');
+    else if (tripStatus === TRIP_STATUS.IDLE && screen !== 'booking-form') {
+      setScreen('select-location');
+    }
   }, [tripStatus]);
 
   const location = useLocation();

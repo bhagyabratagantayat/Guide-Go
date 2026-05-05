@@ -20,6 +20,12 @@ const Home = () => {
   
   const [places, setPlaces] = useState([]);
   const [loadingPlaces, setLoadingPlaces] = useState(true);
+
+  // Auto-redirect for non-traveler roles
+  React.useEffect(() => {
+    if (user?.role === 'guide') navigate('/guide', { replace: true });
+    else if (user?.role === 'admin') navigate('/admin', { replace: true });
+  }, [user, navigate]);
   
   // Functional Search States
   const [locationQuery, setLocationQuery] = useState('');

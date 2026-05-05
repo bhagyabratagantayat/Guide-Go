@@ -62,7 +62,10 @@ const acceptBooking = asyncHandler(async (req, res, next) => {
   await booking.save();
 
   // Notify User
+  console.log(`Booking ${booking._id} accepted by guide ${req.user._id}. Status: ${booking.status}`);
+  
   if (req.io) {
+    console.log(`Emitting booking_accepted to room: ${booking.userId.toString()}`);
     // Notify Traveler
     req.io.to(booking.userId.toString()).emit('booking_accepted', {
       booking: booking,
@@ -76,10 +79,13 @@ const acceptBooking = asyncHandler(async (req, res, next) => {
       }
     });
 
+    console.log(`Emitting booking_accepted_guide to room: ${req.user._id.toString()}`);
     // Notify Guide (themselves) to refresh dashboard
     req.io.to(req.user._id.toString()).emit('booking_accepted_guide', {
       booking: booking
     });
+  } else {
+    console.error('CRITICAL: req.io is UNDEFINED in acceptBooking!');
   }
 
   res.json({ booking, otp });

@@ -192,8 +192,12 @@ function AppContent() {
           <AnimatePresence mode="wait">
             <Suspense fallback={<PageLoader />}>
               <Routes location={location}>
-                {/* Public Routes */}
-                <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+                {/* Public Routes - with redirects for authenticated roles */}
+                <Route path="/" element={
+                  user?.role === 'guide' ? <Navigate to="/guide" replace /> :
+                  user?.role === 'admin' ? <Navigate to="/admin" replace /> :
+                  <PageWrapper><Home /></PageWrapper>
+                } />
                 <Route path="/login" element={<PageWrapper><AuthPage /></PageWrapper>} />
                 <Route path="/register" element={<PageWrapper><AuthPage /></PageWrapper>} />
                 <Route path="/forgot-password" element={<PageWrapper><ForgotPassword /></PageWrapper>} />
