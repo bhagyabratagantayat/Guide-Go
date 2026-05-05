@@ -701,10 +701,15 @@ const BookGuidePage = () => {
                               </div>
                               <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#222222]" />
                            </div>
-                           <div className="space-y-1">
-                              <h3 className="text-2xl font-black italic">{matchedGuide?.name}</h3>
-                              <div className="flex items-center justify-center gap-2 text-amber-500 font-black text-xs">
-                                 <Star size={14} fill="currentColor" /> {matchedGuide?.rating || '5.0'} • Superguide
+                           <div className="space-y-2">
+                              <h3 className="text-3xl font-black italic tracking-tighter leading-none">{matchedGuide?.name || 'Your Guide'}</h3>
+                              <div className="flex flex-col items-center gap-1">
+                                 <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase tracking-widest">
+                                    <Star size={14} fill="currentColor" /> {matchedGuide?.rating || '5.0'} • Superguide
+                                 </div>
+                                 <div className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mt-2">
+                                    {matchedGuide?.languages?.join(', ') || 'English, Hindi, Odia'}
+                                 </div>
                               </div>
                            </div>
                         </div>
