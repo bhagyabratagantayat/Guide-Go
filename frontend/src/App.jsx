@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { io } from 'socket.io-client';
@@ -15,6 +15,7 @@ import NotificationToast from './components/NotificationToast';
 import PageLoader from './components/PageLoader';
 import { connectSocket, disconnectSocket } from './utils/socket';
 import { Menu } from 'lucide-react';
+import api from './utils/api';
 
 // Lazy Loaded Pages
 const Home               = lazy(() => import('./pages/Home'));
@@ -74,13 +75,22 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const socketRef = useRef();
   const location = useLocation();
+  const navigate = useNavigate();
   const { tripStatus } = useBooking();
+  const [incomingBooking, setIncomingBooking] = useState(null);
+  const [countdown, setCountdown] = useState(30);
+
+  // Redirect Guide from Home to Dashboard
+  useEffect(() => {
+    if (user?.role === 'guide' && location.pathname === '/') {
+      navigate('/guide', { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
 
   const isTripLive = tripStatus === TRIP_STATUS.ONGOING && (location.pathname.includes('/book-guide') || location.pathname === '/guide');
 
   useEffect(() => {
     if (user) {
-      // Connect to socket when user is logged in
       const guideId = (user.role === 'guide' && user.guideId) ? user.guideId : null;
       const socket = connectSocket(user._id, user.role, guideId);
       socketRef.current = socket;
@@ -89,11 +99,63 @@ function AppContent() {
         setNotification(data);
       });
 
+      if (user.role === 'guide') {
+        socket.on('new_booking_broadcast', (data) => {
+          setIncomingBooking(data.booking);
+          setCountdown(60);
+        });
+
+        socket.on('booking_cancelled', () => {
+          setIncomingBooking(null);
+        });
+      }
+
       return () => {
+        if (socket) {
+          socket.off('notification');
+          socket.off('new_booking_broadcast');
+          socket.off('booking_cancelled');
+        }
         disconnectSocket();
       };
     }
   }, [user]);
+
+  // Countdown timer for global booking popup
+  useEffect(() => {
+    let timer;
+    if (incomingBooking && countdown > 0) {
+      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
+    } else if (countdown === 0) {
+      setIncomingBooking(null);
+    }
+    return () => clearInterval(timer);
+  }, [incomingBooking, countdown]);
+
+  const handleAcceptBooking = async () => {
+    if (!incomingBooking) return;
+    try {
+      // Get guide's current location first
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        await api.put(`/bookings/accept/${incomingBooking._id}`, {
+          lat: latitude,
+          lng: longitude
+        });
+        setIncomingBooking(null);
+        navigate('/guide');
+      }, async (err) => {
+        // Fallback if location fails
+        console.warn('Location failed, accepting anyway:', err);
+        await api.put(`/bookings/accept/${incomingBooking._id}`);
+        setIncomingBooking(null);
+        navigate('/guide');
+      });
+    } catch (error) {
+      console.error('Failed to accept booking:', error);
+      setIncomingBooking(null);
+    }
+  };
 
   return (
     <>
@@ -195,6 +257,37 @@ function AppContent() {
           </AnimatePresence>
         </main>
       </div>
+
+      <AnimatePresence>
+        {incomingBooking && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-10 left-6 right-6 z-[2000] lg:left-auto lg:right-10 lg:w-[400px]"
+          >
+            <div className="bg-[#0f172a] rounded-[2.5rem] p-8 border border-white/10 shadow-2xl space-y-6">
+               <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-2xl font-black text-white italic tracking-tighter">New Request!</h3>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">Incoming tour request nearby</p>
+                  </div>
+                  <div className="w-12 h-12 bg-[#ff385c]/10 rounded-full flex items-center justify-center text-[#ff385c]">
+                    <span className="font-black text-xs">{countdown}s</span>
+                  </div>
+               </div>
+
+               <div className="bg-white/5 p-6 rounded-3xl border border-white/5 space-y-4">
+                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span><span className="text-xs font-bold text-white">{incomingBooking.plan}</span></div>
+                  <div className="flex justify-between items-center pt-2 border-t border-white/5"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Price</span><span className="text-lg font-black text-emerald-500">₹{incomingBooking.price}</span></div>
+               </div>
+
+               <div className="flex gap-3">
+                  <button onClick={() => setIncomingBooking(null)} className="flex-1 py-4 bg-white/5 text-white/60 rounded-2xl font-bold text-xs uppercase tracking-widest border border-white/10">Reject</button>
+                  <button onClick={handleAcceptBooking} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-500/20">Accept</button>
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {notification && (
         <NotificationToast 

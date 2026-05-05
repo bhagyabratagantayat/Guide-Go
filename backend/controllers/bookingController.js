@@ -61,21 +61,24 @@ const acceptBooking = asyncHandler(async (req, res, next) => {
   booking.otp = otp;
   await booking.save();
 
-  // Populate guide details for the user
-  const guideInfo = await User.findById(req.user._id).select('name phone profilePicture');
-
   // Notify User
   if (req.io) {
+    // Notify Traveler
     req.io.to(booking.userId.toString()).emit('booking_accepted', {
-      bookingId: booking._id,
-      booking: booking, // Full booking for coordinates
+      booking: booking,
       guide: {
-        name: guideInfo.name,
-        phone: guideInfo.phone || guideInfo.mobile,
-        rating: guideInfo.rating || 5.0,
-        profilePicture: guideInfo.profilePicture
-      },
-      otp: otp
+        name: req.user.name,
+        mobile: req.user.mobile,
+        rating: req.user.rating || 5.0,
+        profilePicture: req.user.profilePicture,
+        lat: req.body.lat,
+        lng: req.body.lng
+      }
+    });
+
+    // Notify Guide (themselves) to refresh dashboard
+    req.io.to(req.user._id.toString()).emit('booking_accepted_guide', {
+      booking: booking
     });
   }
 
@@ -175,6 +178,14 @@ const updateBookingStatus = asyncHandler(async (req, res, next) => {
       req.io.to(booking.userId.toString()).emit('booking_cancelled', {
         bookingId: booking._id,
         reason: 'Cancelled by guide'
+      });
+    }
+
+    // If cancelled by traveler, notify guide
+    if (status === 'cancelled' && isOwner && booking.guideId && req.io) {
+      req.io.to(booking.guideId.toString()).emit('booking_cancelled', {
+        bookingId: booking._id,
+        reason: 'Cancelled by traveler'
       });
     }
 

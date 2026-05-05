@@ -36,11 +36,9 @@ const GuideDashboard = () => {
   const [guideData, setGuideData] = useState(null);
 
   // Real-time Booking States
-  const [incomingBooking, setIncomingBooking] = useState(null);
   const [activeBooking, setActiveBooking] = useState(null);
   const [otpInput, setOtpInput] = useState('');
   const [tripTimer, setTripTimer] = useState(0);
-  const [countdown, setCountdown] = useState(30);
   const [places, setPlaces] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('Puri');
   const [showGoLiveConfig, setShowGoLiveConfig] = useState(false);
@@ -73,26 +71,32 @@ const GuideDashboard = () => {
     if (!socket) return;
 
     const handleNewBooking = (data) => {
-      // Show popup ONLY if live
-      if (isLive) {
-        setIncomingBooking(data.booking);
-        setCountdown(60); // 60 seconds to respond
-      }
       // Always refresh data to update the 'Pending Requests' counter
       fetchDashboardData();
     };
 
     const handleTripStarted = () => {
-      setIncomingBooking(null);
+      fetchDashboardData();
+    };
+
+    const handleBookingCancelled = (data) => {
+      alert('The traveler has cancelled this booking request.');
+      setActiveBooking(null);
       fetchDashboardData();
     };
 
     socket.on('new_booking_broadcast', handleNewBooking);
     socket.on('trip_started', handleTripStarted);
+    socket.on('booking_cancelled', handleBookingCancelled);
+    socket.on('booking_accepted_guide', () => {
+      fetchDashboardData();
+    });
 
     return () => {
       socket.off('new_booking_broadcast', handleNewBooking);
-      socket.off('trip_started', handleTripStarted);
+      socket.off('trip_started');
+      socket.off('booking_cancelled');
+      socket.off('booking_accepted_guide');
     };
   }, [isLive]);
 
@@ -120,16 +124,6 @@ const GuideDashboard = () => {
     }
     return () => clearInterval(interval);
   }, [activeBooking]);
-
-  useEffect(() => {
-    let timer;
-    if (incomingBooking && countdown > 0) {
-      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
-    } else if (countdown === 0) {
-      setIncomingBooking(null);
-    }
-    return () => clearInterval(timer);
-  }, [incomingBooking, countdown]);
 
   const fetchPlaces = async () => {
     try {
@@ -179,14 +173,6 @@ const GuideDashboard = () => {
       setBookings(prev => {
         const current = prev?.find(b => ['accepted', 'ongoing'].includes(b.status));
         setActiveBooking(current || null);
-        
-        if (!current && isLive) {
-          const pending = prev?.find(b => b.status === 'searching');
-          if (pending) {
-            setIncomingBooking(pending);
-            setCountdown(60);
-          }
-        }
         return prev;
       });
 
@@ -197,22 +183,7 @@ const GuideDashboard = () => {
     }
   };
 
-  const handleAcceptBooking = async () => {
-    if (!incomingBooking) return;
-    try {
-      const { data } = await api.put(`/bookings/accept/${incomingBooking._id}`);
-      setIncomingBooking(null);
-      setActiveBooking({
-        ...incomingBooking,
-        status: 'accepted',
-        otp: data.otp
-      });
-      fetchDashboardData();
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to accept booking');
-      setIncomingBooking(null);
-    }
-  };
+
 
   const handleVerifyOtp = async () => {
     try {
@@ -259,39 +230,7 @@ const GuideDashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-20 dark:bg-slate-950 min-h-screen">
       
-      {/* 1. NEW BOOKING REQUEST POPUP */}
-      <AnimatePresence>
-        {incomingBooking && (
-          <motion.div 
-            initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-10 left-6 right-6 z-[100] lg:left-auto lg:right-10 lg:w-[400px]"
-          >
-            <div className="bg-[#0f172a] rounded-[2.5rem] p-8 border border-white/10 shadow-2xl space-y-6">
-               <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-2xl font-black text-white italic tracking-tighter">New Request!</h3>
-                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">Incoming tour request nearby</p>
-                  </div>
-                  <div className="w-12 h-12 bg-[#ff385c]/10 rounded-full flex items-center justify-center text-[#ff385c]">
-                    <span className="font-black text-xs">{countdown}s</span>
-                  </div>
-               </div>
-
-               <div className="bg-white/5 p-6 rounded-3xl border border-white/5 space-y-4">
-                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">User</span><span className="text-xs font-bold text-white">Traveler</span></div>
-                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Location</span><span className="text-xs font-bold text-white">{incomingBooking.location}</span></div>
-                  <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span><span className="text-xs font-bold text-white">{incomingBooking.plan}</span></div>
-                  <div className="flex justify-between items-center pt-2 border-t border-white/5"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Price</span><span className="text-lg font-black text-emerald-500">₹{incomingBooking.price}</span></div>
-               </div>
-
-               <div className="flex gap-3">
-                  <button onClick={() => setIncomingBooking(null)} className="flex-1 py-4 bg-white/5 text-white/60 rounded-2xl font-bold text-xs uppercase tracking-widest border border-white/10">Reject</button>
-                  <button onClick={handleAcceptBooking} className="flex-[2] py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-500/20">Accept</button>
-               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>      {/* 2. ACTIVE SESSION HEADER (OVERHAULED) */}
+      {/* 2. ACTIVE SESSION HEADER (OVERHAULED) */}
       <AnimatePresence>
         {activeBooking && (
           <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-[#0f172a] rounded-[3rem] p-10 shadow-2xl border border-white/5 space-y-10 mb-12">
