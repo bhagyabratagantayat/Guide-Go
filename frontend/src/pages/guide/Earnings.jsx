@@ -22,19 +22,20 @@ const Earnings = () => {
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        const { data } = await api.get('/bookings/guide');
+        const res = await api.get('/bookings/guide');
+        const rawData = res.data?.data || res.data || [];
         
-        const completed = data.filter(b => b.status === 'completed');
-        const earnings = completed.reduce((sum, b) => sum + b.price, 0);
+        const completed = rawData.filter(b => b.status === 'completed');
+        const earnings = completed.reduce((sum, b) => sum + (b.price || 0), 0);
         
         setStats({
           totalEarnings: earnings,
-          pendingPayout: data.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + b.price, 0),
+          pendingPayout: rawData.filter(b => b.status === 'accepted' || b.status === 'ongoing').reduce((sum, b) => sum + (b.price || 0), 0),
           bookingCount: completed.length,
           averageBookingValue: completed.length > 0 ? (earnings / completed.length).toFixed(0) : 0
         });
 
-        setTransactions(data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        setTransactions(rawData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       } catch (error) {
         console.error('Error fetching earnings:', error);
       } finally {

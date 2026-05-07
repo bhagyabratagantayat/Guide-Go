@@ -51,12 +51,24 @@ const GuideDashboard = () => {
   const stats = useMemo(() => {
     const completed = bookings.filter(b => b.status === 'completed');
     const earnings = completed.reduce((sum, b) => sum + (b.price || 0), 0);
-    const pendingCount = bookings.filter(b => b.status === 'searching').length;
+    const pendingCount = bookings.filter(b => b.status === 'searching' || b.status === 'accepted').length;
+    
+    // Calculate Today's Earnings
+    const today = new Date().setHours(0,0,0,0);
+    const todayCompleted = completed.filter(b => new Date(b.createdAt).setHours(0,0,0,0) === today);
+    const todayEarnings = todayCompleted.reduce((sum, b) => sum + (b.price || 0), 0);
+
+    // Calculate Weekly Growth (Trips in last 7 days)
+    const sevenDaysAgo = new Date().getTime() - (7 * 24 * 60 * 60 * 1000);
+    const weeklyTrips = completed.filter(b => new Date(b.createdAt).getTime() > sevenDaysAgo).length;
+
     return {
       totalEarnings: earnings,
+      todayEarnings: todayEarnings,
       pendingBookings: pendingCount,
       rating: guideData?.rating ? Number(guideData.rating).toFixed(1) : 5.0,
-      totalTrips: completed.length
+      totalTrips: completed.length,
+      weeklyTrips: weeklyTrips
     };
   }, [bookings, guideData]);
 
@@ -323,9 +335,9 @@ const GuideDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
          {[
             { label: 'Total Earnings', value: `₹${stats.totalEarnings}`, icon: <DollarSign />, color: 'emerald' },
-            { label: 'Pending Requests', value: stats.pendingBookings, icon: <Activity />, color: 'amber' },
-            { label: 'Overall Rating', value: Number(stats.rating).toFixed(1), icon: <Star />, color: 'blue' },
-            { label: 'Total Trips', value: stats.totalTrips, icon: <Award />, color: 'rose' }
+            { label: "Today's Earnings", value: `₹${stats.todayEarnings}`, icon: <TrendingUp />, color: 'blue' },
+            { label: 'Overall Rating', value: Number(stats.rating).toFixed(1), icon: <Star />, color: 'amber' },
+            { label: 'Weekly Trips', value: stats.weeklyTrips, icon: <Award />, color: 'rose' }
          ].map((s, i) => (
             <motion.div 
                key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
