@@ -48,7 +48,16 @@ const BookGuidePage = () => {
     tripTimer, isRestoring, startSearching, cancelBooking, resetBooking 
   } = useBooking();
 
-  const [screen, setScreen] = useState('select-location'); 
+  // Smart initialization based on status
+  const getInitialScreen = () => {
+    if (tripStatus === TRIP_STATUS.SEARCHING) return 'searching';
+    if (tripStatus === TRIP_STATUS.MATCHED) return 'call-connect';
+    if (tripStatus === TRIP_STATUS.ONGOING) return 'trip-ongoing';
+    if (tripStatus === TRIP_STATUS.COMPLETED) return 'end-trip';
+    return 'select-location';
+  };
+
+  const [screen, setScreen] = useState(getInitialScreen()); 
   const [formData, setFormData] = useState({
     location: 'Puri, Odisha',
     plan: '2 Hours',
