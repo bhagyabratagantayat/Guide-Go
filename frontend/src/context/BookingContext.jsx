@@ -106,6 +106,8 @@ export const BookingProvider = ({ children }) => {
         setTripStatus(TRIP_STATUS.ONGOING);
         if (data.bookingId) localStorage.setItem('activeBookingId', data.bookingId);
         startTimer(data.startedAt || new Date());
+        // Proactive sync to ensure all details are latest
+        restoreSession(true);
       });
 
       socket.on('trip_ended', () => {
