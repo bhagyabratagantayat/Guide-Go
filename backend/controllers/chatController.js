@@ -1,5 +1,5 @@
 const Message = require('../models/Message');
-const asyncHandler = require('../middleware/async');
+const asyncHandler = require('../middleware/asyncHandler');
 const ErrorResponse = require('../utils/errorResponse');
 
 // @desc    Get all messages for a booking
