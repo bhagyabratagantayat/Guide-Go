@@ -23,13 +23,41 @@ const OngoingTrip = () => {
   const [userRating, setUserRating] = useState(5);
   const [userComment, setUserComment] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(!bookingData);
 
-  // Safety Redirect: If no active trip, send back to home
+  // 1. Explicit Fetch on Refresh/Direct Link
   useEffect(() => {
-    if (!isRestoring && tripStatus === TRIP_STATUS.IDLE) {
+    const fetchSpecificBooking = async () => {
+      if (bookingData && bookingData._id === bookingId) {
+        setInternalLoading(false);
+        return;
+      }
+      
+      try {
+        setInternalLoading(true);
+        const { data } = await api.get(`/bookings/${bookingId}`);
+        if (data) {
+          // Sync with context if possible, or just use local
+          setTripStatus(data.status === 'ongoing' ? TRIP_STATUS.ONGOING : TRIP_STATUS.COMPLETED);
+          // Note: In a real app, we'd have a function to 'force' sync context
+        }
+      } catch (err) {
+        console.error('Failed to restore specific booking:', err);
+        navigate('/');
+      } finally {
+        setInternalLoading(false);
+      }
+    };
+
+    fetchSpecificBooking();
+  }, [bookingId, bookingData, navigate, setTripStatus]);
+
+  // 2. Safety Redirect: Only if we are sure there's no trip
+  useEffect(() => {
+    if (!isRestoring && !internalLoading && tripStatus === TRIP_STATUS.IDLE) {
       navigate('/');
     }
-  }, [tripStatus, isRestoring, navigate]);
+  }, [tripStatus, isRestoring, internalLoading, navigate]);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
@@ -80,7 +108,7 @@ const OngoingTrip = () => {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  if (isRestoring) return <PageLoader />;
+  if (isRestoring || internalLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] lg:p-10 flex items-center justify-center">
