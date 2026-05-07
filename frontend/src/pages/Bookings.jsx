@@ -8,6 +8,7 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { useBooking } from '../context/BookingContext';
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -15,6 +16,7 @@ const Bookings = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { resumeBooking } = useBooking();
 
   const fetchBookings = async () => {
     try {
@@ -176,12 +178,12 @@ const Bookings = () => {
                        )}
 
                        {['searching', 'accepted', 'ongoing'].includes(booking.status) && (
-                         <Link 
-                          to="/book-guide" 
+                         <button 
+                          onClick={() => resumeBooking(booking)}
                           className="flex-1 lg:w-full px-6 py-3 bg-[#ff385c] text-white rounded-xl text-xs font-bold hover:bg-[#e00b41] transition-all text-center shadow-lg shadow-rose-500/10"
                          >
                             Resume
-                         </Link>
+                         </button>
                        )}
                        {((user.role === 'user' && ['searching', 'accepted'].includes(booking.status)) || 
                          (user.role === 'guide' && booking.status === 'accepted')) && (

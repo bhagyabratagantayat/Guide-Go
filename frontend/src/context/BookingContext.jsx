@@ -197,6 +197,33 @@ export const BookingProvider = ({ children }) => {
     stopTimer();
   };
 
+  const resumeBooking = (booking) => {
+    if (!booking) return;
+    
+    setBookingData(booking);
+    setMatchedGuide(booking.guideId);
+    setOtp(booking.otp);
+    
+    // Set proper status
+    if (booking.status === 'searching') setTripStatus(TRIP_STATUS.SEARCHING);
+    else if (booking.status === 'accepted') setTripStatus(TRIP_STATUS.MATCHED);
+    else if (booking.status === 'ongoing') {
+      setTripStatus(TRIP_STATUS.ONGOING);
+      startTimer(booking.startedAt || new Date());
+    }
+
+    localStorage.setItem('activeBookingId', booking._id);
+    
+    // Redirect based on role
+    const userString = localStorage.getItem('gg_user');
+    const user = userString ? JSON.parse(userString) : null;
+    if (user?.role === 'guide') {
+      window.location.href = '/guide';
+    } else {
+      window.location.href = '/book-guide';
+    }
+  };
+
 
   return (
     <BookingContext.Provider value={{
@@ -210,7 +237,8 @@ export const BookingProvider = ({ children }) => {
       isRestoring,
       startSearching,
       cancelBooking,
-      resetBooking
+      resetBooking,
+      resumeBooking
     }}>
       {children}
     </BookingContext.Provider>
