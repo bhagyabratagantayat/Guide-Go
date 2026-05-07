@@ -254,6 +254,8 @@ export const BookingProvider = ({ children }) => {
       startTimer(booking.startedAt);
     } else if (booking.status === 'accepted') {
       setTripStatus(TRIP_STATUS.MATCHED);
+    } else if (booking.status === 'completed') {
+      setTripStatus(TRIP_STATUS.COMPLETED);
     }
     
     setIsRestoring(false);

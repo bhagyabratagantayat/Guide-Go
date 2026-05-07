@@ -53,9 +53,14 @@ const OngoingTrip = () => {
 
   // 2. Safety Redirect: Only if we are sure there's no trip
   useEffect(() => {
-    if (!isRestoring && !internalLoading && tripStatus === TRIP_STATUS.IDLE) {
-      navigate('/');
-    }
+    // ONLY redirect if we are NOT restoring, NOT loading internally, AND status is IDLE
+    // But wait for a small delay to ensure fetchSpecificBooking had a chance to start
+    const timer = setTimeout(() => {
+      if (!isRestoring && !internalLoading && tripStatus === TRIP_STATUS.IDLE) {
+        navigate('/');
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [tripStatus, isRestoring, internalLoading, navigate]);
 
   const formatTime = (seconds) => {
@@ -107,6 +112,8 @@ const OngoingTrip = () => {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
+  const currentGuide = matchedGuide || bookingData?.guideId;
+
   if (isRestoring || internalLoading) return <PageLoader />;
 
   return (
@@ -126,7 +133,7 @@ const OngoingTrip = () => {
                       <div className="relative">
                          <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white/10 p-1">
                             <img 
-                               src={matchedGuide?.profilePicture || 'https://ui-avatars.com/api/?name=' + matchedGuide?.name} 
+                               src={currentGuide?.profilePicture || 'https://ui-avatars.com/api/?name=' + currentGuide?.name} 
                                className="w-full h-full object-cover rounded-full" 
                                alt="Guide"
                             />
@@ -134,20 +141,20 @@ const OngoingTrip = () => {
                          <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#222222]" />
                       </div>
                       <div className="space-y-2">
-                         <h3 className="text-3xl font-black italic tracking-tighter leading-none">{matchedGuide?.name || 'Your Guide'}</h3>
+                         <h3 className="text-3xl font-black italic tracking-tighter leading-none">{currentGuide?.name || 'Your Guide'}</h3>
                          <div className="flex flex-col items-center gap-1">
                             <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase tracking-widest">
-                               <Star size={14} fill="currentColor" /> {matchedGuide?.rating || '5.0'} • Superguide
+                               <Star size={14} fill="currentColor" /> {currentGuide?.rating || '5.0'} • Superguide
                             </div>
                             <div className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mt-2">
-                               {matchedGuide?.languages?.join(', ') || 'English, Hindi, Odia'}
+                               {currentGuide?.languages?.join(', ') || 'English, Hindi, Odia'}
                             </div>
                          </div>
                       </div>
                    </div>
 
                    <div className="grid grid-cols-2 gap-3">
-                      <a href={`tel:${matchedGuide?.mobile}`} className="flex items-center justify-center gap-3 p-5 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
+                      <a href={`tel:${currentGuide?.mobile}`} className="flex items-center justify-center gap-3 p-5 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
                          <Phone size={18} />
                          <span className="text-[9px] font-black uppercase">Call</span>
                       </a>
