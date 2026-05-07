@@ -177,23 +177,38 @@ const Bookings = () => {
                               <p className="text-[10px] font-medium text-[#222222] italic leading-tight line-clamp-3">"{booking.review.comment}"</p>
                            </div>
                          ) : (
-                           <div className="px-4 py-2 bg-gray-50 text-[#717171] text-[10px] font-bold rounded-lg uppercase tracking-widest text-center w-full">
-                              No Review Yet
-                           </div>
+                           user.role === 'user' ? (
+                             <button 
+                               onClick={() => navigate(`/ongoing-trip/${booking._id}`)}
+                               className="flex-1 lg:w-full px-6 py-3 bg-[#ff385c] text-white rounded-xl text-xs font-bold hover:bg-[#e00b41] transition-all text-center shadow-lg shadow-rose-500/10"
+                             >
+                               Review Now
+                             </button>
+                           ) : (
+                             <div className="px-4 py-2 bg-gray-50 text-[#717171] text-[10px] font-bold rounded-lg uppercase tracking-widest text-center w-full">
+                               No Review Yet
+                             </div>
+                           )
                          )
                        ) : (
-                         <Link 
-                          to={`/chat/${user.role === 'guide' ? booking.userId?._id : booking.guideId?._id}`} 
-                          className="flex-1 lg:w-full px-6 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-xs font-bold hover:bg-[#f7f7f7] transition-all text-center flex items-center justify-center gap-2"
-                         >
-                            <MessageSquare size={14} /> Message
-                         </Link>
+                         ['searching', 'accepted', 'ongoing'].includes(booking.status) ? (
+                           <Link 
+                             to={`/chat/${user.role === 'guide' ? (booking.userId?._id || booking.userId) : (booking.guideId?._id || booking.guideId)}`} 
+                             className="flex-1 lg:w-full px-6 py-3 bg-white border border-[#dddddd] text-[#222222] rounded-xl text-xs font-bold hover:bg-[#f7f7f7] transition-all text-center flex items-center justify-center gap-2"
+                           >
+                             <MessageSquare size={14} /> Message
+                           </Link>
+                         ) : (
+                           <div className="px-4 py-2 bg-gray-50 text-[#717171] text-[10px] font-bold rounded-lg uppercase tracking-widest text-center w-full">
+                             Trip Closed
+                           </div>
+                         )
                        )}
 
                        {['searching', 'accepted', 'ongoing'].includes(booking.status) && (
                          <button 
                           onClick={() => handleResume(booking)}
-                          className="flex-1 lg:w-full px-6 py-3 bg-[#ff385c] text-white rounded-xl text-xs font-bold hover:bg-[#e00b41] transition-all text-center shadow-lg shadow-rose-500/10"
+                          className="flex-1 lg:w-full px-6 py-3 bg-[#222222] text-white rounded-xl text-xs font-bold hover:bg-black transition-all text-center"
                          >
                             Resume
                          </button>
