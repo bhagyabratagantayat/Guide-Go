@@ -63,7 +63,7 @@ const Home = () => {
       const fetchActiveSession = async () => {
         try {
           const { data: bookings } = await api.get('/bookings/user');
-          const active = bookings.find(b => ['searching', 'accepted', 'ongoing'].includes(b.status));
+          const active = Array.isArray(bookings) ? bookings.find(b => ['searching', 'accepted', 'ongoing'].includes(b.status)) : null;
           if (active) setActiveBooking(active);
         } catch (err) {
           console.error(err);
@@ -81,7 +81,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-[#222222] pb-24 desktop:pb-12">
+    <div className="bg-white text-[#222222] pb-24 desktop:pb-12">
       <Helmet>
         <title>GuideGo | AI-Powered Smart Tourism</title>
         <meta name="description" content="Discover and book local guides instantly. Experience Odisha with smart AI-powered tourism." />
@@ -192,10 +192,10 @@ const Home = () => {
              animate={{ opacity: 1, y: 0 }}
              className="space-y-4 lg:space-y-6"
            >
-              <h1 className="text-4xl sm:text-5xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] lg:leading-[0.9]">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] lg:leading-[0.9]">
                  Find local experts.<br className="hidden sm:block" />Explore Odisha.
               </h1>
-              <p className="text-white/80 text-sm lg:text-lg font-medium max-w-2xl mx-auto px-4">
+              <p className="text-white/80 text-xs sm:text-sm lg:text-lg font-medium max-w-2xl mx-auto px-4">
                 Discover hidden gems and sacred temples with verified local guides.
               </p>
            </motion.div>
@@ -286,13 +286,13 @@ const Home = () => {
 
       {/* --- POPULAR LOCATIONS (DYNAMIC) --- */}
       <section className="py-16 lg:py-24 max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div className="space-y-3 lg:space-y-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff385c]">Curated Destinations</span>
-            <h2 className="text-3xl lg:text-5xl font-black italic tracking-tighter text-[#222222]">Popular Locations</h2>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 lg:mb-12 gap-4 lg:gap-6">
+          <div className="space-y-2 lg:space-y-4">
+            <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-[0.4em] text-[#ff385c]">Curated Destinations</span>
+            <h2 className="text-2xl lg:text-5xl font-black italic tracking-tighter text-[#222222]">Popular Locations</h2>
           </div>
-          <button className="flex items-center gap-2 text-sm font-black text-[#222222] hover:underline underline-offset-8 self-start md:self-auto">
-            EXPLORE ALL <ChevronRight size={16} />
+          <button className="flex items-center gap-2 text-xs lg:text-sm font-black text-[#222222] hover:underline underline-offset-8 self-start md:self-auto">
+            EXPLORE ALL <ChevronRight size={14} lg:size={16} />
           </button>
         </div>
 

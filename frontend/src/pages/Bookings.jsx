@@ -79,7 +79,7 @@ const Bookings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-24 lg:pb-12 px-6 lg:px-0">
+    <div className="bg-white pb-24 lg:pb-12 px-6 lg:px-0">
       <Helmet>
         <title>My Bookings | GuideGo</title>
         <meta name="description" content="View and manage your current and past tourism bookings. Keep track of your travel history with GuideGo." />
@@ -111,13 +111,13 @@ const Bookings = () => {
 
         {/* BOOKING LIST */}
         {loading ? (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-[#f7f7f7] h-40 rounded-[2rem] animate-pulse border border-[#eeeeee]" />
+              <div key={i} className="bg-[#f7f7f7] h-40 lg:h-32 rounded-[1.5rem] lg:rounded-[2rem] animate-pulse border border-[#eeeeee]" />
             ))}
           </div>
         ) : filteredBookings.length > 0 ? (
-          <div className="grid gap-6 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6 pb-20">
             <AnimatePresence mode="popLayout">
               {filteredBookings.map((booking) => (
                 <motion.div 
@@ -126,9 +126,9 @@ const Bookings = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   key={booking._id} 
-                  className="bg-white p-6 rounded-[2rem] border border-[#dddddd] hover:shadow-xl transition-all group"
+                  className="bg-white p-5 lg:p-6 rounded-[1.8rem] lg:rounded-[2.2rem] border border-[#dddddd] hover:shadow-xl transition-all group"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
                     {/* PHOTO SECTION */}
                     <div className="relative w-full lg:w-28 h-48 lg:h-28 rounded-2xl overflow-hidden bg-[#f7f7f7] border border-[#dddddd]">
                        <img 

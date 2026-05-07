@@ -20,7 +20,7 @@ const Restaurants = () => {
   );
 
   return (
-    <div className="bg-[#f7f7f7] min-h-screen pb-32">
+    <div className="bg-[#f7f7f7] pb-32">
       
       {/* Hero Header Region */}
       <section className="bg-white pt-24 pb-12 px-6 lg:px-8 border-b border-[#dddddd] relative">

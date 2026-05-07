@@ -17,8 +17,8 @@ import {
 const DashboardSkeleton = () => (
   <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-20 animate-pulse">
     <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-[3rem]" />
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {[...Array(4)].map((_, i) => <div key={i} className="h-32 bg-slate-100 dark:bg-slate-800 rounded-[2rem]" />)}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      {[...Array(4)].map((_, i) => <div key={i} className="h-32 lg:h-40 bg-slate-100 dark:bg-slate-800 rounded-[1.5rem] lg:rounded-[2rem]" />)}
     </div>
     <div className="h-[500px] bg-slate-100 dark:bg-slate-800 rounded-[3rem]" />
   </div>
@@ -287,7 +287,7 @@ const GuideDashboard = () => {
   if (loading) return <DashboardSkeleton />;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-20 dark:bg-slate-950 min-h-screen">
+    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12 pb-10 dark:bg-slate-950">
       
       {/* 2. ACTIVE SESSION HEADER (OVERHAULED) */}
       <AnimatePresence>
@@ -391,7 +391,7 @@ const GuideDashboard = () => {
       </AnimatePresence>
 
       {/* 3. QUICK STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
          {[
             { label: 'Total Earnings', value: `₹${stats.totalEarnings}`, icon: <DollarSign />, color: 'emerald' },
             { label: "Today's Earnings", value: `₹${stats.todayEarnings}`, icon: <TrendingUp />, color: 'blue' },
@@ -400,14 +400,14 @@ const GuideDashboard = () => {
          ].map((s, i) => (
             <motion.div 
                key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-               className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-4"
+               className="bg-white dark:bg-slate-900 p-5 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-3 lg:space-y-4"
             >
-               <div className={`w-12 h-12 bg-${s.color}-50 dark:bg-${s.color}-500/10 text-${s.color}-500 rounded-2xl flex items-center justify-center`}>
-                  {s.icon}
+               <div className={`w-10 h-10 lg:w-12 lg:h-12 bg-${s.color}-50 dark:bg-${s.color}-500/10 text-${s.color}-500 rounded-xl lg:rounded-2xl flex items-center justify-center`}>
+                  {React.cloneElement(s.icon, { size: 18, className: "lg:w-6 lg:h-6" })}
                </div>
                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
-                  <p className="text-2xl font-black text-slate-900 dark:text-white mt-1 italic">{s.value}</p>
+                  <p className="text-[8px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
+                  <p className="text-xl lg:text-2xl font-black text-slate-900 dark:text-white mt-1 italic">{s.value}</p>
                </div>
             </motion.div>
          ))}

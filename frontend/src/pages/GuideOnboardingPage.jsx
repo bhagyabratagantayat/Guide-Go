@@ -343,7 +343,7 @@ const GuideOnboardingPage = () => {
         </div>
 
         {/* Stepper */}
-        <div className="glass-card p-6 rounded-3xl flex justify-between items-center overflow-x-auto gap-4 custom-scrollbar">
+        <div className="glass-card p-4 lg:p-6 rounded-[1.5rem] lg:rounded-3xl flex justify-between items-center overflow-x-auto gap-4 lg:gap-8 custom-scrollbar scrollbar-hide">
           {[1, 2, 3, 4, 5, 6].map(step => renderStepIcon(step))}
         </div>
 
@@ -486,12 +486,12 @@ const GuideOnboardingPage = () => {
 
                   <div className="input-group">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-2 mb-2 block">Travel Radius (from primary city)</label>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                         {['5', '10', '25', '50', '100'].map(radius => (
                             <button
                                 key={radius}
                                 onClick={() => setFormData(prev => ({ ...prev, maxTravelRadius: radius }))}
-                                className={`chip border-2 py-4 ${
+                                className={`chip border-2 py-3 lg:py-4 text-[10px] lg:text-xs ${
                                     formData.maxTravelRadius === radius 
                                     ? 'bg-primary-500 text-white border-primary-500' 
                                     : 'bg-white text-slate-500 border-slate-100'

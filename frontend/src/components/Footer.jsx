@@ -9,21 +9,21 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-[#f7f7f7] pt-20 pb-10 px-6 lg:px-20">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+    <footer className="bg-white border-t border-[#f7f7f7] pt-12 pb-10 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 mb-12">
         
         {/* Brand Column */}
         <div className="space-y-6">
           <div className="flex items-center space-x-3">
-             <span className="text-3xl font-black italic tracking-tighter text-[#ff385c]">Guide Goo</span>
+             <span className="text-2xl lg:text-3xl font-black italic tracking-tighter text-[#ff385c]">Guide Go</span>
           </div>
-          <p className="text-[#717171] text-sm font-medium leading-relaxed">
+          <p className="text-[#717171] text-xs lg:text-sm font-medium leading-relaxed max-w-xs">
             Your ultimate AI-powered travel companion. Discover hidden gems, book expert local guides, and experience India like never before. 🇮🇳
           </p>
           <div className="flex items-center space-x-5">
             {[Instagram, Twitter, Facebook, Youtube].map((Icon, idx) => (
               <a key={idx} href="#" className="text-[#222222] hover:text-[#ff385c] transition-all">
-                <Icon size={20} />
+                <Icon size={18} />
               </a>
             ))}
           </div>
@@ -31,31 +31,31 @@ const Footer = () => {
 
         {/* Explore Column */}
         <div className="space-y-6">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Explore India</h4>
-          <ul className="space-y-4">
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#222222] opacity-40">Explore India</h4>
+          <ul className="space-y-3 lg:space-y-4">
             {['Puri, Odisha', 'Varanasi, UP', 'Jaipur, Rajasthan', 'Rishikesh, Uttarakhand'].map(loc => (
-              <li key={loc}><Link to="/book-guide" className="text-sm text-[#717171] hover:text-[#ff385c] transition-all font-medium">{loc}</Link></li>
+              <li key={loc}><Link to="/book-guide" className="text-xs lg:text-sm text-[#717171] hover:text-[#ff385c] transition-all font-semibold">{loc}</Link></li>
             ))}
           </ul>
         </div>
 
         {/* Company Column */}
         <div className="space-y-6">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Support & Policy</h4>
-          <ul className="space-y-4">
-            <li><Link to="/help" className="flex items-center gap-2 text-sm text-[#717171] hover:text-[#ff385c] transition-all font-medium"><Shield size={14} /> Safety Center</Link></li>
-            <li><Link to="/help" className="flex items-center gap-2 text-sm text-[#717171] hover:text-[#ff385c] transition-all font-medium"><FileText size={14} /> Terms of Service</Link></li>
-            <li><Link to="/help" className="flex items-center gap-2 text-sm text-[#717171] hover:text-[#ff385c] transition-all font-medium"><FileText size={14} /> Privacy Policy</Link></li>
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#222222] opacity-40">Support & Policy</h4>
+          <ul className="space-y-3 lg:space-y-4">
+            <li><Link to="/help" className="flex items-center gap-2 text-xs lg:text-sm text-[#717171] hover:text-[#ff385c] transition-all font-semibold"><Shield size={14} /> Safety Center</Link></li>
+            <li><Link to="/help" className="flex items-center gap-2 text-xs lg:text-sm text-[#717171] hover:text-[#ff385c] transition-all font-semibold"><FileText size={14} /> Terms of Service</Link></li>
+            <li><Link to="/help" className="flex items-center gap-2 text-xs lg:text-sm text-[#717171] hover:text-[#ff385c] transition-all font-semibold"><FileText size={14} /> Privacy Policy</Link></li>
           </ul>
         </div>
 
         {/* Contact Column */}
         <div className="space-y-6">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#222222]">Get in Touch</h4>
-          <ul className="space-y-4">
-            <li className="flex items-start gap-3 text-sm text-[#717171] font-medium"><MapPin size={18} className="text-[#ff385c] shrink-0" /> Bhubaneswar, Odisha, India</li>
-            <li className="flex items-center gap-3 text-sm text-[#717171] font-medium"><Phone size={18} className="text-[#ff385c] shrink-0" /> +91 7855091725</li>
-            <li className="flex items-center gap-3 text-sm text-[#717171] font-medium"><Mail size={18} className="text-[#ff385c] shrink-0" /> guidego2026@gmail.com</li>
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-[#222222] opacity-40">Get in Touch</h4>
+          <ul className="space-y-3 lg:space-y-4">
+            <li className="flex items-start gap-3 text-xs lg:text-sm text-[#717171] font-semibold"><MapPin size={16} className="text-[#ff385c] shrink-0" /> Bhubaneswar, Odisha, India</li>
+            <li className="flex items-center gap-3 text-xs lg:text-sm text-[#717171] font-semibold"><Phone size={16} className="text-[#ff385c] shrink-0" /> +91 7855091725</li>
+            <li className="flex items-center gap-3 text-xs lg:text-sm text-[#717171] font-semibold"><Mail size={16} className="text-[#ff385c] shrink-0" /> guidego2026@gmail.com</li>
           </ul>
         </div>
       </div>
@@ -64,7 +64,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto pt-10 border-t border-[#f7f7f7] flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
         <div className="space-y-1">
           <p className="text-xs font-bold text-[#222222] uppercase tracking-widest">
-            © {currentYear} Guide Goo. All Rights Reserved.
+            © {currentYear} Guide Go. All Rights Reserved.
           </p>
           <p className="text-[10px] text-[#717171] font-black uppercase tracking-[0.2em]">
             Developed with ❤️ by <span className="text-[#ff385c]">Bhagyabrata Gantayat</span>

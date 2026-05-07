@@ -33,12 +33,27 @@
   --radius-lg:        20px;
   --radius-xl:        32px;
 
+  /* Responsive Spacing & Typography */
+  --font-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
+  --font-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
+  --font-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
+  --font-md: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  --font-lg: clamp(1.25rem, 1.1rem + 0.75vw, 1.75rem);
+  --font-xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.5rem);
+  --font-2xl: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  
+  --spacing-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --spacing-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --spacing-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+  --spacing-xl: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+
   --shadow-sm:        rgba(0, 0, 0, 0.04) 0 2px 6px 0;
   --shadow-lg:        rgba(0, 0, 0, 0.02) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 6px 0, rgba(0, 0, 0, 0.1) 0 4px 8px 0;
 }
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px; /* Base for rem */
 }
 
 /* Global Resets */
@@ -48,14 +63,21 @@ html {
     color: var(--text-primary);
     font-family: 'Inter', 'Roboto', -apple-system, sans-serif;
     font-weight: 500;
+    font-size: var(--font-base);
     @apply antialiased transition-colors duration-300 overflow-x-hidden;
     margin: 0;
     padding: 0;
   }
 
+  h1 { font-size: var(--font-2xl); }
+  h2 { font-size: var(--font-xl); }
+  h3 { font-size: var(--font-lg); }
+  h4 { font-size: var(--font-md); }
+  h5 { font-size: var(--font-base); }
+
   h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
-    @apply font-bold tracking-tight;
+    @apply font-bold tracking-tight leading-tight;
   }
 
   img {
@@ -64,12 +86,12 @@ html {
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
+  .no-scrollbar, .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar, .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 

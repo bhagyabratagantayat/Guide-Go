@@ -27,17 +27,24 @@ L.Icon.Default.mergeOptions({
 });
 
 const ScreenWrapper = ({ children, title, showBack, prevScreen, hideHeader, setScreen, maxWidth = "max-w-md", noPadding = false }) => (
-  <div className={`${maxWidth} mx-auto w-full min-h-[calc(100vh-40px)] my-5 flex flex-col bg-white overflow-hidden relative shadow-2xl lg:rounded-[2.5rem] border border-[#dddddd]`}>
+  <div className={`${maxWidth} mx-auto w-full min-h-[calc(100vh-2rem)] lg:min-h-0 my-0 lg:my-10 flex flex-col bg-white overflow-hidden relative shadow-none lg:shadow-2xl lg:rounded-[2.5rem] border-0 lg:border border-[#dddddd]`}>
     {!hideHeader && (
-      <div className="flex items-center justify-between p-6 bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-[#f7f7f7]">
+      <div className="flex items-center justify-between p-5 lg:p-8 bg-white/95 backdrop-blur-xl sticky top-0 z-50 border-b border-[#f7f7f7]">
         <div className="flex items-center gap-4">
-          {showBack && <button onClick={() => setScreen(prevScreen)} className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#222222]"><ChevronLeft size={20}/></button>}
-          <h2 className="text-base font-bold text-[#222222] tracking-tight">{title || 'Book Guide'}</h2>
+          {showBack && (
+            <button 
+              onClick={() => setScreen(prevScreen)} 
+              className="p-2 lg:p-3 hover:bg-[#f7f7f7] rounded-xl text-[#222222] transition-all active:scale-90"
+            >
+              <ChevronLeft size={20} lg:size={24}/>
+            </button>
+          )}
+          <h2 className="text-sm lg:text-lg font-black text-[#222222] uppercase tracking-widest">{title || 'Book Guide'}</h2>
         </div>
-        <button className="p-2 hover:bg-[#f7f7f7] rounded-full text-[#717171]"><MoreVertical size={20}/></button>
+        <button className="p-2 lg:p-3 hover:bg-[#f7f7f7] rounded-xl text-[#717171] transition-all"><MoreVertical size={20}/></button>
       </div>
     )}
-    <div className={`flex-1 ${noPadding ? 'p-0' : 'p-6'} flex flex-col`}>{children}</div>
+    <div className={`flex-1 ${noPadding ? 'p-0' : 'p-5 lg:p-10'} flex flex-col`}>{children}</div>
   </div>
 );
 
@@ -370,7 +377,7 @@ const BookGuidePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] lg:p-10 flex items-center justify-center">
+    <div className="bg-[#f7f7f7] lg:p-10 flex items-center justify-center">
       <Helmet>
         <title>Book a Guide | GuideGo</title>
       </Helmet>

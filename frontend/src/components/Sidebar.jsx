@@ -74,6 +74,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       { path: '/admin/guides', label: 'Manage Guides', icon: Compass },
       { path: '/admin/kyc', label: 'KYC Dossiers', icon: ShieldCheck },
       { path: '/admin/bookings', label: 'All Bookings', icon: Calendar },
+      { path: '/admin/places', label: 'Manage Service Areas', icon: Map },
       { path: '/admin/audio-guides', label: 'Manage Audio Guides', icon: Headphones },
     ]},
     { section: 'ACCOUNT', items: [
@@ -90,7 +91,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <div className="p-8 flex items-center justify-between">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { navigate('/'); onClose?.(); }}>
           <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-full object-cover" />
-          <span className="text-xl font-bold tracking-tighter text-[#222222]">Guide Goo</span>
+          <span className="text-xl font-bold tracking-tighter text-[#222222]">Guide Go</span>
         </div>
         <button onClick={onClose} className="lg:hidden p-2 text-[#6a6a6a]">
           <X size={24} />
@@ -98,10 +99,10 @@ const Sidebar = ({ isOpen, onClose }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-6 py-4 space-y-10 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 space-y-8 no-scrollbar">
         {links.map((group) => (
-          <div key={group.section} className="space-y-4">
-            <h4 className="px-2 text-[10px] font-bold text-[#6a6a6a] uppercase tracking-[0.3em]">{group.section}</h4>
+          <div key={group.section} className="space-y-3">
+            <h4 className="px-3 text-[10px] font-black text-[#717171] uppercase tracking-[0.3em] opacity-60">{group.section}</h4>
             <div className="space-y-1">
               {group.items.map((item) => {
                 const active = isActive(item.path);
@@ -112,15 +113,15 @@ const Sidebar = ({ isOpen, onClose }) => {
                     key={item.path}
                     to={item.path}
                     onClick={() => onClose?.()}
-                    className={`flex items-center space-x-4 px-2 py-3 rounded-lg transition-all duration-200 group relative ${
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 group relative ${
                       active 
-                      ? 'text-[#ff385c]' 
+                      ? 'bg-[#ff385c]/5 text-[#ff385c]' 
                       : 'text-[#222222] hover:bg-[#f7f7f7]'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${active ? 'text-[#ff385c]' : 'text-[#222222] opacity-80'}`} />
-                    <span className={`text-[15px] ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
-                    {active && <motion.div layoutId="active-dot" className="absolute -left-1 w-1 h-6 rounded-full bg-[#ff385c]" />}
+                    <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-[#ff385c]' : 'text-[#222222] opacity-60 group-hover:opacity-100'}`} />
+                    <span className={`text-[14px] lg:text-[15px] ${active ? 'font-black' : 'font-semibold'}`}>{item.label}</span>
+                    {active && <motion.div layoutId="active-dot" className="absolute left-0 w-1 h-5 rounded-full bg-[#ff385c]" />}
                   </NavLink>
                 );
               })}

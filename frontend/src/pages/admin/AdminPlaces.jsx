@@ -21,9 +21,11 @@ const AdminPlaces = () => {
     latitude: '',
     longitude: '',
     category: '',
+    city: '',
     audioGuideText: ''
   });
   const [imageFile, setImageFile] = useState(null);
+  const [imagesFiles, setImagesFiles] = useState([]);
 
   const fetchPlaces = async () => {
     try {
@@ -49,6 +51,7 @@ const AdminPlaces = () => {
         latitude: place.latitude,
         longitude: place.longitude,
         category: place.category,
+        city: place.city || '',
         audioGuideText: place.audioGuideText || ''
       });
     } else {
@@ -59,20 +62,22 @@ const AdminPlaces = () => {
         latitude: '',
         longitude: '',
         category: '',
+        city: '',
         audioGuideText: ''
       });
     }
     setImageFile(null);
+    setImagesFiles([]);
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to remove this place?')) {
+    if (window.confirm('Are you sure you want to remove this service area?')) {
       try {
         await api.delete(`/places/${id}`);
         fetchPlaces();
       } catch (error) {
-        alert('Error deleting place');
+        alert('Error deleting service area');
       }
     }
   };
@@ -82,6 +87,9 @@ const AdminPlaces = () => {
     const data = new FormData();
     Object.keys(formData).forEach(key => data.append(key, formData[key]));
     if (imageFile) data.append('image', imageFile);
+    if (imagesFiles.length > 0) {
+      imagesFiles.forEach(file => data.append('images', file));
+    }
 
     try {
       if (editPlace) {
@@ -92,7 +100,7 @@ const AdminPlaces = () => {
       setShowModal(false);
       fetchPlaces();
     } catch (error) {
-      alert('Error saving place');
+      alert('Error saving service area');
     }
   };
 
@@ -106,14 +114,14 @@ const AdminPlaces = () => {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 uppercase">Destinations</h2>
-          <p className="text-xs font-bold text-slate-400">Add and manage exploration locations</p>
+          <h2 className="text-2xl font-black text-slate-900 uppercase">Manage Service Areas</h2>
+          <p className="text-xs font-bold text-slate-400">Add, modify, and delete locations with gallery support</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
           className="px-8 py-4 bg-primary-500 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-500/20 hover:bg-primary-400 flex items-center"
         >
-          <Plus className="w-4 h-4 mr-2" /> Add Place
+          <Plus className="w-4 h-4 mr-2" /> New Location
         </button>
       </div>
 
@@ -140,9 +148,12 @@ const AdminPlaces = () => {
                    <Trash2 className="w-4 h-4" />
                  </button>
                </div>
-               <div className="absolute bottom-4 left-4">
+               <div className="absolute bottom-4 left-4 flex gap-2">
                   <span className="px-3 py-1 bg-primary-500 text-slate-900 rounded-full text-[10px] font-black uppercase tracking-tighter">
                     {place.category}
+                  </span>
+                  <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-tighter">
+                    {place.city}
                   </span>
                </div>
             </div>
@@ -153,9 +164,14 @@ const AdminPlaces = () => {
                 <p className="text-[10px] text-slate-400 font-bold flex items-center">
                   <MapPin className="w-3 h-3 mr-2" /> {place.latitude.toFixed(4)}, {place.longitude.toFixed(4)}
                 </p>
-                <p className="text-[10px] text-slate-400 font-bold flex items-center">
-                  <Volume2 className="w-3 h-3 mr-2 text-primary-500" /> {place.audioGuideText ? 'Audio Ready' : 'N/A'}
-                </p>
+                <div className="flex items-center justify-between">
+                   <p className="text-[10px] text-slate-400 font-bold flex items-center">
+                     <Volume2 className="w-3 h-3 mr-2 text-primary-500" /> {place.audioGuideText ? 'Audio Ready' : 'N/A'}
+                   </p>
+                   <p className="text-[10px] text-slate-400 font-bold flex items-center">
+                     <Layers className="w-3 h-3 mr-2 text-blue-500" /> {place.images?.length || 0} Photos
+                   </p>
+                </div>
               </div>
               <p className="text-xs text-slate-500 line-clamp-2 italic leading-relaxed">"{place.description}"</p>
             </div>
@@ -166,90 +182,113 @@ const AdminPlaces = () => {
       {showModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
-          <div className="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="relative bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
              <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">
-                  {editPlace ? 'Edit Place' : 'Add New Spot'}
+                  {editPlace ? 'Modify Service Area' : 'Register Service Area'}
                 </h3>
                 <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors">
                   <Plus className="w-6 h-6 rotate-45 text-slate-400" />
                 </button>
              </div>
-             <form onSubmit={handleSubmit} className="p-10 space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                   <div className="col-span-2 space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Place Name</label>
-                      <input 
-                        type="text" required
-                        className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                        value={formData.name}
-                        onChange={e => setFormData({...formData, name: e.target.value})}
-                      />
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Latitude</label>
-                      <input 
-                        type="number" step="any" required
-                        className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                        value={formData.latitude}
-                        onChange={e => setFormData({...formData, latitude: e.target.value})}
-                      />
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Longitude</label>
-                      <input 
-                        type="number" step="any" required
-                        className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                        value={formData.longitude}
-                        onChange={e => setFormData({...formData, longitude: e.target.value})}
-                      />
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                      <select 
-                        className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all appearance-none"
-                        value={formData.category}
-                        onChange={e => setFormData({...formData, category: e.target.value})}
-                      >
-                        <option value="">Select Category</option>
-                        <option value="temple">Temple</option>
-                        <option value="beach">Beach</option>
-                        <option value="historic">Historic</option>
-                        <option value="nature">Nature</option>
-                      </select>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cover Image</label>
-                      <input 
-                        type="file" 
-                        className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold text-xs text-slate-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-primary-500 file:text-slate-900 hover:file:bg-primary-400"
-                        onChange={e => setImageFile(e.target.files[0])}
-                      />
-                   </div>
-                   <div className="col-span-2 space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Audio Guide Script (For TTS)</label>
-                      <textarea 
-                        className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all h-24 resize-none"
-                        value={formData.audioGuideText}
-                        onChange={e => setFormData({...formData, audioGuideText: e.target.value})}
-                      />
-                   </div>
-                   <div className="col-span-2 space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                      <textarea 
-                        required
-                        className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all h-24 resize-none"
-                        value={formData.description}
-                        onChange={e => setFormData({...formData, description: e.target.value})}
-                      />
-                   </div>
-                </div>
-                <div className="pt-6">
-                   <button className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-2xl shadow-slate-900/30">
-                      {editPlace ? 'Update Location' : 'Register New Spot'}
-                   </button>
-                </div>
-             </form>
+             <div className="max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <form onSubmit={handleSubmit} className="p-10 space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="col-span-2 md:col-span-1 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Location Name</label>
+                        <input 
+                          type="text" required
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                          value={formData.name}
+                          onChange={e => setFormData({...formData, name: e.target.value})}
+                        />
+                     </div>
+                     <div className="col-span-2 md:col-span-1 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City/District</label>
+                        <input 
+                          type="text" required
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                          value={formData.city}
+                          onChange={e => setFormData({...formData, city: e.target.value})}
+                          placeholder="e.g. Puri"
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Latitude</label>
+                        <input 
+                          type="number" step="any" required
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                          value={formData.latitude}
+                          onChange={e => setFormData({...formData, latitude: e.target.value})}
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Longitude</label>
+                        <input 
+                          type="number" step="any" required
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+                          value={formData.longitude}
+                          onChange={e => setFormData({...formData, longitude: e.target.value})}
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select 
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all appearance-none"
+                          value={formData.category}
+                          onChange={e => setFormData({...formData, category: e.target.value})}
+                        >
+                          <option value="">Select Category</option>
+                          <option value="temple">Temple</option>
+                          <option value="beach">Beach</option>
+                          <option value="historic">Historic</option>
+                          <option value="nature">Nature</option>
+                          <option value="shopping">Shopping</option>
+                        </select>
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Main Cover Image</label>
+                        <input 
+                          type="file" 
+                          className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold text-xs text-slate-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-primary-500 file:text-slate-900 hover:file:bg-primary-400"
+                          onChange={e => setImageFile(e.target.files[0])}
+                        />
+                     </div>
+                     <div className="col-span-2 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Gallery Images (Multiple)</label>
+                        <input 
+                          type="file" multiple
+                          className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold text-xs text-slate-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-blue-500 file:text-white hover:file:bg-blue-400"
+                          onChange={e => setImagesFiles(Array.from(e.target.files))}
+                        />
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest px-2">Selected: {imagesFiles.length} files</p>
+                     </div>
+                     <div className="col-span-2 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Audio Guide Script (For AI TTS)</label>
+                        <textarea 
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all h-24 resize-none"
+                          value={formData.audioGuideText}
+                          onChange={e => setFormData({...formData, audioGuideText: e.target.value})}
+                          placeholder="Welcome to this beautiful location..."
+                        />
+                     </div>
+                     <div className="col-span-2 space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Detailed Description</label>
+                        <textarea 
+                          required
+                          className="w-full px-6 py-4 bg-slate-100 border-none rounded-2xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-primary-500 transition-all h-24 resize-none"
+                          value={formData.description}
+                          onChange={e => setFormData({...formData, description: e.target.value})}
+                        />
+                     </div>
+                  </div>
+                  <div className="pt-6">
+                     <button className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-2xl shadow-slate-900/30">
+                        {editPlace ? 'Save Modifications' : 'Create Service Area'}
+                     </button>
+                  </div>
+                </form>
+             </div>
           </div>
         </div>
       )}

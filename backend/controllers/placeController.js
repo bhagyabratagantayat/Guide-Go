@@ -21,7 +21,8 @@ const createPlace = asyncHandler(async (req, res, next) => {
   const { name, description, latitude, longitude, category, city, audioGuideText } = req.body;
   
   let imageUrl = '';
-  if (req.file) {
+  if (req.files && req.files['image']) {
+    const file = req.files['image'][0];
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: 'guidego/places' },
@@ -30,20 +31,39 @@ const createPlace = asyncHandler(async (req, res, next) => {
           else resolve(result);
         }
       );
-      uploadStream.end(req.file.buffer);
+      uploadStream.end(file.buffer);
     });
     imageUrl = result.secure_url;
+  }
+
+  let images = [];
+  if (req.files && req.files['images']) {
+    const files = req.files['images'];
+    const uploadPromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: 'guidego/places' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        uploadStream.end(file.buffer);
+      });
+    });
+    images = await Promise.all(uploadPromises);
   }
 
   const place = await Place.create({
     name,
     description,
-    latitude,
-    longitude,
+    latitude: Number(latitude),
+    longitude: Number(longitude),
     category,
-    city,
+    city: city || 'Odisha',
     audioGuideText,
-    image: imageUrl
+    image: imageUrl,
+    images: images
   });
 
   res.status(201).json(place);
@@ -57,7 +77,8 @@ const updatePlace = asyncHandler(async (req, res, next) => {
 
   const { name, description, latitude, longitude, category, city, audioGuideText } = req.body;
   
-  if (req.file) {
+  if (req.files && req.files['image']) {
+    const file = req.files['image'][0];
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: 'guidego/places' },
@@ -66,15 +87,33 @@ const updatePlace = asyncHandler(async (req, res, next) => {
           else resolve(result);
         }
       );
-      uploadStream.end(req.file.buffer);
+      uploadStream.end(file.buffer);
     });
     place.image = result.secure_url;
   }
 
+  if (req.files && req.files['images']) {
+    const files = req.files['images'];
+    const uploadPromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: 'guidego/places' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        uploadStream.end(file.buffer);
+      });
+    });
+    const newImages = await Promise.all(uploadPromises);
+    place.images = [...(place.images || []), ...newImages];
+  }
+
   place.name = name || place.name;
   place.description = description || place.description;
-  place.latitude = latitude || place.latitude;
-  place.longitude = longitude || place.longitude;
+  place.latitude = latitude ? Number(latitude) : place.latitude;
+  place.longitude = longitude ? Number(longitude) : place.longitude;
   place.category = category || place.category;
   place.city = city || place.city;
   place.audioGuideText = audioGuideText || place.audioGuideText;

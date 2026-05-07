@@ -203,17 +203,23 @@ function AppContent() {
 
       <div className="flex min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
         {/* Mobile Header */}
-        <header className={`${isTripLive ? 'hidden' : 'flex'} lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-[#f7f7f7] items-center justify-between px-6 z-[900]`}>
-          <div className="flex items-center gap-4">
-             <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-[#222222] hover:bg-[#f7f7f7] rounded-full transition-all">
-                <Menu size={24} />
+        <header className={`${isTripLive ? 'hidden' : 'flex'} lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-2xl border-b border-[#f7f7f7] items-center justify-between px-4 lg:px-8 z-[900]`}>
+          <div className="flex items-center gap-3">
+             <button 
+                onClick={() => setIsSidebarOpen(true)} 
+                className="p-2 -ml-2 text-[#222222] hover:bg-[#f7f7f7] rounded-xl transition-all active:scale-90"
+             >
+                <Menu size={20} />
              </button>
-             <span className="text-xl font-black italic tracking-tighter text-[#ff385c]">Guide Goo</span>
+             <span className="text-lg font-black italic tracking-tighter text-[#ff385c]">Guide Go</span>
           </div>
           {user && (
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#ff385c]/10 shadow-sm">
+            <button 
+              onClick={() => navigate('/profile')}
+              className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#ff385c]/10 shadow-sm active:scale-95 transition-transform"
+            >
                <img src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.name}&background=ff385c&color=fff`} className="w-full h-full object-cover" />
-            </div>
+            </button>
           )}
         </header>
 
@@ -229,7 +235,7 @@ function AppContent() {
         )}
 
         {/* Main Content Area */}
-        <main className={`flex-1 ${!isTripLive ? 'lg:ml-[260px]' : ''} ml-0 min-h-screen ${!isTripLive ? 'pt-16 lg:pt-0' : 'pt-0'} overflow-y-auto`}>
+        <main className={`flex-1 ${!isTripLive ? 'lg:ml-[260px]' : ''} ml-0 ${!isTripLive ? 'pt-16 lg:pt-0' : 'pt-0'} overflow-y-auto`}>
           <AnimatePresence mode="wait">
             <Suspense fallback={<PageLoader />}>
               <Routes location={location}>
@@ -257,6 +263,7 @@ function AppContent() {
                 {/* Protected Sidebar Routes */}
                 <Route path="/audio-guide" element={<ProtectedRoute><PageWrapper><AudioGuidePage /></PageWrapper></ProtectedRoute>} />
                 <Route path="/ai-chat" element={<ProtectedRoute><PageWrapper><AIChat /></PageWrapper></ProtectedRoute>} />
+                <Route path="/bookings" element={<Navigate to="/my-bookings" replace />} />
                 <Route path="/my-bookings" element={<ProtectedRoute><PageWrapper><Bookings /></PageWrapper></ProtectedRoute>} />
                 <Route path="/hotels" element={<ProtectedRoute><PageWrapper><HotelsPage /></PageWrapper></ProtectedRoute>} />
                 <Route path="/agencies" element={<ProtectedRoute><PageWrapper><Agencies /></PageWrapper></ProtectedRoute>} />
@@ -362,7 +369,7 @@ const PageWrapper = ({ children }) => (
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: 0.2, ease: "easeOut" }}
-    className="w-full h-full min-h-screen"
+    className="w-full h-full"
   >
     {children}
   </motion.div>
