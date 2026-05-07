@@ -55,7 +55,7 @@ const Footer = () => {
           <ul className="space-y-4">
             <li className="flex items-start gap-3 text-sm text-[#717171] font-medium"><MapPin size={18} className="text-[#ff385c] shrink-0" /> Bhubaneswar, Odisha, India</li>
             <li className="flex items-center gap-3 text-sm text-[#717171] font-medium"><Phone size={18} className="text-[#ff385c] shrink-0" /> +91 7855091725</li>
-            <li className="flex items-center gap-3 text-sm text-[#717171] font-medium"><Mail size={18} className="text-[#ff385c] shrink-0" /> contact@guidegoo.com</li>
+            <li className="flex items-center gap-3 text-sm text-[#717171] font-medium"><Mail size={18} className="text-[#ff385c] shrink-0" /> guidego2026@gmail.com</li>
           </ul>
         </div>
       </div>
@@ -71,9 +71,13 @@ const Footer = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-6">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_Play_Store_badge_EN.svg/1200px-Google_Play_Store_badge_EN.svg.png" className="h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer" alt="Play Store" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Download_on_the_App_Store_Badge.svg/1200px-Download_on_the_App_Store_Badge.svg.png" className="h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer" alt="App Store" />
+        <div className="flex items-center gap-4">
+          <a href="#" className="transition-transform hover:scale-105 active:scale-95">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" className="h-10 w-auto" alt="Google Play" />
+          </a>
+          <a href="#" className="transition-transform hover:scale-105 active:scale-95">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" className="h-10 w-auto" alt="App Store" />
+          </a>
         </div>
       </div>
     </footer>

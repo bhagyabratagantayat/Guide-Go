@@ -136,22 +136,20 @@ const Sidebar = ({ isOpen, onClose }) => {
         {/* User Card */}
         {/* User Card / Login Actions */}
         {user ? (
-          <div className="flex items-center justify-between group">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full bg-[#f7f7f7] border border-[#dddddd] flex items-center justify-center text-[#ff385c] font-bold text-lg overflow-hidden shrink-0 shadow-sm">
-                {user?.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[14px] font-bold text-[#222222] leading-none mb-1 truncate">{user?.name || 'Guest'}</span>
-                <span className="text-[10px] text-[#6a6a6a] font-medium truncate">{user?.role || 'User'}</span>
-              </div>
+          <div className="flex items-center gap-3 bg-[#f7f7f7] p-4 rounded-2xl border border-[#eeeeee]">
+            <div className="w-10 h-10 rounded-full bg-white border border-[#dddddd] flex items-center justify-center text-[#ff385c] font-bold text-sm overflow-hidden shrink-0">
+              {user?.profilePicture ? <img src={user.profilePicture} className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
+            </div>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-bold text-[#222222] truncate">{user?.name || 'Guest'}</span>
+              <span className="text-[9px] text-[#6a6a6a] font-bold uppercase tracking-widest truncate">{user?.role || 'User'}</span>
             </div>
             <button 
               onClick={logout}
-              className="p-3 text-[#6a6a6a] hover:text-[#ff385c] hover:bg-[#f7f7f7] rounded-full transition-all"
+              className="p-2 text-[#6a6a6a] hover:text-[#ff385c] transition-all shrink-0"
               title="Logout"
             >
-              <LogOut size={20} />
+              <LogOut size={18} />
             </button>
           </div>
         ) : (
