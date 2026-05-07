@@ -238,6 +238,18 @@ const addBookingReview = asyncHandler(async (req, res, next) => {
   res.json(booking);
 });
 
+const getBookingById = asyncHandler(async (req, res, next) => {
+  const booking = await Booking.findById(req.params.id)
+    .populate('userId', 'name mobile profilePicture')
+    .populate('guideId', 'name mobile profilePicture rating');
+
+  if (!booking) {
+    return next(new ErrorResponse('Booking not found', 404));
+  }
+
+  res.json(booking);
+});
+
 module.exports = { 
   createBooking, 
   acceptBooking, 
@@ -245,6 +257,7 @@ module.exports = {
   endBooking, 
   getUserBookings, 
   getGuideBookings, 
+  getBookingById,
   updateBookingStatus,
   addBookingReview
 };
