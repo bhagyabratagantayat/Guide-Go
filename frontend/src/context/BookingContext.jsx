@@ -48,7 +48,18 @@ export const BookingProvider = ({ children }) => {
       ]);
 
       if (data && data.length > 0) {
-        const latest = data[0];
+        // Find specific active booking if ID exists in storage
+        const storedActiveId = localStorage.getItem('activeBookingId');
+        let latest = data[0];
+        
+        if (storedActiveId) {
+          const specificBooking = data.find(b => b._id === storedActiveId);
+          // If we found the specific booking and it's still active, prioritize it
+          if (specificBooking && ['searching', 'accepted', 'ongoing'].includes(specificBooking.status)) {
+            latest = specificBooking;
+          }
+        }
+
         if (['searching', 'accepted', 'ongoing', 'completed'].includes(latest.status)) {
           setBookingData(latest);
           if (latest.status === 'searching') {

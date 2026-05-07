@@ -94,13 +94,21 @@ const BookGuidePage = () => {
   }, []);
 
   useEffect(() => {
-    console.log('BookGuidePage: tripStatus Sync ->', tripStatus);
+    if (bookingData) {
+      setFormData({
+        location: bookingData.location || 'Puri, Odisha',
+        plan: bookingData.plan || '2 Hours',
+        language: bookingData.language || 'Hindi',
+        price: bookingData.price || 349
+      });
+    }
+  }, [bookingData]);
+
+  useEffect(() => {
+    console.log('BookGuidePage Status Sync:', tripStatus);
     if (tripStatus === TRIP_STATUS.SEARCHING) setScreen('searching');
     else if (tripStatus === TRIP_STATUS.MATCHED) setScreen('call-connect');
-    else if (tripStatus === TRIP_STATUS.ONGOING) {
-      console.log('Transitioning to trip-ongoing screen...');
-      setScreen('trip-ongoing');
-    }
+    else if (tripStatus === TRIP_STATUS.ONGOING) setScreen('trip-ongoing');
     else if (tripStatus === TRIP_STATUS.COMPLETED) setScreen('end-trip');
     else if (tripStatus === TRIP_STATUS.IDLE && !isRestoring) setScreen('select-location');
   }, [tripStatus, isRestoring]);
