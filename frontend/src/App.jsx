@@ -16,6 +16,7 @@ import PageLoader from './components/PageLoader';
 import { connectSocket, disconnectSocket } from './utils/socket';
 import { Menu } from 'lucide-react';
 import api from './utils/api';
+import Footer from './components/Footer';
 
 // Lazy Loaded Pages
 const Home               = lazy(() => import('./pages/Home'));
@@ -179,7 +180,7 @@ function AppContent() {
              <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-[#222222] hover:bg-[#f7f7f7] rounded-full transition-all">
                 <Menu size={24} />
              </button>
-             <span className="text-xl font-black italic tracking-tighter text-[#ff385c]">GuideGo</span>
+             <span className="text-xl font-black italic tracking-tighter text-[#ff385c]">Guide Goo</span>
           </div>
           {user && (
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#ff385c]/10 shadow-sm">
@@ -273,6 +274,7 @@ function AppContent() {
               </Routes>
             </Suspense>
           </AnimatePresence>
+          {!isTripLive && <Footer />}
         </main>
       </div>
 

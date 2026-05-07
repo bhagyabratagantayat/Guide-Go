@@ -91,7 +91,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <div className="p-8 flex items-center justify-between">
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { navigate('/'); onClose?.(); }}>
           <img src={logo} alt="GuideGo" className="w-10 h-10 rounded-full object-cover" />
-          <span className="text-xl font-bold tracking-tighter text-[#222222]">GuideGo</span>
+          <span className="text-xl font-bold tracking-tighter text-[#222222]">Guide Goo</span>
         </div>
         <button onClick={onClose} className="lg:hidden p-2 text-[#6a6a6a]">
           <X size={24} />
