@@ -212,6 +212,7 @@ export const BookingProvider = ({ children }) => {
       startTimer(booking.startedAt || new Date());
     }
 
+    setIsRestoring(false);
     localStorage.setItem('activeBookingId', booking._id);
     
     // Redirect based on role

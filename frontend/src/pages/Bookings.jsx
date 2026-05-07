@@ -59,12 +59,6 @@ const Bookings = () => {
 
   const handleResume = (booking) => {
     resumeBooking(booking);
-    // Force immediate navigation for better UX
-    if (user?.role === 'guide') {
-      navigate('/guide');
-    } else {
-      navigate('/book-guide');
-    }
   };
 
   const filteredBookings = bookings.filter(b => {
