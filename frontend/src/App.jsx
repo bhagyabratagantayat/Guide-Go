@@ -39,6 +39,7 @@ const PremiumPage        = lazy(() => import('./pages/PremiumPage'));
 const HelpPage           = lazy(() => import('./pages/HelpPage'));
 
 const Chat               = lazy(() => import('./pages/Chat'));
+const ChatPage           = lazy(() => import('./pages/ChatPage'));
 const Weather            = lazy(() => import('./pages/Weather'));
 const TripPlanner        = lazy(() => import('./pages/TripPlanner'));
 const Agencies           = lazy(() => import('./pages/Agencies'));
@@ -227,6 +228,7 @@ function AppContent() {
                 <Route path="/notifications" element={<ProtectedRoute><PageWrapper><NotificationsPage /></PageWrapper></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
                 <Route path="/help" element={<ProtectedRoute><PageWrapper><HelpPage /></PageWrapper></ProtectedRoute>} />
+                <Route path="/chat/:bookingId" element={<ProtectedRoute><PageWrapper><ChatPage /></PageWrapper></ProtectedRoute>} />
 
                 {/* Guide Flow */}
                 <Route path="/guide/verify-identity" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />

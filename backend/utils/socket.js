@@ -70,20 +70,21 @@ const initSocket = (server) => {
       });
     });
 
-    // Real-time Chat with Access Control
+    // Real-time Chat with Persistence
     socket.on('sendMessage', async (data) => {
-      const { bookingId, text, recipientId, senderRole } = data;
+      const { bookingId, text, recipientId, senderId } = data;
       if (!bookingId || !text || !recipientId) return;
 
       try {
         const Booking = require('../models/Booking');
+        const Message = require('../models/Message');
         const booking = await Booking.findById(bookingId);
 
         if (!booking) {
           return socket.emit('chatError', { message: 'Booking not found' });
         }
 
-        // Access Control: Only allow chat if trip is active
+        // Access Control: Only allow chat if trip is active (Accepted or Ongoing)
         const allowedStatuses = ['accepted', 'ongoing'];
         if (!allowedStatuses.includes(booking.status)) {
           return socket.emit('chatError', { 
@@ -92,15 +93,17 @@ const initSocket = (server) => {
           });
         }
 
-        // Broadcast to recipient
-        io.to(recipientId).emit('receiveMessage', {
-          _id: Date.now().toString(),
+        // Save message to Database
+        const newMessage = await Message.create({
           bookingId,
-          senderId: userId,
-          senderRole,
-          text,
-          timestamp: new Date()
+          senderId: senderId || userId,
+          receiverId: recipientId,
+          text
         });
+
+        // Broadcast to recipient room
+        io.to(recipientId).emit('receiveMessage', newMessage);
+        // Also send back to sender for confirmation if needed (optional)
 
       } catch (err) {
         console.error('Chat Error:', err);

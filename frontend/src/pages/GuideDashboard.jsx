@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import useGuideTracking from '../hooks/useGuideTracking';
@@ -25,6 +26,7 @@ const DashboardSkeleton = () => (
 
 const GuideDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { startTracking } = useGuideTracking(user);
   const { darkMode } = useTheme();
   const [isLive, setIsLive] = useState(false);
@@ -253,7 +255,13 @@ const GuideDashboard = () => {
                             onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${activeBooking.userLat},${activeBooking.userLng}`, '_blank')}
                             className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
                          >
-                            <Navigation size={14} /> <span className="text-[10px] font-bold uppercase">View User Location</span>
+                            <Navigation size={14} /> <span className="text-[10px] font-bold uppercase">Location</span>
+                         </button>
+                         <button 
+                            onClick={() => navigate(`/chat/${activeBooking._id}`)}
+                            className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors ml-2"
+                         >
+                            <MessageSquare size={14} /> <span className="text-[10px] font-bold uppercase">Chat</span>
                          </button>
                       </div>
                    </div>

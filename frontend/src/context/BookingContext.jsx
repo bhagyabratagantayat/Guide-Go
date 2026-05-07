@@ -21,7 +21,7 @@ export const BookingProvider = ({ children }) => {
   const [otp, setOtp] = useState('');
   const [tripTimer, setTripTimer] = useState(0);
   const [isRestoring, setIsRestoring] = useState(true);
-  
+
   const timerRef = useRef(null);
   const socketRef = useRef(null);
 
@@ -36,9 +36,9 @@ export const BookingProvider = ({ children }) => {
       }
 
       const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
-      
+
       // Add a 5-second timeout to the API call
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Restoration Timeout')), 5000)
       );
 
@@ -46,7 +46,7 @@ export const BookingProvider = ({ children }) => {
         api.get(endpoint),
         timeoutPromise
       ]);
-      
+
       if (data && data.length > 0) {
         const latest = data[0];
         if (['searching', 'accepted', 'ongoing', 'completed'].includes(latest.status)) {
@@ -106,8 +106,6 @@ export const BookingProvider = ({ children }) => {
         setTripStatus(TRIP_STATUS.ONGOING);
         if (data.bookingId) localStorage.setItem('activeBookingId', data.bookingId);
         startTimer(data.startedAt || new Date());
-        // Proactive sync to ensure all details are latest
-        restoreSession(true);
       });
 
       socket.on('trip_ended', () => {
@@ -143,7 +141,7 @@ export const BookingProvider = ({ children }) => {
 
   const startTimer = (startTime) => {
     if (timerRef.current) clearInterval(timerRef.current);
-    
+
     const calculateElapsed = () => {
       const start = new Date(startTime).getTime();
       const now = new Date().getTime();
@@ -182,7 +180,7 @@ export const BookingProvider = ({ children }) => {
       // Optimistically reset UI
       const idToCancel = bookingData._id;
       resetBooking();
-      
+
       // Notify backend
       await api.put(`/bookings/${idToCancel}/status`, { status: 'cancelled' });
     } catch (error) {
