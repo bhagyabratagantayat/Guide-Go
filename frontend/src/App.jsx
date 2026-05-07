@@ -123,11 +123,26 @@ function AppContent() {
         });
       }
 
+      // Global Message Notifications
+      socket.on('new_message', (message) => {
+        const isChatPage = location.pathname.includes(`/chat/${message.bookingId}`);
+        if (!isChatPage) {
+          setNotification({
+            title: 'New Message',
+            message: message.text,
+            type: 'new_message',
+            bookingId: message.bookingId,
+            onClick: () => navigate(`/chat/${message.bookingId}`)
+          });
+        }
+      });
+
       return () => {
         if (socket) {
           socket.off('notification');
           socket.off('new_booking_broadcast');
           socket.off('booking_cancelled');
+          socket.off('new_message');
         }
         disconnectSocket();
       };

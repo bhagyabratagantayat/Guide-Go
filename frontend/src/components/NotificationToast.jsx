@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, X, CheckCircle, Info, Calendar } from 'lucide-react';
+import { Bell, X, CheckCircle, Info, Calendar, MessageSquare } from 'lucide-react';
 
 const NotificationToast = ({ notification, onClose }) => {
   const [visible, setVisible] = useState(false);
@@ -18,12 +18,24 @@ const NotificationToast = ({ notification, onClose }) => {
     switch (notification.type) {
       case 'booking_received': return <Calendar className="w-6 h-6 text-secondary-500" />;
       case 'booking_status_update': return <CheckCircle className="w-6 h-6 text-green-500" />;
-      default: return <Info className="w-6 h-6 text-primary-500" />;
+      case 'new_message': return <MessageSquare className="w-6 h-6 text-blue-500" />;
+      default: return <Bell className="w-6 h-6 text-primary-500" />;
+    }
+  };
+
+  const handleClick = () => {
+    if (notification.onClick) {
+      notification.onClick();
+      setVisible(false);
+      setTimeout(onClose, 500);
     }
   };
 
   return (
-    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:bottom-8 z-[9999] max-w-sm w-full bg-white/95 backdrop-blur-md rounded-[2rem] shadow-2xl border border-[#ebebeb] overflow-hidden transform transition-all duration-500 ease-out ${visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-95 pointer-events-none'}`}>
+    <div 
+      onClick={handleClick}
+      className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:bottom-8 z-[9999] max-w-sm w-full bg-white/95 backdrop-blur-md rounded-[2rem] shadow-2xl border border-[#ebebeb] overflow-hidden transform transition-all duration-500 ease-out ${notification.onClick ? 'cursor-pointer hover:scale-[1.02]' : ''} ${visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-95 pointer-events-none'}`}
+    >
       <div className="p-5 flex items-start space-x-4">
         <div className="flex-shrink-0 p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl">
           {getIcon()}
