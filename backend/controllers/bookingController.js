@@ -23,18 +23,37 @@ const createBooking = asyncHandler(async (req, res, next) => {
 
   // Broadcast to all approved guides
   if (req.io) {
-    // Count active guides
-    const activeCount = await Guide.countDocuments({ isLive: true });
+    // Flexible matching: Get first word of location to avoid "Puri, Odisha" vs "Puri" mismatch
+    const city = location.split(',')[0].trim();
+    const activeCount = await Guide.countDocuments({ 
+      isLive: true, 
+      $or: [
+        { location: { $regex: city, $options: 'i' } },
+        { location: { $regex: location, $options: 'i' } }
+      ]
+    });
     
+    console.log(`NEW BOOKING: Broadcast to ${activeCount} guides in ${location} (City: ${city})`);
+    
+    // Broadcast specifically to all guides
+    // Using a more reliable emission strategy
     req.io.emit('new_booking_broadcast', {
-      message: 'New tour request nearby!',
-      booking
+      message: `New tour request in ${location}!`,
+      booking: {
+        ...booking._doc,
+        userName: req.user.name,
+        userAvatar: req.user.profilePicture
+      }
     });
 
-    // Notify the specific user about active guides
+    console.log('EVENT EMITTED: new_booking_broadcast');
+
+    // Notify the specific user about active guides nearby
     req.io.to(req.user._id.toString()).emit('booking_stats_initial', {
       activeCount
     });
+  } else {
+    console.error('CRITICAL: req.io is UNDEFINED in createBooking!');
   }
 
   res.status(201).json(booking);
@@ -257,6 +276,22 @@ const getBookingById = asyncHandler(async (req, res, next) => {
   res.json(booking);
 });
 
+const getNearbyBookings = asyncHandler(async (req, res) => {
+  const { location } = req.query;
+  
+  // Find all bookings in 'searching' state for this location
+  const query = { status: 'searching' };
+  if (location) {
+    query.location = { $regex: location, $options: 'i' };
+  }
+
+  const bookings = await Booking.find(query)
+    .populate('userId', 'name mobile profilePicture')
+    .sort('-createdAt');
+
+  res.json({ success: true, data: bookings });
+});
+
 module.exports = { 
   createBooking, 
   acceptBooking, 
@@ -266,5 +301,6 @@ module.exports = {
   getGuideBookings, 
   getBookingById,
   updateBookingStatus,
-  addBookingReview
+  addBookingReview,
+  getNearbyBookings
 };

@@ -162,17 +162,40 @@ const GuideDashboard = () => {
     fetchPlaces();
   }, []);
 
+  const [nearbyBookings, setNearbyBookings] = useState([]);
+
+  const fetchNearbyBookings = async () => {
+    if (!isLive) return;
+    try {
+      const res = await api.get(`/bookings/nearby?location=${selectedLocation}`);
+      const data = res.data?.data || res.data;
+      setNearbyBookings(Array.isArray(data) ? data : []);
+    } catch (err) { console.error('Nearby fetch failed'); }
+  };
+
+  useEffect(() => {
+    if (isLive) {
+      fetchNearbyBookings();
+      // Sync location with backend if it changed while live
+      api.put('/guides/live', { isLive: true, location: selectedLocation })
+        .catch(err => console.error('Auto-location sync failed:', err));
+
+      const interval = setInterval(fetchNearbyBookings, 10000); // Sync every 10s
+      return () => clearInterval(interval);
+    } else {
+      setNearbyBookings([]);
+    }
+  }, [isLive, selectedLocation]);
+
   const fetchDashboardData = async (force = false) => {
     if (!force) setLoading(true);
 
     try {
       console.log('Fetching guide dashboard data...');
       
-      // Independent fetchers to avoid blocking
       const fetchBookings = async () => {
         try {
           const res = await api.get('/bookings/guide');
-          // Handle both {data: []} and direct []
           const data = res.data?.data || res.data;
           setBookings(Array.isArray(data) ? data : []);
         } catch (err) { console.error('Bookings fetch failed'); }
@@ -187,13 +210,13 @@ const GuideDashboard = () => {
             setIsLive(data.isLive || false);
             setGuideStatus(data.status || 'pending');
             setPackages(data.packages || []);
+            if (data.location) setSelectedLocation(data.location);
           }
         } catch (err) { console.error('Profile fetch failed'); }
       };
 
-      await Promise.allSettled([fetchBookings(), fetchProfile()]);
+      await Promise.allSettled([fetchBookings(), fetchProfile(), fetchNearbyBookings()]);
 
-      // Check for active/searching bookings
       setBookings(prev => {
         const current = prev?.find(b => ['accepted', 'ongoing'].includes(b.status));
         setActiveBooking(current || null);
@@ -208,6 +231,18 @@ const GuideDashboard = () => {
   };
 
 
+
+  const handleAcceptBooking = async (bookingId) => {
+    try {
+      await api.put(`/bookings/accept/${bookingId}`, { 
+        lat: guideData?.lat || 0, 
+        lng: guideData?.lng || 0 
+      });
+      fetchDashboardData(true);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to accept booking');
+    }
+  };
 
   const handleVerifyOtp = async () => {
     try {
@@ -425,8 +460,48 @@ const GuideDashboard = () => {
             </div>
          </div>
 
-         {/* 5. RECENT BOOKINGS TABLE */}
-         <div className="lg:col-span-2">
+         {/* 5. NEARBY AVAILABLE REQUESTS */}
+         <div className="lg:col-span-2 space-y-6">
+            {isLive && nearbyBookings.length > 0 && (
+               <div className="bg-rose-50 dark:bg-rose-500/5 rounded-[3rem] p-8 border-2 border-rose-100 dark:border-rose-500/10 space-y-6">
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-rose-500 rounded-full animate-ping" />
+                        <h3 className="text-xl font-black text-rose-600 italic tracking-tighter uppercase">Available Requests Nearby</h3>
+                     </div>
+                     <span className="px-4 py-1 bg-rose-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest">{nearbyBookings.length} NEW</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     {nearbyBookings.map(b => (
+                        <motion.div 
+                           key={b._id} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                           className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-rose-100 dark:border-rose-800 shadow-xl shadow-rose-500/5 space-y-4"
+                        >
+                           <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-hidden">
+                                 <img src={b.userId?.profilePicture || 'https://ui-avatars.com/api/?name=' + b.userId?.name} className="w-full h-full object-cover" />
+                              </div>
+                              <div>
+                                 <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase italic">{b.userId?.name}</h4>
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{b.plan} • {b.language}</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                              <p className="text-xl font-black text-slate-900 dark:text-white italic">₹{b.price}</p>
+                              <button 
+                                 onClick={() => handleAcceptBooking(b._id)}
+                                 className="px-6 py-2.5 bg-[#222222] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 transition-all active:scale-95 shadow-lg"
+                              >
+                                 Accept Trip
+                              </button>
+                           </div>
+                        </motion.div>
+                     ))}
+                  </div>
+               </div>
+            )}
+
             <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden h-full">
                <div className="p-8 lg:p-10 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                   <h3 className="text-2xl font-black text-slate-900 dark:text-white italic tracking-tighter">Recent Activities</h3>

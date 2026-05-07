@@ -5,10 +5,10 @@ let socket;
 export const connectSocket = (userId, role, guideId) => {
   if (!socket) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const defaultURL = isLocal ? 'http://localhost:3000' : 'https://guide-go-backend.onrender.com';
+    const defaultURL = 'https://guide-go-backend.onrender.com';
     
     socket = io(import.meta.env.VITE_SOCKET_URL || defaultURL, {
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'], // Use polling first to ensure connection, then upgrade to websocket
       withCredentials: true,
       auth: {
         userId,

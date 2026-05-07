@@ -59,8 +59,27 @@ export default function GuideGuard({ children }) {
     };
 
     checkStatus();
+
+    // 🛡️ SECURITY HARDENING: Block Inspect and Right Click
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleKeyDown = (e) => {
+      if (
+        e.keyCode === 123 || 
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+        (e.ctrlKey && e.keyCode === 85)
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
     
-    return () => { mounted = false; };
+    return () => { 
+      mounted = false; 
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [navigate]);
 
   if (loading) {

@@ -109,14 +109,26 @@ function AppContent() {
       const socket = connectSocket(user._id, user.role, guideId);
       socketRef.current = socket;
       
+      const onConnect = () => {
+        socket.emit('join', { userId: user._id });
+        console.log('Socket Joined Global Room:', user._id);
+      };
+
+      if (socket.connected) onConnect();
+      socket.on('connect', onConnect);
+      
       socket.on('notification', (data) => {
         setNotification(data);
       });
 
       if (user.role === 'guide') {
         socket.on('new_booking_broadcast', (data) => {
+          console.log('🔔 NEW BOOKING BROADCAST RECEIVED:', data);
           setIncomingBooking(data.booking);
           setCountdown(60);
+          
+          // Optional: Vibrate or play subtle sound if possible
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         });
 
         socket.on('booking_cancelled', () => {
@@ -312,6 +324,15 @@ function AppContent() {
                </div>
 
                <div className="bg-white/5 p-6 rounded-3xl border border-white/5 space-y-4">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10">
+                      <img src={incomingBooking.userAvatar || `https://ui-avatars.com/api/?name=${incomingBooking.userName}&background=ff385c&color=fff`} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Traveler</p>
+                      <p className="text-sm font-black text-white italic">{incomingBooking.userName || 'Someone Nearby'}</p>
+                    </div>
+                  </div>
                   <div className="flex justify-between items-center"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Plan</span><span className="text-xs font-bold text-white">{incomingBooking.plan}</span></div>
                   <div className="flex justify-between items-center pt-2 border-t border-white/5"><span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Price</span><span className="text-lg font-black text-emerald-500">₹{incomingBooking.price}</span></div>
                </div>

@@ -7,7 +7,7 @@ const isLocal = window.location.hostname === 'localhost' || window.location.host
 const defaultBaseURL = isLocal ? '/api' : 'https://guide-go-backend.onrender.com/api';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || defaultBaseURL,
+  baseURL: import.meta.env.VITE_API_URL || 'https://guide-go-backend.onrender.com/api',
   withCredentials: true 
 });
 

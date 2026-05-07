@@ -42,12 +42,14 @@ export const BookingProvider = ({ children }) => {
         setTimeout(() => reject(new Error('Restoration Timeout')), 5000)
       );
 
-      const { data } = await Promise.race([
+      const res = await Promise.race([
         api.get(endpoint),
         timeoutPromise
       ]);
 
-      if (data && data.length > 0) {
+      const data = res.data.data || res.data; // Handle both formats
+
+      if (data && Array.isArray(data) && data.length > 0) {
         // Find specific active booking if ID exists in storage
         const storedActiveId = localStorage.getItem('activeBookingId');
         let latest = data[0];

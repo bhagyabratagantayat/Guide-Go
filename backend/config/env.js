@@ -35,7 +35,7 @@ const config = {
     smtpPass: process.env.SMTP_PASS,
     from: process.env.EMAIL_FROM || 'guidego2026@gmail.com'
   },
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173'
+  clientUrl: process.env.CLIENT_URL || 'https://guide-goo.web.app'
 };
 
 console.log('🚀 SYSTEM STARTING WITH CONFIG:');
