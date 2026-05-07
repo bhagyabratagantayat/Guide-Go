@@ -244,43 +244,83 @@ const OngoingTrip = () => {
                    </div>
                 </div>
              ) : (
-                <div className="bg-white rounded-[3rem] p-12 lg:p-20 shadow-2xl">
-                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                      <div className="space-y-8">
-                         <h2 className="text-5xl font-black italic leading-tight">How was your adventure?</h2>
-                         <div className="bg-[#f7f7f7] p-8 rounded-[2.5rem] flex items-center gap-6">
-                            <img src={matchedGuide?.profilePicture} className="w-16 h-16 rounded-full" alt="" />
-                            <div>
-                               <p className="text-[10px] font-black uppercase text-[#717171]">Your Guide</p>
-                               <p className="text-xl font-bold">{matchedGuide?.name}</p>
-                            </div>
-                         </div>
-                      </div>
+                 <div className="bg-white rounded-[3rem] p-12 lg:p-20 shadow-2xl relative overflow-hidden">
+                    {/* Background Decorative Element */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#ff385c]/5 rounded-full -mr-20 -mt-20 blur-3xl" />
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+                       <div className="space-y-10">
+                          <div className="space-y-4">
+                             <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest">Adventure Completed</span>
+                             <h2 className="text-5xl lg:text-6xl font-black italic leading-[0.9] tracking-tighter">How was your adventure?</h2>
+                          </div>
 
-                      <div className="space-y-8">
-                         <div className="flex gap-4 justify-center">
-                            {[1, 2, 3, 4, 5].map(star => (
-                               <button key={star} onClick={() => setUserRating(star)}>
-                                  <Star size={48} className={star <= userRating ? 'text-amber-500 fill-current' : 'text-slate-200'} />
-                               </button>
-                            ))}
-                         </div>
-                         <textarea 
-                            className="w-full p-8 bg-[#f7f7f7] rounded-[2rem] border-none focus:ring-2 focus:ring-[#ff385c]"
-                            placeholder="Share your experience..."
-                            value={userComment}
-                            onChange={(e) => setUserComment(e.target.value)}
-                         />
-                         <button 
-                            onClick={handleSubmitReview}
-                            disabled={isSubmitting}
-                            className="w-full py-6 bg-[#222222] text-white rounded-full font-black uppercase tracking-widest shadow-xl disabled:opacity-50"
-                         >
-                            {isSubmitting ? 'Submitting...' : 'Complete & Pay'}
-                         </button>
-                      </div>
-                   </div>
-                </div>
+                          <div className="bg-[#f7f7f7] p-8 rounded-[2.5rem] flex items-center gap-6 border border-[#eeeeee]">
+                             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                <img src={matchedGuide?.profilePicture || 'https://ui-avatars.com/api/?name=' + matchedGuide?.name} className="w-full h-full object-cover" alt="" />
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black uppercase text-[#717171] tracking-widest">Your Guide</p>
+                                <p className="text-xl font-bold text-[#222222]">{matchedGuide?.name}</p>
+                             </div>
+                          </div>
+                          
+                          <div className="pt-4">
+                             <p className="text-sm font-medium text-[#717171] leading-relaxed max-w-sm">
+                                Your feedback helps us keep the GuideGo community safe and awesome for everyone.
+                             </p>
+                          </div>
+                       </div>
+
+                       <div className="space-y-10">
+                          <div className="space-y-4">
+                             <p className="text-center text-[10px] font-black uppercase text-[#717171] tracking-[0.2em]">Rate your experience</p>
+                             <div className="flex gap-3 justify-center">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                   <motion.button 
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      key={star} 
+                                      onClick={() => setUserRating(star)}
+                                      className="p-1"
+                                   >
+                                      <Star size={44} className={star <= userRating ? 'text-amber-500 fill-current' : 'text-slate-200'} />
+                                   </motion.button>
+                                ))}
+                             </div>
+                          </div>
+
+                          <div className="space-y-6">
+                             <textarea 
+                                className="w-full p-8 bg-[#f7f7f7] rounded-[2rem] border border-[#eeeeee] focus:ring-2 focus:ring-[#ff385c] focus:bg-white transition-all resize-none h-32"
+                                placeholder="What did you love about this trip?"
+                                value={userComment}
+                                onChange={(e) => setUserComment(e.target.value)}
+                             />
+                             
+                             <div className="flex flex-col gap-4">
+                                <button 
+                                   onClick={handleSubmitReview}
+                                   disabled={isSubmitting}
+                                   className="w-full py-6 bg-[#222222] text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl disabled:opacity-50 hover:bg-black transition-all active:scale-[0.98]"
+                                >
+                                   {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                                </button>
+                                
+                                <button 
+                                   onClick={() => {
+                                      resetBooking();
+                                      navigate('/my-bookings');
+                                   }}
+                                   className="w-full py-4 text-[#717171] font-bold text-[10px] uppercase tracking-[0.2em] hover:text-[#222222] transition-colors"
+                                >
+                                   Skip for now
+                                </button>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
              )}
           </motion.div>
         ) : (
