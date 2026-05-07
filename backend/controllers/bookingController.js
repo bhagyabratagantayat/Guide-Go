@@ -138,9 +138,15 @@ const endBooking = asyncHandler(async (req, res, next) => {
   booking.endedAt = Date.now();
   await booking.save();
 
-  // Notify User to pay/review
+  // Notify both User and Guide
   if (req.io) {
     req.io.to(booking.userId.toString()).emit('trip_ended', { bookingId: booking._id });
+    if (booking.guideId) {
+      req.io.to(booking.guideId.toString()).emit('trip_ended_guide', { 
+        bookingId: booking._id,
+        price: booking.price 
+      });
+    }
   }
 
   res.json(booking);
@@ -191,6 +197,7 @@ const updateBookingStatus = asyncHandler(async (req, res, next) => {
 
     // If cancelled by traveler, notify guide
     if (status === 'cancelled' && isOwner && booking.guideId && req.io) {
+      console.log(`Emitting booking_cancelled to guide: ${booking.guideId}`);
       req.io.to(booking.guideId.toString()).emit('booking_cancelled', {
         bookingId: booking._id,
         reason: 'Cancelled by traveler'

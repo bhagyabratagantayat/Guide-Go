@@ -44,6 +44,8 @@ const GuideDashboard = () => {
   const [places, setPlaces] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('Puri');
   const [showGoLiveConfig, setShowGoLiveConfig] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastEarnings, setLastEarnings] = useState(0);
 
   // Optimized Stats Calculation
   const stats = useMemo(() => {
@@ -93,12 +95,20 @@ const GuideDashboard = () => {
     socket.on('booking_accepted_guide', () => {
       fetchDashboardData();
     });
+    
+    socket.on('trip_ended_guide', (data) => {
+      setLastEarnings(data.price || 0);
+      setShowSuccessModal(true);
+      setActiveBooking(null);
+      fetchDashboardData();
+    });
 
     return () => {
       socket.off('new_booking_broadcast', handleNewBooking);
       socket.off('trip_started');
       socket.off('booking_cancelled');
       socket.off('booking_accepted_guide');
+      socket.off('trip_ended_guide');
     };
   }, [isLive]);
 
@@ -438,6 +448,37 @@ const GuideDashboard = () => {
             </div>
          </div>
       </div>
+      {/* 6. SUCCESS MODAL */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[3rem] p-10 text-center space-y-8 shadow-2xl border border-slate-100 dark:border-slate-800"
+            >
+               <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle size={48} />
+               </div>
+               <div className="space-y-2">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white italic tracking-tighter">Trip Completed!</h3>
+                  <p className="text-sm font-medium text-slate-400">Great job! The traveler has finished the tour.</p>
+               </div>
+               
+               <div className="bg-emerald-50 dark:bg-emerald-500/5 p-8 rounded-3xl border border-emerald-100 dark:border-emerald-500/10">
+                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Your Earnings</p>
+                  <p className="text-5xl font-black text-emerald-500 italic tracking-tighter">₹{lastEarnings}</p>
+               </div>
+
+               <button 
+                  onClick={() => setShowSuccessModal(false)}
+                  className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+               >
+                  Back to Dashboard
+               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
