@@ -20,13 +20,21 @@ const Bookings = () => {
 
   const fetchBookings = async () => {
     try {
+      // Try to load from cache first for instant UI
+      const cachedData = localStorage.getItem(`gg_bookings_${user._id}`);
+      if (cachedData && loading) {
+        setBookings(JSON.parse(cachedData));
+        setLoading(false); // Stop loading immediately if we have cached data
+      }
+
       const endpoint = user.role === 'guide' ? '/bookings/guide' : '/bookings/user';
-      console.log(`fetching from: ${endpoint} for role: ${user.role}`);
       const res = await api.get(endpoint);
-      console.log('Bookings raw response:', res.data);
       const fetchedData = res.data?.data || res.data;
-      console.log('Bookings parsed data:', fetchedData);
-      setBookings(Array.isArray(fetchedData) ? fetchedData : []);
+      const dataArray = Array.isArray(fetchedData) ? fetchedData : [];
+      
+      setBookings(dataArray);
+      // Update cache
+      localStorage.setItem(`gg_bookings_${user._id}`, JSON.stringify(dataArray));
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {
@@ -99,9 +107,10 @@ const Bookings = () => {
 
         {/* BOOKING LIST */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <div className="w-10 h-10 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#717171]">Loading history</p>
+          <div className="grid gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-[#f7f7f7] h-40 rounded-[2rem] animate-pulse border border-[#eeeeee]" />
+            ))}
           </div>
         ) : filteredBookings.length > 0 ? (
           <div className="grid gap-6 pb-20">
