@@ -217,8 +217,10 @@ export const BookingProvider = ({ children }) => {
     // Redirect based on role
     const userString = localStorage.getItem('gg_user');
     const user = userString ? JSON.parse(userString) : null;
+    
+    // Using navigate for faster transitions if available
     if (user?.role === 'guide') {
-      window.location.href = '/guide';
+      window.location.href = '/guide'; // Keep this for now to ensure clean context reset, but optimize later
     } else {
       window.location.href = '/book-guide';
     }

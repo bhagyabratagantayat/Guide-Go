@@ -57,6 +57,16 @@ const Bookings = () => {
     }
   };
 
+  const handleResume = (booking) => {
+    resumeBooking(booking);
+    // Force immediate navigation for better UX
+    if (user?.role === 'guide') {
+      navigate('/guide');
+    } else {
+      navigate('/book-guide');
+    }
+  };
+
   const filteredBookings = bookings.filter(b => {
     if (activeFilter === 'upcoming') return ['searching', 'pending', 'confirmed', 'accepted', 'ongoing'].includes(b.status);
     if (activeFilter === 'completed') return b.status === 'completed';
@@ -188,7 +198,7 @@ const Bookings = () => {
 
                        {['searching', 'accepted', 'ongoing'].includes(booking.status) && (
                          <button 
-                          onClick={() => resumeBooking(booking)}
+                          onClick={() => handleResume(booking)}
                           className="flex-1 lg:w-full px-6 py-3 bg-[#ff385c] text-white rounded-xl text-xs font-bold hover:bg-[#e00b41] transition-all text-center shadow-lg shadow-rose-500/10"
                          >
                             Resume
