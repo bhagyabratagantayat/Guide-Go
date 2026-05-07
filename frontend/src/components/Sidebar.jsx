@@ -51,7 +51,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     { section: 'MANAGEMENT', items: (user?.kycStatus === 'approved' && user?.profileComplete) ? [
       { path: '/guide', label: 'Dashboard', icon: Home },
       { path: '/guide/bookings', label: 'Bookings', icon: Calendar },
-      { path: '/guide/chat', label: 'Messages', icon: MessageCircle },
       { path: '/guide/earnings', label: 'Earnings', icon: DollarSign },
     ] : [
       { path: '/guide/verify-identity', label: 'Verify Identity', icon: ShieldCheck, isPrimary: true },
