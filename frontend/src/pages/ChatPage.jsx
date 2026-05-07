@@ -11,24 +11,41 @@ const ChatPage = () => {
   const { bookingId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { bookingData } = useBooking();
+  const { bookingData: contextBooking } = useBooking();
+  const [booking, setBooking] = useState(contextBooking);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
   const scrollRef = useRef();
   const socketRef = useRef();
 
-  // Fetch initial messages
+  // Quick Recommendations
+  const recommendations = [
+    "Where are you?",
+    "I have reached the location",
+    "I am waiting near the entrance",
+    "Call me when you're here",
+    "On my way!",
+    "Okay, sounds good"
+  ];
+
+  // Fetch initial data
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchData = async () => {
       try {
-        const { data } = await api.get(`/chat/${bookingId}`);
-        setMessages(data.data);
+        const [msgRes, bookingRes] = await Promise.all([
+          api.get(`/chat/${bookingId}`),
+          api.get(`/bookings/${bookingId}`)
+        ]);
+        setMessages(msgRes.data.data);
+        setBooking(bookingRes.data);
       } catch (err) {
-        console.error('Failed to fetch messages:', err);
+        console.error('Failed to fetch chat data:', err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchMessages();
+    fetchData();
   }, [bookingId]);
 
   // Socket setup
@@ -36,50 +53,75 @@ const ChatPage = () => {
     const socket = getSocket();
     socketRef.current = socket;
 
+    if (socket && user?._id) {
+       socket.emit('join', { userId: user._id });
+    }
+
     socket.on('receiveMessage', (message) => {
       if (message.bookingId === bookingId) {
-        setMessages((prev) => [...prev, message]);
+        // Prevent duplicates from optimistic updates
+        setMessages((prev) => {
+          if (prev.some(m => m._id === message._id)) return prev;
+          return [...prev, message];
+        });
       }
     });
 
     return () => {
       socket.off('receiveMessage');
     };
-  }, [bookingId]);
+  }, [bookingId, user?._id]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
+  const handleSendMessage = (text) => {
+    const messageText = typeof text === 'string' ? text : newMessage;
+    if (!messageText.trim()) return;
 
-    const recipientId = user.role === 'user' ? bookingData?.guideId?._id : bookingData?.userId;
+    // Correct recipient determination
+    const recipientId = user.role === 'user' 
+      ? (booking?.guideId?._id || booking?.guideId) 
+      : (booking?.userId?._id || booking?.userId);
     
+    if (!recipientId) {
+      alert("Error: Recipient not found. Please try again.");
+      return;
+    }
+
     const messageData = {
       bookingId,
-      text: newMessage,
-      recipientId: recipientId || (user.role === 'user' ? bookingData?.guideId : bookingData?.userId),
+      text: messageText,
+      recipientId: recipientId,
       senderId: user._id
     };
 
     // Emit via socket
     socketRef.current.emit('sendMessage', messageData);
 
-    // Optimistically update UI
+    // Optimistically update UI with a temporary ID
+    const tempId = Date.now();
     setMessages((prev) => [...prev, {
-      _id: Date.now(),
+      _id: tempId,
       senderId: user._id,
-      text: newMessage,
+      text: messageText,
       createdAt: new Date()
     }]);
 
     setNewMessage('');
   };
 
-  const partnerName = user.role === 'user' ? (bookingData?.guideId?.name || 'Guide') : (bookingData?.userName || 'Traveler');
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-[#f7f7f7]">
+      <div className="w-10 h-10 border-4 border-[#ff385c] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  const partnerName = user.role === 'user' 
+    ? (booking?.guideId?.name || 'Guide') 
+    : (booking?.userId?.name || 'Traveler');
 
   return (
     <div className="flex flex-col h-screen bg-[#f7f7f7] text-[#222222]">
@@ -90,10 +132,14 @@ const ChatPage = () => {
             <ArrowLeft size={20} />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#ff385c]/10 flex items-center justify-center border border-[#ff385c]/20">
-               <span className="text-[#ff385c] font-black text-xs uppercase tracking-tighter italic">
-                 {partnerName.substring(0, 2)}
-               </span>
+            <div className="w-10 h-10 rounded-full bg-[#ff385c]/10 flex items-center justify-center border border-[#ff385c]/20 overflow-hidden">
+               {user.role === 'user' && booking?.guideId?.profilePicture ? (
+                 <img src={booking.guideId.profilePicture} className="w-full h-full object-cover" />
+               ) : (
+                 <span className="text-[#ff385c] font-black text-xs uppercase tracking-tighter italic">
+                   {partnerName.substring(0, 2)}
+                 </span>
+               )}
             </div>
             <div>
                <h3 className="text-sm font-black italic tracking-tighter text-[#222222]">{partnerName}</h3>
@@ -105,9 +151,9 @@ const ChatPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-           <button className="p-3 bg-slate-50 text-[#222222] rounded-2xl hover:bg-slate-100 transition-all">
+           <a href={`tel:${user.role === 'user' ? booking?.guideId?.mobile : booking?.userId?.mobile}`} className="p-3 bg-slate-50 text-[#222222] rounded-2xl hover:bg-slate-100 transition-all">
               <Phone size={18} />
-           </button>
+           </a>
            <button className="p-3 bg-slate-50 text-[#222222] rounded-2xl hover:bg-slate-100 transition-all">
               <MoreVertical size={18} />
            </button>
@@ -123,7 +169,7 @@ const ChatPage = () => {
            </div>
            <div>
               <p className="text-[10px] font-black text-[#222222] uppercase tracking-widest leading-none">Secure Session</p>
-              <p className="text-[9px] font-medium text-[#717171] mt-1 italic">Chat is encrypted and visible only to you and your guide.</p>
+              <p className="text-[9px] font-medium text-[#717171] mt-1 italic">Chat is visible only to you and your guide.</p>
            </div>
         </div>
 
@@ -154,7 +200,20 @@ const ChatPage = () => {
 
       {/* --- INPUT AREA --- */}
       <footer className="p-6 bg-white border-t border-[#eeeeee]">
-         <form onSubmit={handleSendMessage} className="relative flex items-center gap-3">
+         {/* Recommendations */}
+         <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-2">
+            {recommendations.map((rec, i) => (
+              <button 
+                key={i}
+                onClick={() => handleSendMessage(rec)}
+                className="whitespace-nowrap px-4 py-2 bg-[#f7f7f7] border border-[#eeeeee] text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-[#ff385c] hover:text-white hover:border-[#ff385c] transition-all"
+              >
+                {rec}
+              </button>
+            ))}
+         </div>
+
+         <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="relative flex items-center gap-3">
             <input 
                type="text" 
                placeholder="Write a message..."
