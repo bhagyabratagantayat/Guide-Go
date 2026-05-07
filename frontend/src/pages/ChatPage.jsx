@@ -124,111 +124,159 @@ const ChatPage = () => {
     : (booking?.userId?.name || 'Traveler');
 
   return (
-    <div className="flex flex-col h-screen bg-[#f7f7f7] text-[#222222]">
+    <div className="flex flex-col h-screen bg-[#f8f9fa] text-[#222222]">
       {/* --- HEADER --- */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-[#eeeeee] p-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="bg-white/70 backdrop-blur-xl border-b border-[#eeeeee] p-4 flex items-center justify-between sticky top-0 z-50 lg:px-8">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-full transition-all">
-            <ArrowLeft size={20} />
+          <button 
+            onClick={() => navigate(-1)} 
+            className="p-2.5 hover:bg-slate-100/50 rounded-2xl transition-all active:scale-90"
+          >
+            <ArrowLeft size={20} className="text-[#222222]" />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#ff385c]/10 flex items-center justify-center border border-[#ff385c]/20 overflow-hidden">
-               {user.role === 'user' && booking?.guideId?.profilePicture ? (
-                 <img src={booking.guideId.profilePicture} className="w-full h-full object-cover" />
-               ) : (
-                 <span className="text-[#ff385c] font-black text-xs uppercase tracking-tighter italic">
-                   {partnerName.substring(0, 2)}
-                 </span>
-               )}
+          <div className="flex items-center gap-3.5">
+            <div className="relative">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#ff385c] to-[#e00b41] flex items-center justify-center border-2 border-white shadow-lg overflow-hidden">
+                 {user.role === 'user' && booking?.guideId?.profilePicture ? (
+                   <img src={booking.guideId.profilePicture} className="w-full h-full object-cover" />
+                 ) : (
+                   <span className="text-white font-black text-xs uppercase tracking-tighter italic">
+                     {partnerName.substring(0, 2)}
+                   </span>
+                 )}
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
             </div>
             <div>
-               <h3 className="text-sm font-black italic tracking-tighter text-[#222222]">{partnerName}</h3>
-               <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Chat</span>
-               </div>
+               <h3 className="text-sm font-black italic tracking-tighter text-[#222222] leading-none mb-1">{partnerName}</h3>
+               <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Active Session</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-           <a href={`tel:${user.role === 'user' ? booking?.guideId?.mobile : booking?.userId?.mobile}`} className="p-3 bg-slate-50 text-[#222222] rounded-2xl hover:bg-slate-100 transition-all">
+           <a 
+              href={`tel:${user.role === 'user' ? booking?.guideId?.mobile : booking?.userId?.mobile}`} 
+              className="p-3 bg-white text-[#222222] rounded-2xl hover:bg-slate-50 transition-all border border-[#eeeeee] shadow-sm active:scale-95"
+            >
               <Phone size={18} />
            </a>
-           <button className="p-3 bg-slate-50 text-[#222222] rounded-2xl hover:bg-slate-100 transition-all">
+           <button className="p-3 bg-white text-[#222222] rounded-2xl hover:bg-slate-50 transition-all border border-[#eeeeee] shadow-sm">
               <MoreVertical size={18} />
            </button>
         </div>
       </header>
 
       {/* --- CHAT AREA --- */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {/* Info Card */}
-        <div className="bg-white/50 border border-white p-4 rounded-3xl flex items-center gap-4 mb-8 shadow-sm backdrop-blur-sm">
-           <div className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center">
-              <ShieldCheck size={20} />
-           </div>
-           <div>
-              <p className="text-[10px] font-black text-[#222222] uppercase tracking-widest leading-none">Secure Session</p>
-              <p className="text-[9px] font-medium text-[#717171] mt-1 italic">Chat is visible only to you and your guide.</p>
-           </div>
-        </div>
+      <div className="flex-1 overflow-y-auto bg-[#f8f9fa] custom-scrollbar">
+        <div className="max-w-4xl mx-auto w-full p-6 lg:p-10 space-y-6">
+          {/* Info Card */}
+          <div className="bg-white/40 border border-white p-5 rounded-[2rem] flex items-center gap-4 mb-10 shadow-sm backdrop-blur-sm mx-auto max-w-sm">
+             <div className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner">
+                <ShieldCheck size={20} />
+             </div>
+             <div>
+                <p className="text-[10px] font-black text-[#222222] uppercase tracking-widest leading-none">End-to-End Secure</p>
+                <p className="text-[9px] font-bold text-[#717171] mt-1 italic">Private session between you and guide.</p>
+             </div>
+          </div>
 
-        {messages.map((msg, index) => {
-          const isMe = msg.senderId === user._id;
-          return (
-            <motion.div 
-              key={msg._id || index}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[80%] p-4 rounded-[2rem] shadow-sm text-sm font-medium leading-relaxed ${
-                isMe 
-                ? 'bg-[#222222] text-white rounded-br-none' 
-                : 'bg-white text-[#222222] rounded-bl-none border border-[#eeeeee]'
-              }`}>
-                {msg.text}
-                <div className={`text-[8px] mt-2 font-bold uppercase tracking-widest ${isMe ? 'text-white/40' : 'text-slate-400'}`}>
-                  {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-        <div ref={scrollRef} />
+          <AnimatePresence initial={false}>
+            {messages.map((msg, index) => {
+              const isMe = msg.senderId === user._id;
+              const showDate = index === 0 || 
+                new Date(messages[index-1].createdAt).toDateString() !== new Date(msg.createdAt).toDateString();
+
+              return (
+                <React.Fragment key={msg._id || index}>
+                  {showDate && (
+                    <div className="flex justify-center my-6">
+                       <span className="px-4 py-1.5 bg-slate-200/50 backdrop-blur-sm text-[9px] font-black text-slate-500 uppercase tracking-widest rounded-full">
+                          {new Date(msg.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                       </span>
+                    </div>
+                  )}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}
+                  >
+                    <div className={`relative max-w-[85%] lg:max-w-[70%] px-5 py-4 rounded-[2rem] shadow-sm text-sm font-medium leading-relaxed transition-all ${
+                      isMe 
+                      ? 'bg-[#222222] text-white rounded-br-none shadow-black/5' 
+                      : 'bg-white text-[#222222] rounded-bl-none border border-[#eeeeee] shadow-slate-200/50'
+                    }`}>
+                      {msg.text}
+                      <div className={`text-[8px] mt-2 font-black uppercase tracking-widest flex items-center gap-2 ${isMe ? 'text-white/40' : 'text-slate-400'}`}>
+                        {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {isMe && <ShieldCheck size={8} className="text-emerald-500" />}
+                      </div>
+                      
+                      {/* Bubble Tail pseudo-elements could be added but let's stick to clean rounded look */}
+                    </div>
+                  </motion.div>
+                </React.Fragment>
+              );
+            })}
+          </AnimatePresence>
+          <div ref={scrollRef} className="h-4" />
+        </div>
       </div>
 
       {/* --- INPUT AREA --- */}
-      <footer className="p-6 bg-white border-t border-[#eeeeee]">
-         {/* Recommendations */}
-         <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-2">
-            {recommendations.map((rec, i) => (
-              <button 
-                key={i}
-                onClick={() => handleSendMessage(rec)}
-                className="whitespace-nowrap px-4 py-2 bg-[#f7f7f7] border border-[#eeeeee] text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-[#ff385c] hover:text-white hover:border-[#ff385c] transition-all"
-              >
-                {rec}
-              </button>
-            ))}
-         </div>
+      <footer className="bg-white/70 backdrop-blur-xl border-t border-[#eeeeee] relative z-50">
+        <div className="max-w-4xl mx-auto w-full p-4 lg:p-6">
+           {/* Recommendations */}
+           <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-1">
+              {recommendations.map((rec, i) => (
+                <button 
+                  key={i}
+                  onClick={() => handleSendMessage(rec)}
+                  className="whitespace-nowrap px-5 py-2.5 bg-white border border-[#eeeeee] text-[9px] font-black uppercase tracking-[0.15em] rounded-2xl hover:bg-[#ff385c] hover:text-white hover:border-[#ff385c] transition-all shadow-sm active:scale-95"
+                >
+                  {rec}
+                </button>
+              ))}
+           </div>
 
-         <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="relative flex items-center gap-3">
-            <input 
-               type="text" 
-               placeholder="Write a message..."
-               value={newMessage}
-               onChange={(e) => setNewMessage(e.target.value)}
-               className="flex-1 bg-[#f7f7f7] border border-[#eeeeee] p-5 rounded-[2rem] text-sm font-medium focus:ring-4 focus:ring-[#ff385c]/5 focus:border-[#ff385c] focus:bg-white transition-all outline-none"
-            />
-            <button 
-              type="submit"
-              className="p-5 bg-[#222222] text-white rounded-full hover:bg-black active:scale-90 transition-all shadow-xl shadow-black/10"
-            >
-              <Send size={20} />
-            </button>
-         </form>
+           <form 
+              onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} 
+              className="relative flex items-center gap-3"
+           >
+              <div className="flex-1 relative group">
+                <input 
+                   type="text" 
+                   placeholder="Write a message..."
+                   value={newMessage}
+                   onChange={(e) => setNewMessage(e.target.value)}
+                   className="w-full bg-[#f8f9fa] border border-[#eeeeee] p-5 lg:p-6 rounded-[2.2rem] text-sm font-semibold focus:ring-4 focus:ring-[#ff385c]/5 focus:border-[#ff385c]/30 focus:bg-white transition-all outline-none shadow-inner"
+                />
+              </div>
+              <button 
+                type="submit"
+                disabled={!newMessage.trim()}
+                className="p-5 lg:p-6 bg-[#222222] text-white rounded-full hover:bg-black active:scale-90 transition-all shadow-2xl shadow-black/10 disabled:opacity-20 disabled:scale-95"
+              >
+                <Send size={22} />
+              </button>
+           </form>
+        </div>
       </footer>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #eeeeee;
+          border-radius: 10px;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
