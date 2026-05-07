@@ -44,6 +44,7 @@ const Weather            = lazy(() => import('./pages/Weather'));
 const TripPlanner        = lazy(() => import('./pages/TripPlanner'));
 const Agencies           = lazy(() => import('./pages/Agencies'));
 const AgencyDetail       = lazy(() => import('./pages/AgencyDetail'));
+const OngoingTrip        = lazy(() => import('./pages/OngoingTrip'));
 
 // Admin
 const AdminLayout        = lazy(() => import('./components/AdminLayout'));
@@ -77,7 +78,7 @@ function AppContent() {
   const socketRef = useRef();
   const location = useLocation();
   const navigate = useNavigate();
-  const { tripStatus } = useBooking();
+  const { tripStatus, bookingData } = useBooking();
   const [incomingBooking, setIncomingBooking] = useState(null);
   const [countdown, setCountdown] = useState(30);
 
@@ -88,7 +89,17 @@ function AppContent() {
     }
   }, [user, location.pathname, navigate]);
 
-  const isTripLive = (tripStatus === TRIP_STATUS.MATCHED || tripStatus === TRIP_STATUS.ONGOING) && (location.pathname.includes('/book-guide') || location.pathname === '/guide');
+  const isTripLive = (tripStatus === TRIP_STATUS.MATCHED || tripStatus === TRIP_STATUS.ONGOING) && (location.pathname.includes('/book-guide') || location.pathname.includes('/ongoing-trip') || location.pathname === '/guide');
+
+  // GLOBAL REDIRECT: If trip is ongoing, force user to the trip page
+  useEffect(() => {
+    if (user?.role === 'user' && tripStatus === TRIP_STATUS.ONGOING && bookingData?._id) {
+      const restrictedPaths = ['/', '/book-guide', '/my-bookings'];
+      if (restrictedPaths.includes(location.pathname)) {
+         navigate(`/ongoing-trip/${bookingData._id}`, { replace: true });
+      }
+    }
+  }, [tripStatus, bookingData, location.pathname, user, navigate]);
 
   useEffect(() => {
     if (user) {
@@ -210,6 +221,7 @@ function AppContent() {
                 
                 {/* Core Feature Routes */}
                 <Route path="/book-guide" element={<ProtectedRoute><PageWrapper><BookGuidePage /></PageWrapper></ProtectedRoute>} />
+                <Route path="/ongoing-trip/:id" element={<ProtectedRoute><PageWrapper><OngoingTrip /></PageWrapper></ProtectedRoute>} />
                 <Route path="/location/:name" element={<PageWrapper><LocationDetailPage /></PageWrapper>} />
                 <Route path="/guides/:id" element={<ProtectedRoute><PageWrapper><GuideProfile /></PageWrapper></ProtectedRoute>} />
                 

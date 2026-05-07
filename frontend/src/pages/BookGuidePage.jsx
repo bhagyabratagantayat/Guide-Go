@@ -117,10 +117,12 @@ const BookGuidePage = () => {
     console.log('BookGuidePage Status Sync:', tripStatus);
     if (tripStatus === TRIP_STATUS.SEARCHING) setScreen('searching');
     else if (tripStatus === TRIP_STATUS.MATCHED) setScreen('call-connect');
-    else if (tripStatus === TRIP_STATUS.ONGOING) setScreen('trip-ongoing');
+    else if (tripStatus === TRIP_STATUS.ONGOING && bookingData?._id) {
+       navigate(`/ongoing-trip/${bookingData._id}`, { replace: true });
+    }
     else if (tripStatus === TRIP_STATUS.COMPLETED) setScreen('end-trip');
     else if (tripStatus === TRIP_STATUS.IDLE && !isRestoring) setScreen('select-location');
-  }, [tripStatus, isRestoring]);
+  }, [tripStatus, isRestoring, bookingData, navigate]);
 
   const location = useLocation();
   useEffect(() => {

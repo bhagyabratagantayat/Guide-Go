@@ -232,9 +232,13 @@ export const BookingProvider = ({ children }) => {
     
     // Using navigate for faster transitions if available
     if (user?.role === 'guide') {
-      window.location.href = '/guide'; // Keep this for now to ensure clean context reset, but optimize later
+      window.location.href = '/guide';
     } else {
-      window.location.href = '/book-guide';
+      if (booking.status === 'ongoing') {
+        window.location.href = `/ongoing-trip/${booking._id}`;
+      } else {
+        window.location.href = '/book-guide';
+      }
     }
   };
 
