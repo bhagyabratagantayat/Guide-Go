@@ -90,7 +90,8 @@ function AppContent() {
     }
   }, [user, location.pathname, navigate]);
 
-  const isTripLive = (tripStatus === TRIP_STATUS.MATCHED || tripStatus === TRIP_STATUS.ONGOING) && (location.pathname.includes('/book-guide') || location.pathname.includes('/ongoing-trip') || location.pathname === '/guide');
+  const isChatRoute = location.pathname.includes('/chat/');
+  const isTripLive = isChatRoute || ((tripStatus === TRIP_STATUS.MATCHED || tripStatus === TRIP_STATUS.ONGOING) && (location.pathname.includes('/book-guide') || location.pathname.includes('/ongoing-trip') || location.pathname === '/guide'));
 
   // GLOBAL REDIRECT: If trip is ongoing, force user to the trip page
   useEffect(() => {
@@ -256,7 +257,7 @@ function AppContent() {
                 <Route path="/notifications" element={<ProtectedRoute><PageWrapper><NotificationsPage /></PageWrapper></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><PageWrapper><Settings /></PageWrapper></ProtectedRoute>} />
                 <Route path="/help" element={<ProtectedRoute><PageWrapper><HelpPage /></PageWrapper></ProtectedRoute>} />
-                <Route path="/chat/:bookingId" element={<ProtectedRoute><PageWrapper><ChatPage /></PageWrapper></ProtectedRoute>} />
+                <Route path="/chat/:bookingId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
 
                 {/* Guide Flow */}
                 <Route path="/guide/verify-identity" element={<ProtectedRoute requiredRole="guide"><PageWrapper><GuideVerifyPage /></PageWrapper></ProtectedRoute>} />
@@ -264,7 +265,7 @@ function AppContent() {
                 <Route path="/guide" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><GuideDashboard /></PageWrapper></GuideGuard></ProtectedRoute>} />
                 <Route path="/guide/bookings" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><Bookings /></PageWrapper></GuideGuard></ProtectedRoute>} />
                 <Route path="/guide/chat" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><ChatList /></PageWrapper></GuideGuard></ProtectedRoute>} />
-                <Route path="/guide/chat/:id" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><Chat /></PageWrapper></GuideGuard></ProtectedRoute>} />
+                <Route path="/guide/chat/:id" element={<ProtectedRoute requiredRole="guide"><Chat /></ProtectedRoute>} />
                 <Route path="/guide/earnings" element={<ProtectedRoute requiredRole="guide"><GuideGuard><PageWrapper><Earnings /></PageWrapper></GuideGuard></ProtectedRoute>} />
 
                 {/* Admin Routes */}
