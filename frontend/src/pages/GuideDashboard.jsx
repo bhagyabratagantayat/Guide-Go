@@ -9,7 +9,7 @@ import { getSocket } from '../utils/socket';
 import { 
   Wifi, WifiOff, MapPin, Calendar, CheckCircle, 
   XCircle, DollarSign, User, Clock, Star, 
-  ArrowUpRight, ChevronRight, Activity, Shield,
+  ArrowUpRight, ChevronRight, Activity, Shield, ShieldAlert,
   Navigation, Phone, MessageSquare, Timer, Zap,
   TrendingUp, Users, Award, Briefcase
 } from 'lucide-react';
@@ -289,28 +289,52 @@ const GuideDashboard = () => {
                    </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                   {activeBooking.status === 'accepted' ? (
-                      <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 flex items-center gap-8 shadow-inner">
-                         <div className="space-y-1">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Enter OTP</p>
-                            <input 
-                               type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
-                               placeholder="0000" className="bg-transparent border-none text-4xl font-black text-white p-0 focus:ring-0 w-32 tracking-[0.3em] font-mono" 
-                            />
-                         </div>
-                         <button onClick={handleVerifyOtp} className="px-10 py-5 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">Start Trip</button>
-                      </div>
-                   ) : (
-                      <div className="flex items-center gap-10">
-                         <div className="text-center space-y-1">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Elapsed Time</p>
-                            <p className="text-4xl font-black text-white font-mono tracking-widest">{Math.floor(tripTimer / 60)}:{Math.floor(tripTimer % 60).toString().padStart(2, '0')}</p>
-                         </div>
-                         <button onClick={handleEndTrip} className="px-12 py-5 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95">Complete Trip</button>
-                      </div>
-                   )}
-                </div>
+                 <div className="flex flex-col md:flex-row items-center gap-6">
+                    {activeBooking.status === 'accepted' ? (
+                       <div className="flex items-center gap-6">
+                          <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 flex items-center gap-8 shadow-inner">
+                             <div className="space-y-1">
+                                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Enter OTP</p>
+                                <input 
+                                   type="text" value={otpInput} onChange={(e) => setOtpInput(e.target.value)}
+                                   placeholder="0000" className="bg-transparent border-none text-4xl font-black text-white p-0 focus:ring-0 w-32 tracking-[0.3em] font-mono" 
+                                />
+                             </div>
+                             <button onClick={handleVerifyOtp} className="px-10 py-5 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">Start Trip</button>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              if(window.confirm('Are you sure you want to cancel this trip?')) {
+                                api.put(`/bookings/${activeBooking._id}/status`, { status: 'cancelled' }).then(() => fetchDashboardData());
+                              }
+                            }}
+                            className="p-5 bg-white/5 text-rose-500 hover:bg-rose-500 hover:text-white rounded-2xl border border-white/10 transition-all active:scale-95"
+                          >
+                            <XCircle size={20} />
+                          </button>
+                       </div>
+                    ) : (
+                       <div className="flex items-center gap-10">
+                          <div className="text-center space-y-1">
+                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Elapsed Time</p>
+                             <p className="text-4xl font-black text-white font-mono tracking-widest">{Math.floor(tripTimer / 60)}:{Math.floor(tripTimer % 60).toString().padStart(2, '0')}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button onClick={handleEndTrip} className="px-12 py-5 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95">Complete Trip</button>
+                            <button 
+                              onClick={() => {
+                                if(window.confirm('Emergency Cancellation? This will end the trip immediately.')) {
+                                  api.put(`/bookings/${activeBooking._id}/status`, { status: 'cancelled' }).then(() => fetchDashboardData());
+                                }
+                              }}
+                              className="p-5 bg-white/5 text-rose-400 hover:bg-rose-900/50 rounded-2xl border border-white/10 transition-all"
+                            >
+                              <ShieldAlert size={20} />
+                            </button>
+                          </div>
+                       </div>
+                    )}
+                 </div>
              </div>
 
              <div className="pt-8 border-t border-white/5 flex flex-wrap gap-4">
