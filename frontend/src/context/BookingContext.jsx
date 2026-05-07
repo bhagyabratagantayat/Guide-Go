@@ -243,20 +243,27 @@ export const BookingProvider = ({ children }) => {
   };
 
 
+  const forceSyncBooking = (booking) => {
+    if (!booking) return;
+    setBookingData(booking);
+    setMatchedGuide(booking.guideId);
+    setOtp(booking.otp);
+    
+    if (booking.status === 'ongoing') {
+      setTripStatus(TRIP_STATUS.ONGOING);
+      startTimer(booking.startedAt);
+    } else if (booking.status === 'accepted') {
+      setTripStatus(TRIP_STATUS.MATCHED);
+    }
+    
+    setIsRestoring(false);
+  };
+
   return (
-    <BookingContext.Provider value={{
-      tripStatus,
-      setTripStatus,
-      bookingData,
-      setBookingData,
-      matchedGuide,
-      otp,
-      tripTimer,
-      isRestoring,
-      startSearching,
-      cancelBooking,
-      resetBooking,
-      resumeBooking
+    <BookingContext.Provider value={{ 
+      tripStatus, setTripStatus, bookingData, matchedGuide, otp, 
+      tripTimer, isRestoring, startSearching, cancelBooking, 
+      resetBooking, resumeBooking, forceSyncBooking 
     }}>
       {children}
     </BookingContext.Provider>

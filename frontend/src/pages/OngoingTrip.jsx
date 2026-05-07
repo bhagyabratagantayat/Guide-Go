@@ -15,7 +15,7 @@ const OngoingTrip = () => {
   const navigate = useNavigate();
   const { 
     tripStatus, setTripStatus, bookingData, matchedGuide, 
-    tripTimer, isRestoring, resetBooking 
+    tripTimer, isRestoring, resetBooking, forceSyncBooking 
   } = useBooking();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +28,7 @@ const OngoingTrip = () => {
   // 1. Explicit Fetch on Refresh/Direct Link
   useEffect(() => {
     const fetchSpecificBooking = async () => {
+      // If we already have the right data, stop loading
       if (bookingData && bookingData._id === bookingId) {
         setInternalLoading(false);
         return;
@@ -37,9 +38,7 @@ const OngoingTrip = () => {
         setInternalLoading(true);
         const { data } = await api.get(`/bookings/${bookingId}`);
         if (data) {
-          // Sync with context if possible, or just use local
-          setTripStatus(data.status === 'ongoing' ? TRIP_STATUS.ONGOING : TRIP_STATUS.COMPLETED);
-          // Note: In a real app, we'd have a function to 'force' sync context
+          forceSyncBooking(data);
         }
       } catch (err) {
         console.error('Failed to restore specific booking:', err);
@@ -50,7 +49,7 @@ const OngoingTrip = () => {
     };
 
     fetchSpecificBooking();
-  }, [bookingId, bookingData, navigate, setTripStatus]);
+  }, [bookingId, bookingData, navigate, forceSyncBooking]);
 
   // 2. Safety Redirect: Only if we are sure there's no trip
   useEffect(() => {
