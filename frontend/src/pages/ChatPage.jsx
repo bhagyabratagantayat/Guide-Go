@@ -123,6 +123,8 @@ const ChatPage = () => {
     ? (booking?.guideId?.name || 'Guide') 
     : (booking?.userId?.name || 'Traveler');
 
+  const currentGuide = user.role === 'user' ? (booking?.guideId) : null;
+
   return (
     <div className="flex flex-col h-[100dvh] bg-[#f8f9fa] text-[#222222] overflow-hidden fixed inset-0 z-[5000]">
       {/* --- HEADER (Fixed at Top) --- */}

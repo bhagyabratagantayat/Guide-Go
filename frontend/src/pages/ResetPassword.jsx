@@ -56,11 +56,11 @@ const ResetPassword = () => {
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 to-secondary-500"></div>
           
           <div className="text-center mb-10 space-y-2">
-            <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-[#ff385c]/10 text-[#ff385c] rounded-2xl flex items-center justify-center mx-auto mb-4">
                <Lock className="w-8 h-8" />
             </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tighter italic font-serif">New Password</h1>
-            <p className="text-slate-500 font-bold text-sm tracking-widest uppercase">Set your new secure password</p>
+            <h1 className="text-3xl font-black text-[#222222] tracking-tighter italic font-serif">New Password</h1>
+            <p className="text-slate-500 font-bold text-[10px] tracking-widest uppercase">Set your new secure password</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

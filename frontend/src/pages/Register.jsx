@@ -28,8 +28,8 @@ const Register = () => {
     setLoading(true);
     try {
       await register(name, email, password, role, mobile, location);
-      alert('Registration successful! You can now log in.');
-      navigate('/login');
+      // After registration, user must verify OTP
+      navigate('/verify-otp', { state: { email } });
     } catch (error) {
       alert(error.response?.data?.message || 'Registration failed');
     } finally {

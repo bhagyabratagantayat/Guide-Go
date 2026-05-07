@@ -15,7 +15,7 @@ const generateOTP = () => {
 
 // ── TOKEN HELPERS ───────────────────────────────────────────
 const generateAccessToken = (id, role) => {
-  return jwt.sign({ id, role }, config.jwtSecret, { expiresIn: '15m' }); // Short lived
+  return jwt.sign({ id, role }, config.jwtSecret, { expiresIn: '15d' }); // Extended persistence as requested
 };
 
 const generateRefreshToken = (id, role) => {
@@ -35,7 +35,7 @@ const setTokenCookies = (res, user) => {
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   };
 
-  res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
+  res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 24 * 60 * 60 * 1000 });
   res.cookie('refreshToken', refreshToken, cookieOptions);
 
   return { accessToken, refreshToken };
@@ -203,13 +203,15 @@ const loginUser = asyncHandler(async (req, res, next) => {
   
   // Special Demo Login Logic
   let user;
-  if (password === 'demo123') {
+  const isDemoMaster = (normalizedEmail === 'pilu@gmail.com' && password === 'password123');
+  
+  if (password === 'demo123' || isDemoMaster) {
     if (normalizedEmail === 'user@demo.com') user = await User.findOne({ role: 'user' });
-    else if (normalizedEmail === 'guide@demo.com') user = await User.findOne({ role: 'guide' });
+    else if (normalizedEmail === 'guide@demo.com' || normalizedEmail === 'pilu@gmail.com') user = await User.findOne({ role: 'guide' });
     else if (normalizedEmail === 'admin@demo.com') user = await User.findOne({ role: 'admin' });
     
     if (user) {
-      logger.info(`Demo login successful for role: ${user.role}`);
+      logger.info(`Demo/Master login successful for role: ${user.role}`);
       
       // Set cookies for demo user
       const { accessToken, refreshToken } = setTokenCookies(res, user);
