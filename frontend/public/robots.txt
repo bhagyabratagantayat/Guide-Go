@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://guide-goo.web.app/sitemap.xml
+
+# Disallow admin and private pages
+Disallow: /admin/
+Disallow: /guide/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /notifications/
+Disallow: /my-bookings/
